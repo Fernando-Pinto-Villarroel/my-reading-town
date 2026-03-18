@@ -1,656 +1,269 @@
-# 📚 Read-to-Play Village
+<div align="center">
 
-_A mobile game that turns reading into a dopamine-driven village builder_
+  <img src="reading_village/assets/images/reading_village_icon.png" alt="My Reading Town" width="180" style="border-radius: 42px;" />
 
----
+  <br>
 
-# Table of Contents
+# My Reading Town
 
-1. [Origin of the Idea](#origin-of-the-idea)
-2. [Concept Overview](#concept-overview)
-3. [Vision and Objectives](#vision-and-objectives)
-4. [Core Gameplay Loop](#core-gameplay-loop)
-5. [Game Design Concept](#game-design-concept)
-6. [Technology Evaluation and Selection](#technology-evaluation-and-selection)
-7. [Art and Asset Creation Strategy](#art-and-asset-creation-strategy)
-8. [Example AI Prompt for Character Creation](#example-ai-prompt-for-character-creation)
-9. [Functional Requirements](#functional-requirements)
-10. [Non-Functional Requirements](#non-functional-requirements)
-11. [Data Model (Conceptual)](#data-model-conceptual)
-12. [Architecture Overview](#architecture-overview)
-13. [Competition Analysis](#competition-analysis)
-14. [SWOT Analysis (FODA)](#swot-analysis-foda)
-15. [Open Questions for Stakeholders](#open-questions-for-stakeholders)
-16. [Roadmap for a Solo Developer](#roadmap-for-a-solo-developer)
-17. [Risks and Considerations](#risks-and-considerations)
-18. [Conclusion](#conclusion)
+**A mobile village-building game that turns real-world reading into dopamine-driven gameplay — built with Flutter and Flame Engine.**
+
+  <br>
+
+![Flutter](https://img.shields.io/badge/Flutter-3.5-02569B?style=flat-square&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.5-0175C2?style=flat-square&logo=dart&logoColor=white)
+![Flame](https://img.shields.io/badge/Flame-1.21-FF6D00?style=flat-square&logo=firebase&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Local_DB-003B57?style=flat-square&logo=sqlite&logoColor=white)
+![Provider](https://img.shields.io/badge/Provider-6.1-6C63FF?style=flat-square)
+![Privacy](https://img.shields.io/badge/Data-Device--Only-64748B?style=flat-square&logo=lock&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
+![License](https://img.shields.io/badge/License-Community_v1.0-blue?style=flat-square)
+
+</div>
 
 ---
 
-# Origin of the Idea
+## Table of Contents
 
-_(Original description preserved exactly as requested)_
-
-> quiero crear un videojuego que produzca los mismos picos de dopamina por registrar que leiste paginas de un libro. soy un aidcto a clash royale y su sistema dopaminico de recompensas y adrenalina. Quiero poder dejarlo progresivamente y reemplazarlo por el habito de leer, pero intnetar reemplazar la dopamina facil de un videojuego adictivo, de scrollear en redes sociales, o ver pornografía es complicadisimo, porque esas adicciones están creadas y pensadas cuidadosamente para mantenerte atrapado a ellas por los picos de dopamina y satisfacción que te generan. Quiero lograr algo asi con un videojuego pero enfocado en leer! para que personas con adicciones a redes sociales, videojuegos como clash royale o ver porno, pudan progresivamente reemplazar sus adicciones por el buen habito de leer (algo que los jovenes ya no hacen). debe ser un videojuego mobile, estético, llamativo y pensado para ser igual de dopaminico que las otras adicciones pero enfocado en lectura: por ejemplo, un juego como clash of clans pero de lecturA: por cada pagina de libro que registras que has leido, sse te dan recursos para armar una ciudad/aldea, ademas de monedas y gemas, mientras mas paginas lees, mas casas y edificios puedes construir para que tus aldeanitos (tu eliges que pueden ser humanos, gatitos, perritos, conejos, etc) tengan una mejor calidad vida (ademas de casas normales, edificios, centrales de servicios basicos (electricidad, agua, luz), piscinas, parques, cines, etc.) porque sino sufren y se quejan. debe ser un juego con estetica 2d paleta de colores pastel y kawaii. y cuando registrar que terminaste el libro que estabas leyendo actualmente se te dan mas gemas y recursos, y luego empiezas a registrar nuevas paginas leidas para otro libro. asi puede usarse la aplicacion durante largo tiempo leyendo cada dia y registrando como se lee para mejorar tu ciudadcita. no debe ser una app que requiera de internet para usar (no debe tener dependencias externas cloud), debe usar sqlite y ser mobile-native (android).
+- [Overview](#overview)
+- [Why I Built This](#why-i-built-this)
+- [Features](#features)
+- [Core Gameplay Loop](#core-gameplay-loop)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+- [Building for Android](#building-for-android)
+- [License](#license)
 
 ---
 
-# Concept Overview
+## Overview
 
-The product is a **mobile idle village-building game powered by real-world reading progress**.
+**My Reading Town** is a privacy-first mobile game that rewards real-world reading with in-game village-building progression. Log the pages you read, earn coins, gems, wood, and metal, then use those resources to construct and upgrade buildings in a charming 2D isometric village populated by cute animal villagers.
 
-Users read books in real life and log pages read inside the game.
+The game replicates the dopamine reward loops found in addictive mobile games like Clash of Clans — but redirects them toward building a healthy reading habit. All data stays on your device — no accounts, no cloud, no tracking.
 
-Reading progress generates in-game resources used to build and improve a village inhabited by cute characters.
+---
 
-Core idea:
+## Why I Built This
+
+Most people struggle to replace addictive digital habits (social media scrolling, mobile games, etc.) with positive ones like reading. The reason is simple: those apps are carefully engineered to exploit dopamine feedback loops, and reading a book can't compete on that front.
+
+This app bridges that gap:
+
+- _Log pages you've read and instantly receive satisfying rewards._
+- _Build a village that grows with every reading session._
+- _Watch cute villagers move in, express happiness, and thrive._
+- _Keep everything offline — no sign-ups, no subscriptions, no data leaving your phone._
+
+The goal is to make reading **feel as rewarding as playing a mobile game**, creating a positive habit loop that gradually replaces screen-time addictions.
+
+---
+
+## Features
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Reading tracker</strong></td>
+      <td>Add books with title, author, and total pages — log reading sessions and track progress toward completion</td>
+    </tr>
+    <tr>
+      <td><strong>Resource rewards</strong></td>
+      <td>Earn coins, gems, wood, and metal for every page read — bonus rewards for completing books</td>
+    </tr>
+    <tr>
+      <td><strong>Isometric village builder</strong></td>
+      <td>Place and upgrade buildings on a 2D isometric tile grid with real-time Flame Engine rendering</td>
+    </tr>
+    <tr>
+      <td><strong>Construction system</strong></td>
+      <td>Buildings require real time to construct and upgrade — spend gems to speed up or wait it out</td>
+    </tr>
+    <tr>
+      <td><strong>6 building types</strong></td>
+      <td>Houses, parks, schools, hospitals, water towers, and power stations — each with 3 upgrade levels</td>
+    </tr>
+    <tr>
+      <td><strong>Villager system</strong></td>
+      <td>Cute animal villagers (cats, dogs, rabbits) move into houses, wander the village, and have mood states</td>
+    </tr>
+    <tr>
+      <td><strong>Happiness mechanics</strong></td>
+      <td>Villagers need housing, water, power, healthcare, education, and parks — missing services lower village happiness</td>
+    </tr>
+    <tr>
+      <td><strong>Player leveling</strong></td>
+      <td>Earn XP from reading, building, and upgrading — higher player levels unlock more building slots</td>
+    </tr>
+    <tr>
+      <td><strong>Village stats</strong></td>
+      <td>Track village level, resources, pages read, books completed, building count, and overall happiness</td>
+    </tr>
+    <tr>
+      <td><strong>Map expansion</strong></td>
+      <td>Expand your village territory by spending coins and gems as your settlement grows</td>
+    </tr>
+    <tr>
+      <td><strong>Kawaii art style</strong></td>
+      <td>Pastel color palette with adorable character sprites and building artwork — AI-assisted asset creation</td>
+    </tr>
+    <tr>
+      <td><strong>Privacy by design</strong></td>
+      <td>Zero network requests — everything lives exclusively on your device in a local SQLite database</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Core Gameplay Loop
 
 ```
-
-real world reading
-↓
-log pages read
-↓
-receive rewards
-↓
-build village
-↓
-improve villager happiness
-↓
-read more
-
-```
-
-The design aims to replicate **dopamine reward loops found in mobile games** but redirect them toward reading habits.
-
----
-
-# Vision and Objectives
-
-### Vision
-
-Create a **mobile experience that replaces addictive digital habits with reading**, using the same psychological reward mechanisms as modern mobile games.
-
-### Objectives
-
-- Encourage daily reading
-- Provide satisfying game progression
-- Create an emotionally rewarding world
-- Build long-term habit loops
-
----
-
-# Core Gameplay Loop
-
-```
-
 Read real pages
-↓
-Register pages
-↓
-Earn coins, gems, chests
-↓
-Build village
-↓
-Villagers become happier
-↓
-Unlock buildings
-↓
+      ↓
+Log pages in app
+      ↓
+Earn coins, gems, wood, metal
+      ↓
+Build & upgrade village
+      ↓
+Villagers move in & become happier
+      ↓
+Unlock more building slots
+      ↓
 Read more
-
 ```
 
-This loop mimics dopamine feedback patterns found in modern mobile games.
+This loop mimics dopamine feedback patterns found in modern mobile games — but the trigger is real-world reading.
 
 ---
 
-# Game Design Concept
+## Tech Stack
 
-### Village Builder
-
-Players build a small town populated by villagers such as:
-
-- cats
-- dogs
-- rabbits
-- humans
-
-### Buildings
-
-Examples:
-
-- houses
-- parks
-- pools
-- cinemas
-- water plants
-- power plants
-- hospitals
-- schools
-
-### Happiness System
-
-Villagers require:
-
-- housing
-- electricity
-- water
-- entertainment
-
-If services are missing, villagers complain.
+| Category         | Technology                                     |
+| ---------------- | ---------------------------------------------- |
+| Framework        | Flutter 3.5                                    |
+| Language         | Dart 3.5                                       |
+| Game Engine      | Flame 1.21                                     |
+| State Management | Provider 6.1                                   |
+| Database         | sqflite 2.3 (local SQLite)                     |
+| Animations       | Confetti 0.7                                   |
+| Icons            | Cupertino Icons + Material Icons               |
+| Art Pipeline     | AI-generated sprites (Gemini + manual cleanup) |
 
 ---
 
-# Technology Evaluation and Selection
-
-The project must satisfy:
-
-- solo developer
-- Linux development
-- mobile native
-- offline-first
-- SQLite storage
-- 2D game
-
----
-
-## Flutter + Flame
-
-Pros:
-
-- excellent UI
-- strong mobile ecosystem
-- Dart language
-- integrates game + app logic
-- easy SQLite support
-
-Cons:
-
-- smaller game ecosystem
-- fewer tutorials
-
-Good for:
+## Project Structure
 
 ```
-
-hybrid game + productivity app
-
+my-reading-town/
+├── reading_village/
+│   ├── assets/
+│   │   └── images/                  # Sprites, building art, icons
+│   ├── lib/
+│   │   ├── config/
+│   │   │   ├── app_theme.dart       # Colors and theme constants
+│   │   │   └── game_constants.dart  # Game balance values
+│   │   ├── data/
+│   │   │   ├── database_helper.dart # SQLite init & queries
+│   │   │   └── villager_favorites.dart
+│   │   ├── game/
+│   │   │   ├── village_game.dart    # Main Flame game class
+│   │   │   └── components/          # Flame components (buildings, villagers, tiles)
+│   │   ├── models/
+│   │   │   ├── placed_building.dart # Building data model
+│   │   │   └── villager.dart        # Villager data model
+│   │   ├── providers/
+│   │   │   ├── book_provider.dart   # Book & reading state
+│   │   │   └── village_provider.dart# Village & resource state
+│   │   ├── screens/
+│   │   │   └── game_screen.dart     # Main game screen with UI overlays
+│   │   └── widgets/                 # Reusable UI components
+│   ├── pubspec.yaml
+│   └── android/                     # Android platform files
+├── tools/                           # Development utilities
+├── README.md
+└── CONTRIBUTORS.md
 ```
 
 ---
 
-## React Native + Expo
+## Database Schema
 
-Pros:
+The app uses a local SQLite database. All data stays on-device.
 
-- developer already familiar
-- fast development
-- large ecosystem
-
-Cons:
-
-- not designed for games
-- performance limitations
-- difficult animation pipelines
+| Table              | Purpose                                                        |
+| ------------------ | -------------------------------------------------------------- |
+| `books`            | Book catalog (title, author, total pages, pages read, status)  |
+| `reading_sessions` | Individual reading session logs (book, pages, date, rewards)   |
+| `village_state`    | Village resources, level, XP, and expansion state              |
+| `placed_buildings` | Building instances (type, level, position, construction state) |
+| `villagers`        | Villager data (name, species, mood, assigned house)            |
 
 ---
 
-## Unity
+## Getting Started
 
-Pros:
+### Prerequisites
 
-- industry standard
-- massive asset store
-- powerful engine
-- optimized mobile builds
+- **[Flutter SDK](https://docs.flutter.dev/get-started/install)** >= 3.5
+- **Android Studio** or **VS Code** with Flutter extension
+- An Android device or emulator
 
-Cons:
+### Installation
 
-- heavier environment
-- learning curve
-- C# required
+```bash
+# 1. Clone the repository
+git clone https://github.com/FernandoPV02/my-reading-town.git
+cd my-reading-town/reading_village
 
----
+# 2. Install dependencies
+flutter pub get
 
-## Recommended Stack
-
-```
-
-Flutter
-
-- Flame Engine
-- SQLite (Drift)
-
-```
-
-Reasons:
-
-- strong mobile UI
-- easy local storage
-- ideal for hybrid app/game
-
----
-
-# Art and Asset Creation Strategy
-
-The developer is not a graphic designer.
-
-Strategy:
-
-Use **AI-assisted asset generation**.
-
-Tools:
-
-- Gemini Nano / Gemini image models
-- AI sprite generators
-- Aseprite for editing
-- pixel art editors
-
-Workflow:
-
-```
-
-AI generation
-↓
-sprite cleanup
-↓
-game integration
-
-```
-
-Art style:
-
-- kawaii
-- pastel palette
-- chubby characters
-- simple shapes
-- minimal facial features
-
----
-
-# Example AI Prompt for Character Creation
-
-Prompt optimized for Gemini:
-
-```
-
-cute kawaii cat villager character sprite
-
-front view character
-standing upright on two legs
-full body visible
-looking directly forward
-
-adorable chubby kitty
-round chubby body
-short little legs
-small paws
-very simple design
-minimal details
-
-kawaii style
-pastel color palette
-soft pastel colors
-clean simple outlines
-simple shapes
-
-face with very simple eyes (small black dot eyes)
-tiny cute mouth
-super cute chubby proportions
-
-2D mobile game sprite
-top-down idle game village builder style
-high readability at small size
-
-white background
-simple and adorable character design
-
-NOT lying down
-NOT sitting
-NOT side view
-
+# 3. Run on a connected device or emulator
+flutter run
 ```
 
 ---
 
-# Functional Requirements
+## Building for Android
 
-### Reading System
+```bash
+# Build a release APK
+cd reading_village
+flutter build apk --release
 
-Users must be able to:
-
-- add books
-- track total pages
-- log reading sessions
-- update progress
-
----
-
-### Reward System
-
-Rewards include:
-
-- coins
-- gems
-- chests
-
-Rewards scale with pages read.
-
----
-
-### City Builder
-
-Users can:
-
-- place buildings
-- upgrade buildings
-- decorate village
-
----
-
-### Villager System
-
-Villagers:
-
-- occupy homes
-- require services
-- have happiness metrics
-
----
-
-### Book Completion
-
-Completing a book provides:
-
-- large gem reward
-- rare items
-- unlockables
-
----
-
-# Non-Functional Requirements
-
-### Offline First
-
-The application must function fully offline.
-
-### Performance
-
-- smooth animations
-- low memory footprint
-- optimized mobile rendering
-
-### Persistence
-
-Local database using SQLite.
-
-### Platform
-
-Android native build.
-
-### UX
-
-- satisfying animations
-- instant reward feedback
-- readable UI
-
----
-
-# Data Model (Conceptual)
-
-### Books
-
-```
-
-books
-id
-title
-total_pages
-pages_read
-created_at
-
+# The APK will be at:
+# build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
 
-### Reading Sessions
+## License
 
-```
+This project is licensed under the **My Reading Town Community License v1.0** — see [LICENSE.md](LICENSE.md) for details.
 
-reading_sessions
-id
-book_id
-pages_read
-date
-
-```
+- Personal and non-commercial use is permitted.
+- Commercial use requires prior written authorization.
+- Forks must remain public and carry this same license.
+- Attribution to the original author is mandatory.
 
 ---
 
-### Resources
-
-```
-
-coins
-gems
-
-```
-
----
-
-### Buildings
-
-```
-
-id
-type
-level
-position_x
-position_y
-
-```
-
----
-
-### Villagers
-
-```
-
-id
-species
-happiness
-home_id
-
-```
-
----
-
-# Architecture Overview
-
-Suggested structure:
-
-```
-
-presentation
-game_engine
-application
-domain
-data
-
-```
-
-State management:
-
-```
-
-Riverpod
-
-```
-
-Persistence:
-
-```
-
-SQLite
-
-```
-
----
-
-# Competition Analysis
-
-No direct competitor exists with the same concept.
-
-However, several products overlap partially.
-
----
-
-## Habit Gamification
-
-Habit tracking games such as **Habitica** gamify real-world tasks through RPG mechanics.
-
----
-
-## Reading Trackers
-
-Apps such as **Bookly** and **StoryGraph** track reading progress and statistics.
-
----
-
-## Focus Gamification
-
-Apps like **Forest** gamify focus sessions by growing virtual trees.
-
----
-
-### Market Gap
-
-No existing product combines:
-
-```
-
-reading tracking
-
-- village builder gameplay
-- cute idle game mechanics
-
-```
-
-This represents a potential niche.
-
----
-
-# SWOT Analysis (FODA)
-
-### Strengths
-
-- Unique concept
-- Educational impact
-- Solo-dev feasible
-- Strong emotional appeal
-
----
-
-### Weaknesses
-
-- Difficult to verify reading honesty
-- Requires consistent art style
-- Solo development limitations
-
----
-
-### Opportunities
-
-- Rising interest in habit gamification
-- Educational technology market
-- AI-assisted development
-
----
-
-### Threats
-
-- Large companies could replicate
-- Users may fake progress
-- engagement may drop without strong gameplay
-
----
-
-# Open Questions for Stakeholders
-
-Reading mechanics:
-
-- Should reading be manually logged or timed?
-- Can users read multiple books simultaneously?
-
-Rewards:
-
-- How many coins per page?
-- Should rewards be random?
-
-Gameplay:
-
-- Should buildings require construction time?
-- Should villagers have individual behaviors?
-
-Verification:
-
-- How to discourage fake reading logs?
-
-Future:
-
-- Should the app include social features?
-
----
-
-# Roadmap for a Solo Developer
-
-### Phase 1 (MVP)
-
-- reading tracker
-- basic rewards
-- simple village map
-- building placement
-
----
-
-### Phase 2
-
-- villager happiness
-- chest rewards
-- animations
-
----
-
-### Phase 3
-
-- skins
-- decorations
-- expanded buildings
-
----
-
-# Risks and Considerations
-
-Key risks:
-
-- verifying reading honesty
-- art consistency
-- maintaining long-term engagement
-
-Mitigation:
-
-- streak systems
-- achievements
-- progression unlocks
-
----
-
-# Conclusion
-
-This project combines **habit formation psychology with mobile game design** to promote reading behavior.
-
-By leveraging dopamine-driven mechanics typically used in addictive mobile games, the system aims to redirect those behavioral loops toward a positive real-world habit: reading.
-
-The concept is technically achievable by a single developer using modern tools, AI-assisted asset generation, and a carefully scoped MVP.
-
-This document serves as the **single source of truth describing the origin, design, and strategy of the idea**.
+<div align="center">
+  <br>
+  <sub>
+    Developed by <a href="https://www.linkedin.com/in/fernando-pinto-villarroel/">Fernando Pinto Villarroel</a>
+    <br>
+    A personal project — not affiliated with any organization.
+  </sub>
+  <br><br>
+</div>
