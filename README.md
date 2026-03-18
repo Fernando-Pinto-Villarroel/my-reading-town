@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="reading_village/assets/images/reading_village_icon.png" alt="My Reading Town" width="180" style="border-radius: 42px;" />
+  <img src="reading_village/assets/images/reading_village_icon_rounded.png" alt="My Reading Town" width="220" />
 
   <br>
 
