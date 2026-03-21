@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show File;
 import 'package:flame/game.dart' hide Matrix4;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,9 +13,16 @@ import '../models/villager.dart';
 import '../providers/book_provider.dart';
 import '../providers/village_provider.dart';
 import '../widgets/book_card.dart';
+import '../widgets/skeleton.dart';
+import '../widgets/book_filter_bar.dart';
+import '../widgets/book_form_dialog.dart';
+import '../widgets/book_search_dialog.dart';
 import '../widgets/happiness_indicator.dart';
 import '../widgets/resource_icon.dart';
 import '../widgets/reward_popup.dart';
+import '../widgets/tag_manager_dialog.dart';
+import '../models/book.dart';
+import '../providers/tag_provider.dart';
 import '../data/villager_favorites.dart';
 
 enum GameMode { normal, construction, road }
@@ -37,6 +45,7 @@ class _GameScreenState extends State<GameScreen> {
   final Set<int> _notifiedCompletions = {};
   bool _menuOpen = false;
   bool _resourceHudExpanded = false;
+  bool _flipNextBuilding = false;
   late final TransformationController _transformController;
 
   @override
@@ -232,11 +241,13 @@ class _GameScreenState extends State<GameScreen> {
       metalCost: metalCost,
       happinessBonus: template['happinessBonus'] as int,
       constructionMinutes: template['constructionMinutes'] as int,
+      isFlipped: _flipNextBuilding,
     );
 
     setState(() {
       _mode = GameMode.normal;
       _selectedBuildingType = null;
+      _flipNextBuilding = false;
     });
     _syncGameState();
   }
@@ -271,9 +282,7 @@ class _GameScreenState extends State<GameScreen> {
       backgroundColor: Colors.transparent,
       useSafeArea: true,
       isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.6,
-      ),
+      constraints: _sheetConstraints(context, portraitFrac: 0.68),
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewPadding.bottom),
         child: Container(
@@ -327,6 +336,72 @@ class _GameScreenState extends State<GameScreen> {
                   villager.moodText,
                   style: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.6)),
                 ),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.darkText.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        villager.happiness >= 60 ? Icons.sentiment_satisfied_alt
+                            : villager.happiness >= 40 ? Icons.sentiment_neutral
+                            : Icons.sentiment_dissatisfied,
+                        size: 22,
+                        color: villager.happiness >= 60 ? Color(0xFF2E7D32)
+                            : villager.happiness >= 40 ? Color(0xFFB8860B)
+                            : Color(0xFFC62828),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Happiness: ${villager.happiness}%',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: villager.happiness >= 60 ? Color(0xFF2E7D32)
+                              : villager.happiness >= 40 ? Color(0xFFB8860B)
+                              : Color(0xFFC62828),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (villager.happiness < 100) ...[
+                  SizedBox(height: 8),
+                  Builder(builder: (_) {
+                    const needEmojis = {
+                      'water_plant': '💧',
+                      'power_plant': '⚡',
+                      'hospital': '🏥',
+                      'school': '🎒',
+                      'park': '🌳',
+                    };
+                    final missing = _villageProvider.missingNeedsForVillager(villager);
+                    if (missing.isEmpty) return SizedBox.shrink();
+                    return Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      alignment: WrapAlignment.center,
+                      children: missing.map((type) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200, width: 1),
+                          ),
+                          child: Text(
+                            '${needEmojis[type] ?? '❓'} Needs ${_needLabel(type)}',
+                            style: TextStyle(fontSize: 12, color: Colors.red.shade400, fontWeight: FontWeight.w600),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }),
+                ],
                 SizedBox(height: 16),
                 _villagerInfoRow(Icons.auto_stories, 'Favorite Author', favoriteAuthors[authorIdx]),
                 SizedBox(height: 10),
@@ -337,6 +412,17 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
     );
+  }
+
+  String _needLabel(String type) {
+    switch (type) {
+      case 'water_plant': return 'Water';
+      case 'power_plant': return 'Power';
+      case 'hospital': return 'Hospital';
+      case 'school': return 'School';
+      case 'park': return 'Park';
+      default: return type;
+    }
   }
 
   Widget _villagerInfoRow(IconData icon, String label, String value) {
@@ -407,12 +493,17 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showConstructionCompleteDialog(PlacedBuilding building) {
+    final isUpgrade = building.level > 1;
+    final expEarned = isUpgrade
+        ? GameConstants.expPerBuildingUpgraded
+        : GameConstants.expPerBuildingPlaced;
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(24, 20, 24, 20),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.circular(24),
@@ -420,47 +511,92 @@ class _GameScreenState extends State<GameScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(Icons.close, size: 20),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ),
-              Icon(Icons.celebration, size: 48, color: AppTheme.coinGold),
-              SizedBox(height: 12),
-              Text(
-                'Construction Complete!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.darkText,
-                ),
-              ),
-              SizedBox(height: 12),
-              Image.asset(
-                'assets/images/${GameConstants.spriteForBuilding(building.type, building.level)}',
-                width: 64,
-                height: 64,
-                filterQuality: FilterQuality.medium,
-              ),
-              SizedBox(height: 8),
-              Text(
-                '${building.name} is ready!',
-                style: TextStyle(fontSize: 16, color: AppTheme.darkText),
-              ),
-              if (building.type == 'house')
-                Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'A new villager has arrived!',
-                    style: TextStyle(fontSize: 14, color: AppTheme.mint, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isUpgrade ? 'Upgrade Complete!' : 'Construction Complete!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.darkText,
+                      ),
+                    ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Icon(Icons.close, size: 20, color: AppTheme.darkText.withValues(alpha: 0.4)),
+                  ),
+                ],
+              ),
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text('Great!'),
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/images/${GameConstants.spriteForBuilding(building.type, building.level)}',
+                    width: 72,
+                    height: 72,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          building.name,
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.darkText),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          isUpgrade ? 'Upgraded to Lv${building.level}' : 'Level ${building.level}',
+                          style: TextStyle(fontSize: 13, color: AppTheme.lavender, fontWeight: FontWeight.w600),
+                        ),
+                        SizedBox(height: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.coinGold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star, size: 16, color: const Color(0xFFB8860B)),
+                              SizedBox(width: 4),
+                              Text(
+                                '+$expEarned EXP',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFFB8860B)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (building.type == 'house')
+                          Padding(
+                            padding: EdgeInsets.only(top: 6),
+                            child: Text(
+                              'A new villager has arrived!',
+                              style: TextStyle(fontSize: 13, color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.mint,
+                    foregroundColor: AppTheme.darkText,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text('Great!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
               ),
             ],
           ),
@@ -471,100 +607,32 @@ class _GameScreenState extends State<GameScreen> {
 
   void _showConstructingBuildingSheet(PlacedBuilding building) {
     final village = _villageProvider;
-    final remaining = building.remainingConstructionTime;
-    final gemCost = GameConstants.gemCostToSpeedUp(remaining);
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      builder: (sheetCtx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewPadding.bottom),
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.cream,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              SizedBox(height: 16),
-              Image.asset(
-                'assets/images/building_construction.png',
-                width: 64, height: 64,
-                filterQuality: FilterQuality.medium,
-              ),
-              SizedBox(height: 8),
-              Text(
-                '${building.name} (Lv${building.level})',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.darkText),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Under construction...',
-                style: TextStyle(fontSize: 14, color: AppTheme.peach, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              _buildTimeDisplay(remaining),
-              SizedBox(height: 16),
-              if (gemCost > 0)
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: village.gems >= gemCost
-                        ? () async {
-                            Navigator.pop(sheetCtx);
-                            final success = await village.speedUpConstruction(building.id!);
-                            if (success) {
-                              _syncGameState();
-                              if (mounted) _checkConstructions();
-                            }
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: village.gems >= gemCost ? AppTheme.gemPurple : Colors.grey.shade300,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.flash_on, size: 20),
-                        SizedBox(width: 8),
-                        Text('Speed up', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        SizedBox(width: 8),
-                        ResourceIcon.gem(size: 20),
-                        SizedBox(width: 4),
-                        Text('$gemCost', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ),
-              SizedBox(height: 8),
-            ],
-          ),
-        ),
+      isScrollControlled: true,
+      constraints: _sheetConstraints(context, portraitFrac: 0.6),
+      builder: (sheetCtx) => _ConstructionSheetContent(
+        building: building,
+        village: village,
+        onSpeedUp: () async {
+          Navigator.pop(sheetCtx);
+          final success = await village.speedUpConstruction(building.id!);
+          if (success) {
+            _syncGameState();
+            _notifiedCompletions.add(building.id!);
+            if (mounted) _showConstructionCompleteDialog(building);
+          }
+        },
+        onCancel: () async {
+          Navigator.pop(sheetCtx);
+          final success = await village.cancelConstruction(building.id!);
+          if (success) _syncGameState();
+        },
       ),
     );
-  }
-
-  Widget _buildTimeDisplay(Duration remaining) {
-    final hours = remaining.inHours;
-    final mins = remaining.inMinutes % 60;
-    final secs = remaining.inSeconds % 60;
-    final text = hours > 0
-        ? '${hours}h ${mins}m ${secs}s remaining'
-        : '${mins}m ${secs}s remaining';
-    return Text(text, style: TextStyle(fontSize: 16, color: AppTheme.darkText, fontWeight: FontWeight.bold));
   }
 
   void _showBuildingInfoSheet(PlacedBuilding building) {
@@ -586,9 +654,7 @@ class _GameScreenState extends State<GameScreen> {
       backgroundColor: Colors.transparent,
       useSafeArea: true,
       isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
-      ),
+      constraints: _sheetConstraints(context),
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewPadding.bottom),
         child: Container(
@@ -611,7 +677,7 @@ class _GameScreenState extends State<GameScreen> {
                 SizedBox(height: 16),
                 Image.asset(
                   'assets/images/${GameConstants.spriteForBuilding(building.type, building.level)}',
-                  width: 64, height: 64,
+                  width: 88, height: 88,
                   filterQuality: FilterQuality.medium,
                 ),
                 SizedBox(height: 8),
@@ -826,14 +892,18 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showReadingModal() {
+    final landscape = _isLandscape(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
+      constraints: landscape
+          ? BoxConstraints(maxWidth: 480, maxHeight: MediaQuery.of(context).size.height * 0.95)
+          : null,
       builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.4,
+        initialChildSize: landscape ? 0.95 : 0.85,
+        minChildSize: landscape ? 0.5 : 0.4,
         maxChildSize: 0.95,
         builder: (ctx, scrollController) {
           return Padding(
@@ -854,7 +924,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(16, 12, 8, 8),
+                    padding: EdgeInsets.fromLTRB(16, 12, 4, 4),
                     child: Row(
                       children: [
                         Icon(Icons.menu_book, size: 24, color: AppTheme.darkText),
@@ -865,17 +935,40 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                         Spacer(),
                         IconButton(
-                          icon: Icon(Icons.add_circle, size: 32, color: AppTheme.pink),
+                          icon: Icon(Icons.label, size: 22, color: AppTheme.lavender),
+                          tooltip: 'Manage Tags',
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: ctx,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              builder: (_) => TagManagerDialog(),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add_circle, size: 30, color: AppTheme.pink),
                           onPressed: () => _showAddBookDialog(),
                         ),
                       ],
                     ),
                   ),
+                  // Filter bar
+                  Consumer2<BookProvider, TagProvider>(
+                    builder: (ctx, bookProvider, tagProvider, _) {
+                      return BookFilterBar(
+                        filter: bookProvider.filter,
+                        availableTags: tagProvider.tags,
+                        onFilterChanged: (f) => bookProvider.setFilter(f),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 4),
                   Expanded(
                     child: Consumer<BookProvider>(
                       builder: (ctx, bookProvider, _) {
-                        if (bookProvider.activeBooks.isEmpty &&
-                            bookProvider.completedBooks.isEmpty) {
+                        final books = bookProvider.filteredBooks;
+                        if (bookProvider.books.isEmpty) {
                           return Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -891,43 +984,25 @@ class _GameScreenState extends State<GameScreen> {
                             ),
                           );
                         }
-                        return ListView(
+                        if (books.isEmpty) {
+                          return Center(
+                            child: Text('No books match your filters.',
+                                style: TextStyle(fontSize: 14, color: AppTheme.darkText.withValues(alpha: 0.5))),
+                          );
+                        }
+                        return ListView.builder(
                           controller: scrollController,
-                          children: [
-                            if (bookProvider.activeBooks.isNotEmpty) ...[
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.auto_stories, size: 16, color: AppTheme.lavender),
-                                    SizedBox(width: 4),
-                                    Text('Currently Reading',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
-                                  ],
-                                ),
-                              ),
-                              ...bookProvider.activeBooks.map((book) => BookCard(
-                                    book: book,
-                                    onLogPages: () => _showLogPagesDialog(book.id!),
-                                  )),
-                            ],
-                            if (bookProvider.completedBooks.isNotEmpty) ...[
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.star, size: 16, color: AppTheme.coinGold),
-                                    SizedBox(width: 4),
-                                    Text('Completed',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
-                                  ],
-                                ),
-                              ),
-                              ...bookProvider.completedBooks.map((book) =>
-                                  BookCard(book: book, onLogPages: () {})),
-                            ],
-                            SizedBox(height: 24),
-                          ],
+                          itemCount: books.length + 1, // +1 for bottom padding
+                          itemBuilder: (ctx, i) {
+                            if (i == books.length) return SizedBox(height: 24);
+                            final book = books[i];
+                            return BookCard(
+                              book: book,
+                              onLogPages: book.isCompleted ? () {} : () => _showLogPagesDialog(book.id!),
+                              onTap: () => _showBookDetailSheet(book),
+                              onEdit: () => _editBook(book),
+                            );
+                          },
                         );
                       },
                     ),
@@ -942,78 +1017,53 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showAddBookDialog() {
-    final titleController = TextEditingController();
-    final pagesController = TextEditingController();
-    String? titleError;
-    String? pagesError;
-
     showDialog(
       context: context,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Add a New Book'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'Book Title',
-                  hintText: 'e.g. The Little Prince',
-                  errorText: titleError,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.add_circle, size: 22, color: AppTheme.pink),
+            SizedBox(width: 8),
+            Text('Add a Book', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('How would you like to add your book?',
+                style: TextStyle(fontSize: 14, color: AppTheme.darkText.withValues(alpha: 0.7))),
+            SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showDialog(context: context, builder: (_) => BookSearchDialog());
+                },
+                icon: Icon(Icons.search, size: 18),
+                label: Text('Search Online'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.lavender,
+                  padding: EdgeInsets.symmetric(vertical: 12),
                 ),
-                textCapitalization: TextCapitalization.words,
-                maxLength: 100,
               ),
-              SizedBox(height: 12),
-              TextField(
-                controller: pagesController,
-                decoration: InputDecoration(
-                  labelText: 'Total Pages (2–900)',
-                  hintText: 'e.g. 96',
-                  errorText: pagesError,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                final title = titleController.text.trim();
-                final pages = int.tryParse(pagesController.text.trim());
-                String? tErr;
-                String? pErr;
-
-                if (title.isEmpty) {
-                  tErr = 'Title is required';
-                } else if (title.length < 2) {
-                  tErr = 'Title must be at least 2 characters';
-                }
-                if (pages == null) {
-                  pErr = 'Enter a valid number';
-                } else if (pages < 2) {
-                  pErr = 'Minimum 2 pages';
-                } else if (pages > 900) {
-                  pErr = 'Maximum 900 pages';
-                }
-
-                if (tErr != null || pErr != null) {
-                  setDialogState(() { titleError = tErr; pagesError = pErr; });
-                  return;
-                }
-
-                _bookProvider.addBook(title, pages!);
-                Navigator.pop(dialogCtx);
-              },
-              child: Text('Add'),
+            SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  showDialog(context: context, builder: (_) => BookFormDialog());
+                },
+                icon: Icon(Icons.edit, size: 18),
+                label: Text('Add Manually'),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: AppTheme.lavender),
+                ),
+              ),
             ),
           ],
         ),
@@ -1021,41 +1071,216 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  void _editBook(Book book) {
+    showDialog(
+      context: context,
+      builder: (_) => BookFormDialog(existingBook: book),
+    );
+  }
+
+  void _showBookDetailSheet(Book book) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: _sheetConstraints(context, portraitFrac: 0.5),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewPadding.bottom),
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppTheme.cream,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (book.coverImagePath != null && book.coverImagePath!.isNotEmpty)
+                      SkeletonImage(
+                        image: FileImage(File(book.coverImagePath!)),
+                        width: 60, height: 86, borderRadius: 10,
+                      )
+                    else
+                      Container(
+                        width: 60, height: 86,
+                        decoration: BoxDecoration(
+                          color: AppTheme.lavender.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.menu_book, size: 28, color: AppTheme.lavender),
+                      ),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(book.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                          if (book.author != null && book.author!.isNotEmpty) ...[
+                            SizedBox(height: 2),
+                            Text(book.author!, style: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                          ],
+                          SizedBox(height: 4),
+                          Text('${book.pagesRead} / ${book.totalPages} pages',
+                              style: TextStyle(fontSize: 13, color: AppTheme.lavender, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (book.tags.isNotEmpty) ...[
+                  SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: book.tags.map((tag) => Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Color(tag.colorValue).withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(tag.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText)),
+                    )).toList(),
+                  ),
+                ],
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    if (!book.isCompleted)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(sheetCtx);
+                            _showLogPagesDialog(book.id!);
+                          },
+                          icon: Icon(Icons.menu_book, size: 16),
+                          label: Text('Log Pages'),
+                          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.pink),
+                        ),
+                      ),
+                    if (!book.isCompleted) SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(sheetCtx);
+                          _editBook(book);
+                        },
+                        icon: Icon(Icons.edit, size: 16, color: AppTheme.lavender),
+                        label: Text('Edit', style: TextStyle(color: AppTheme.lavender)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppTheme.lavender.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(sheetCtx);
+                          _confirmDeleteBook(book);
+                        },
+                        icon: Icon(Icons.delete_outline, size: 16, color: Colors.red.shade300),
+                        label: Text('Delete', style: TextStyle(color: Colors.red.shade300)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.red.shade200),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteBook(Book book) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete Book?'),
+        content: Text('Remove "${book.title}" and all its reading sessions?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
+            onPressed: () {
+              _bookProvider.deleteBook(book.id!);
+              Navigator.pop(ctx);
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showLogPagesDialog(int bookId) {
     final pagesController = TextEditingController();
+    final book = _bookProvider.books.firstWhere((b) => b.id == bookId);
+    final remainingPages = book.totalPages - book.pagesRead;
 
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Log Pages Read'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('How many pages did you read?',
-                style: TextStyle(color: AppTheme.darkText.withValues(alpha: 0.7))),
-            SizedBox(height: 12),
-            TextField(
-              controller: pagesController,
-              decoration: InputDecoration(
-                labelText: 'Pages Read',
-                hintText: 'e.g. 15',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              keyboardType: TextInputType.number,
-              autofocus: true,
+      builder: (dialogCtx) {
+        String? pagesError;
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Log Pages Read'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('How many pages did you read?',
+                    style: TextStyle(color: AppTheme.darkText.withValues(alpha: 0.7))),
+                SizedBox(height: 4),
+                Text('$remainingPages pages remaining',
+                    style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.5))),
+                SizedBox(height: 12),
+                TextField(
+                  controller: pagesController,
+                  decoration: InputDecoration(
+                    labelText: 'Pages Read (max $remainingPages)',
+                    hintText: 'e.g. 15',
+                    errorText: pagesError,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final pages = int.tryParse(pagesController.text.trim());
-              if (pages == null || pages <= 0) return;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final pages = int.tryParse(pagesController.text.trim());
+                  if (pages == null || pages <= 0) {
+                    setDialogState(() => pagesError = 'Enter a valid number');
+                    return;
+                  }
+                  if (pages > remainingPages) {
+                    setDialogState(() => pagesError = 'Cannot exceed $remainingPages remaining pages');
+                    return;
+                  }
 
               Navigator.pop(dialogCtx);
 
@@ -1083,6 +1308,8 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 
@@ -1276,18 +1503,33 @@ class _GameScreenState extends State<GameScreen> {
     };
   }
 
+  bool _isLandscape(BuildContext context) =>
+      MediaQuery.of(context).orientation == Orientation.landscape;
+
+  BoxConstraints _sheetConstraints(BuildContext context, {double portraitFrac = 0.75}) {
+    final size = MediaQuery.of(context).size;
+    final landscape = _isLandscape(context);
+    return BoxConstraints(
+      maxHeight: landscape ? size.height * 0.92 : size.height * portraitFrac,
+      maxWidth: landscape ? 480 : double.infinity,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final village = context.watch<VillageProvider>();
     final mediaQuery = MediaQuery.of(context);
     final topPadding = mediaQuery.padding.top;
     final bottomPadding = mediaQuery.padding.bottom;
+    final leftPadding = mediaQuery.padding.left;
+    final rightPadding = mediaQuery.padding.right;
+    final landscape = _isLandscape(context);
+    final hudEdge = landscape ? 8.0 : 14.0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // GameWidget fills the screen; Flame camera handles rendering.
           Positioned.fill(
             child: GameWidget(
               game: _game,
@@ -1308,9 +1550,6 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
           ),
-          // InteractiveViewer overlay captures pan/pinch gestures
-          // and syncs transform to the Flame camera. Taps are forwarded
-          // to the Flame game by converting screen coords to world coords.
           Positioned.fill(
             child: _TapThroughInteractiveViewer(
               transformationController: _transformController,
@@ -1321,21 +1560,21 @@ class _GameScreenState extends State<GameScreen> {
           ),
 
           Positioned(
-            top: topPadding + 10,
-            left: 14,
-            child: _buildResourceHud(village),
+            top: topPadding + (landscape ? 6 : 10),
+            left: leftPadding + hudEdge,
+            child: _buildResourceHud(village, landscape),
           ),
 
           Positioned(
-            top: topPadding + 10,
-            right: 14,
+            top: topPadding + (landscape ? 6 : 10),
+            right: rightPadding + hudEdge,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 HappinessIndicator(happiness: village.villageHappiness),
-                SizedBox(height: 10),
+                SizedBox(height: landscape ? 6 : 10),
                 _buildZoomControls(),
-                SizedBox(height: 10),
+                SizedBox(height: landscape ? 6 : 10),
                 _buildSideMenu(),
               ],
             ),
@@ -1344,15 +1583,15 @@ class _GameScreenState extends State<GameScreen> {
           if (_mode == GameMode.construction)
             Positioned(
               bottom: bottomPadding + 8,
-              left: 0,
-              right: 0,
+              left: leftPadding,
+              right: rightPadding,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_movingBuildingId != null)
                     Container(
                       margin: EdgeInsets.only(bottom: 8),
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: landscape ? 4 : 8),
                       decoration: BoxDecoration(
                         color: AppTheme.mint.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(12),
@@ -1365,13 +1604,51 @@ class _GameScreenState extends State<GameScreen> {
                           Text('Tap a tile to move building', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.darkText)),
                           SizedBox(width: 8),
                           GestureDetector(
+                            onTap: () async {
+                              final village = _villageProvider;
+                              await village.flipBuilding(_movingBuildingId!);
+                              _syncGameState();
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.darkText.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.flip, size: 20, color: AppTheme.darkText),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          GestureDetector(
                             onTap: () => setState(() => _movingBuildingId = null),
                             child: Icon(Icons.close, size: 20, color: AppTheme.darkText),
                           ),
                         ],
                       ),
                     ),
-                  _buildBuildingSelector(village),
+                  if (landscape && _selectedBuildingType != null && _movingBuildingId == null)
+                    Container(
+                      margin: EdgeInsets.only(bottom: 6),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _flipNextBuilding = !_flipNextBuilding),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _flipNextBuilding ? AppTheme.mint : AppTheme.cream.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.flip, size: 18, color: _flipNextBuilding ? Colors.white : AppTheme.darkText),
+                              SizedBox(width: 4),
+                              Text('Flip', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _flipNextBuilding ? Colors.white : AppTheme.darkText)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  _buildBuildingSelector(village, landscape),
                 ],
               ),
             ),
@@ -1380,11 +1657,18 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildResourceHud(VillageProvider village) {
+  Widget _buildResourceHud(VillageProvider village, bool landscape) {
+    final iconSize = landscape ? 28.0 : 32.0;
+    final fontSize = landscape ? 17.0 : 19.0;
+    final spacing = landscape ? 4.0 : 5.0;
+    final padding = landscape
+        ? EdgeInsets.symmetric(horizontal: 10, vertical: 8)
+        : EdgeInsets.symmetric(horizontal: 12, vertical: 10);
+
     return GestureDetector(
       onTap: () => setState(() => _resourceHudExpanded = !_resourceHudExpanded),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: padding,
         decoration: BoxDecoration(
           color: const Color(0xAA000000),
           borderRadius: BorderRadius.circular(14),
@@ -1395,12 +1679,12 @@ class _GameScreenState extends State<GameScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.star, size: 32, color: AppTheme.coinGold),
+                Icon(Icons.star, size: iconSize, color: AppTheme.coinGold),
                 SizedBox(width: 6),
                 Text(
                   'Lv${village.playerLevel}',
                   style: TextStyle(
-                    fontSize: 19,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
@@ -1409,25 +1693,20 @@ class _GameScreenState extends State<GameScreen> {
                 SizedBox(width: 8),
                 Icon(
                   _resourceHudExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  size: 22,
+                  size: landscape ? 20 : 22,
                   color: Colors.white70,
                 ),
               ],
             ),
             if (_resourceHudExpanded) ...[
-              SizedBox(height: 5),
-              _hudRow(ResourceIcon.coin(size: 32), '${village.coins}'),
-              SizedBox(height: 5),
-              _hudRow(ResourceIcon.gem(size: 32), '${village.gems}'),
-              SizedBox(height: 5),
-              _hudRow(
-                Image.asset('assets/images/cat_villager.png', width: 32, height: 32, filterQuality: FilterQuality.medium),
-                '${village.villagers.length}',
-              ),
-              SizedBox(height: 5),
-              _hudRow(ResourceIcon.wood(size: 32), '${village.wood}'),
-              SizedBox(height: 5),
-              _hudRow(ResourceIcon.metal(size: 32), '${village.metal}'),
+              SizedBox(height: spacing),
+              _hudRow(ResourceIcon.coin(size: iconSize), '${village.coins}', fontSize),
+              SizedBox(height: spacing),
+              _hudRow(ResourceIcon.gem(size: iconSize), '${village.gems}', fontSize),
+              SizedBox(height: spacing),
+              _hudRow(ResourceIcon.wood(size: iconSize), '${village.wood}', fontSize),
+              SizedBox(height: spacing),
+              _hudRow(ResourceIcon.metal(size: iconSize), '${village.metal}', fontSize),
             ],
           ],
         ),
@@ -1435,7 +1714,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _hudRow(Widget icon, String value) {
+  Widget _hudRow(Widget icon, String value, [double fontSize = 19]) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1444,7 +1723,7 @@ class _GameScreenState extends State<GameScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: 19,
+            fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: Colors.white,
             shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
@@ -1504,40 +1783,41 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildZoomControls() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xAA000000),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ZoomButton(
-            icon: Icons.remove,
-            onTap: () => _applyZoomFactor(0.8),
-          ),
-          GestureDetector(
-            onTap: () {
-              _game.setZoom(GameConstants.defaultZoom);
-              _game.camera.viewfinder.position = Vector2.all(
-                GameConstants.defaultAreaCenterTile * GameConstants.tilePixelSize +
-                    GameConstants.tilePixelSize / 2,
-              );
-              _syncTransformToCamera();
-              setState(() {});
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Reset', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-            ),
-          ),
-          _ZoomButton(
-            icon: Icons.add,
-            onTap: () => _applyZoomFactor(1.25),
-          ),
-        ],
-      ),
-    );
+    return SizedBox.shrink();
+    // return Container(
+    //   decoration: BoxDecoration(
+    //     color: const Color(0xAA000000),
+    //     borderRadius: BorderRadius.circular(14),
+    //   ),
+    //   child: Row(
+    //     mainAxisSize: MainAxisSize.min,
+    //     children: [
+    //       _ZoomButton(
+    //         icon: Icons.remove,
+    //         onTap: () => _applyZoomFactor(0.8),
+    //       ),
+    //       GestureDetector(
+    //         onTap: () {
+    //           _game.setZoom(GameConstants.defaultZoom);
+    //           _game.camera.viewfinder.position = Vector2.all(
+    //             GameConstants.defaultAreaCenterTile * GameConstants.tilePixelSize +
+    //                 GameConstants.tilePixelSize / 2,
+    //           );
+    //           _syncTransformToCamera();
+    //           setState(() {});
+    //         },
+    //         child: Padding(
+    //           padding: EdgeInsets.symmetric(horizontal: 8),
+    //           child: Text('Reset', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+    //         ),
+    //       ),
+    //       _ZoomButton(
+    //         icon: Icons.add,
+    //         onTap: () => _applyZoomFactor(1.25),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   Widget _buildSideMenu() {
@@ -1561,6 +1841,7 @@ class _GameScreenState extends State<GameScreen> {
                   if (!_menuOpen) {
                     _mode = GameMode.normal;
                     _selectedBuildingType = null;
+                    _flipNextBuilding = false;
                     _syncGameState();
                   }
                 });
@@ -1578,6 +1859,7 @@ class _GameScreenState extends State<GameScreen> {
                 if (_mode == GameMode.construction) {
                   _mode = GameMode.normal;
                   _selectedBuildingType = null;
+                  _flipNextBuilding = false;
                 } else {
                   _mode = GameMode.construction;
                 }
@@ -1614,13 +1896,13 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildBuildingSelector(VillageProvider village) {
+  Widget _buildBuildingSelector(VillageProvider village, bool landscape) {
     return Container(
-      height: 180,
+      height: landscape ? 88 : 195,
       margin: EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: AppTheme.cream.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(landscape ? 14 : 20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.15),
@@ -1632,22 +1914,42 @@ class _GameScreenState extends State<GameScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Row(
-              children: [
-                Text('Select Building:',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
-                Spacer(),
-                if (_selectedBuildingType != null)
-                  Text('Tap a tile to place',
-                      style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6)))
-                else if (_movingBuildingId == null)
-                  Text('Tap building to move',
-                      style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
-              ],
+          if (!landscape)
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Row(
+                children: [
+                  Text('Select Building:',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                  Spacer(),
+                  if (_selectedBuildingType != null) ...[
+                    GestureDetector(
+                      onTap: () => setState(() => _flipNextBuilding = !_flipNextBuilding),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _flipNextBuilding ? AppTheme.mint : AppTheme.darkText.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.flip, size: 16, color: _flipNextBuilding ? Colors.white : AppTheme.darkText),
+                            SizedBox(width: 4),
+                            Text('Flip', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _flipNextBuilding ? Colors.white : AppTheme.darkText)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text('Tap a tile to place',
+                        style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                  ] else if (_movingBuildingId == null)
+                    Text('Tap building to move',
+                        style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -1665,10 +1967,82 @@ class _GameScreenState extends State<GameScreen> {
                     village.wood >= woodCost && village.metal >= metalCost;
                 final canPlace = village.canPlaceBuildingType(type);
 
+                if (landscape) {
+                  return GestureDetector(
+                    onTap: canPlace ? () => setState(() { _selectedBuildingType = type; _movingBuildingId = null; }) : null,
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.mint : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/$type.png',
+                            width: 32, height: 32,
+                            filterQuality: FilterQuality.medium,
+                            color: (canAfford && canPlace) ? null : Colors.grey,
+                            colorBlendMode: (canAfford && canPlace) ? null : BlendMode.saturation,
+                          ),
+                          SizedBox(width: 6),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                template['name'] as String,
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkText),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ResourceIcon.coin(size: 10),
+                                  Text(' $coinCost', style: TextStyle(fontSize: 9)),
+                                  if (woodCost > 0) ...[
+                                    SizedBox(width: 2),
+                                    ResourceIcon.wood(size: 10),
+                                    Text(' $woodCost', style: TextStyle(fontSize: 9)),
+                                  ],
+                                  if (metalCost > 0) ...[
+                                    SizedBox(width: 2),
+                                    ResourceIcon.metal(size: 10),
+                                    Text(' $metalCost', style: TextStyle(fontSize: 9)),
+                                  ],
+                                ],
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.timer_outlined, size: 10, color: AppTheme.peach),
+                                  SizedBox(width: 2),
+                                  Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    '${village.buildingCountOfType(type)}/${GameConstants.maxBuildingsOfTypeForPlayerLevel(type, village.playerLevel)}',
+                                    style: TextStyle(fontSize: 9, color: canPlace ? AppTheme.darkText.withValues(alpha: 0.5) : Colors.red.shade300),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 return GestureDetector(
                   onTap: canPlace ? () => setState(() { _selectedBuildingType = type; _movingBuildingId = null; }) : null,
                   child: Container(
-                    width: 100,
+                    width: 110,
                     margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                     padding: EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -1685,7 +2059,7 @@ class _GameScreenState extends State<GameScreen> {
                       children: [
                         Image.asset(
                           'assets/images/$type.png',
-                          width: 36, height: 36,
+                          width: 44, height: 44,
                           filterQuality: FilterQuality.medium,
                           color: (canAfford && canPlace) ? null : Colors.grey,
                           colorBlendMode: (canAfford && canPlace) ? null : BlendMode.saturation,
@@ -1704,29 +2078,24 @@ class _GameScreenState extends State<GameScreen> {
                           children: [
                             ResourceIcon.coin(size: 12),
                             Text(' $coinCost', style: TextStyle(fontSize: 10)),
+                            if (woodCost > 0) ...[
+                              SizedBox(width: 3),
+                              ResourceIcon.wood(size: 12),
+                              Text(' $woodCost', style: TextStyle(fontSize: 10)),
+                            ],
+                            if (metalCost > 0) ...[
+                              SizedBox(width: 3),
+                              ResourceIcon.metal(size: 12),
+                              Text(' $metalCost', style: TextStyle(fontSize: 10)),
+                            ],
                           ],
                         ),
-                        if (woodCost > 0 || metalCost > 0)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (woodCost > 0) ...[
-                                ResourceIcon.wood(size: 12),
-                                Text(' $woodCost', style: TextStyle(fontSize: 10)),
-                              ],
-                              if (woodCost > 0 && metalCost > 0) SizedBox(width: 4),
-                              if (metalCost > 0) ...[
-                                ResourceIcon.metal(size: 12),
-                                Text(' $metalCost', style: TextStyle(fontSize: 10)),
-                              ],
-                            ],
-                          ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.timer_outlined, size: 10, color: AppTheme.darkText.withValues(alpha: 0.4)),
-                            SizedBox(width: 2),
-                            Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 9, color: AppTheme.darkText.withValues(alpha: 0.5))),
+                            Icon(Icons.timer_outlined, size: 13, color: AppTheme.peach),
+                            SizedBox(width: 3),
+                            Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
                           ],
                         ),
                         Text(
@@ -1842,6 +2211,145 @@ class _StatRow extends StatelessWidget {
           Spacer(),
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
         ],
+      ),
+    );
+  }
+}
+
+class _ConstructionSheetContent extends StatefulWidget {
+  final PlacedBuilding building;
+  final VillageProvider village;
+  final VoidCallback onSpeedUp;
+  final VoidCallback onCancel;
+
+  const _ConstructionSheetContent({
+    required this.building,
+    required this.village,
+    required this.onSpeedUp,
+    required this.onCancel,
+  });
+
+  @override
+  State<_ConstructionSheetContent> createState() => _ConstructionSheetContentState();
+}
+
+class _ConstructionSheetContentState extends State<_ConstructionSheetContent> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = widget.building.remainingConstructionTime;
+    final gemCost = GameConstants.gemCostToSpeedUp(remaining);
+    final hours = remaining.inHours;
+    final mins = remaining.inMinutes % 60;
+    final secs = remaining.inSeconds % 60;
+    final timeText = hours > 0
+        ? '${hours}h ${mins}m ${secs}s remaining'
+        : '${mins}m ${secs}s remaining';
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom),
+      child: Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.cream,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            SizedBox(height: 16),
+            Image.asset(
+              'assets/images/building_construction.png',
+              width: 88, height: 88,
+              filterQuality: FilterQuality.medium,
+            ),
+            SizedBox(height: 8),
+            Text(
+              '${widget.building.name} (Lv${widget.building.level})',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.darkText),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Under construction...',
+              style: TextStyle(fontSize: 14, color: AppTheme.darkOrange, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(timeText, style: TextStyle(fontSize: 16, color: AppTheme.darkText, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16),
+            if (gemCost > 0)
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: widget.village.gems >= gemCost ? widget.onSpeedUp : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.village.gems >= gemCost ? AppTheme.gemPurple : Colors.grey.shade300,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.flash_on, size: 20),
+                      SizedBox(width: 8),
+                      Text('Speed up', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      SizedBox(width: 8),
+                      ResourceIcon.gem(size: 20),
+                      SizedBox(width: 4),
+                      Text('$gemCost', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton(
+                onPressed: widget.onCancel,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red.shade400,
+                  side: BorderSide(color: Colors.red.shade300),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: Text(
+                  widget.building.level > 1 ? 'Cancel Upgrade' : 'Cancel Construction',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Full resource refund',
+              style: TextStyle(fontSize: 11, color: AppTheme.darkText.withValues(alpha: 0.5)),
+            ),
+            SizedBox(height: 8),
+          ],
+        ),
+        ),
       ),
     );
   }

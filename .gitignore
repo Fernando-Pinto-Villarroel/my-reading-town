@@ -48,3 +48,5 @@ out/
 .venv/
 build/
 android/
+
+CLAUDE.md

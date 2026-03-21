@@ -11,6 +11,22 @@ class AppTheme {
   static const Color gemPurple = Color(0xFFBB86FC);
   static const Color softWhite = Color(0xFFFFFEFC);
   static const Color darkText = Color(0xFF4A4A4A);
+  static const Color darkOrange = Color(0xFFCC7722);
+
+  static const List<Color> tagColors = [
+    Color(0xFFFFB3BA), // pink
+    Color(0xFFB5B3FF), // lavender
+    Color(0xFFB3FFD9), // mint
+    Color(0xFFFFDFC4), // peach
+    Color(0xFFBAE1FF), // sky blue
+    Color(0xFFFFE0B2), // light orange
+    Color(0xFFF8BBD0), // rose
+    Color(0xFFC8E6C9), // sage
+    Color(0xFFD1C4E9), // lilac
+    Color(0xFFFFECB3), // buttercup
+    Color(0xFFB2DFDB), // teal
+    Color(0xFFFFCDD2), // coral
+  ];
 
   static ThemeData get theme {
     return ThemeData(

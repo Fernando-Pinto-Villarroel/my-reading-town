@@ -1,10 +1,10 @@
 import 'dart:math';
 
 class GameConstants {
-  static const int coinsPerPage = 5;
-  static const int woodPerPage = 3;
-  static const int metalPerPage = 2;
-  static const int bookCompletionGemBonus = 15;
+  static const int coinsPerPage = 3;
+  static const int woodPerPage = 2;
+  static const int metalPerPage = 1;
+  static const int bookCompletionGemBonus = 20;
   static const int bookCompletionCoinBonus = 50;
   static const int startingCoins = 100;
   static const int startingGems = 5;
@@ -12,7 +12,7 @@ class GameConstants {
   static const int startingMetal = 15;
 
   static const int maxBuildingLevel = 3;
-  static const int sadHappinessThreshold = 40;
+  static const int sadHappinessThreshold = 80;
 
   static const int mapSize = 150;
   static const int defaultAreaSize = 25;
@@ -157,12 +157,12 @@ class GameConstants {
   }
 
   static const List<Map<String, dynamic>> buildingTemplates = [
-    {'type': 'house', 'name': 'Home', 'coinCost': 30, 'gemCost': 0, 'woodCost': 20, 'metalCost': 5, 'happinessBonus': 10, 'constructionMinutes': 5},
-    {'type': 'park', 'name': 'Tiny Park', 'coinCost': 25, 'gemCost': 0, 'woodCost': 15, 'metalCost': 5, 'happinessBonus': 8, 'constructionMinutes': 20},
-    {'type': 'school', 'name': 'Little School', 'coinCost': 50, 'gemCost': 0, 'woodCost': 30, 'metalCost': 10, 'happinessBonus': 15, 'constructionMinutes': 60},
-    {'type': 'hospital', 'name': 'Clinic', 'coinCost': 60, 'gemCost': 0, 'woodCost': 25, 'metalCost': 20, 'happinessBonus': 12, 'constructionMinutes': 90},
-    {'type': 'water_plant', 'name': 'Water Tower', 'coinCost': 40, 'gemCost': 0, 'woodCost': 10, 'metalCost': 15, 'happinessBonus': 10, 'constructionMinutes': 45},
-    {'type': 'power_plant', 'name': 'Power Station', 'coinCost': 45, 'gemCost': 0, 'woodCost': 15, 'metalCost': 25, 'happinessBonus': 10, 'constructionMinutes': 60},
+    {'type': 'house', 'name': 'Home', 'coinCost': 60, 'gemCost': 0, 'woodCost': 40, 'metalCost': 10, 'happinessBonus': 10, 'constructionMinutes': 10},
+    {'type': 'park', 'name': 'Tiny Park', 'coinCost': 50, 'gemCost': 0, 'woodCost': 30, 'metalCost': 10, 'happinessBonus': 8, 'constructionMinutes': 40},
+    {'type': 'school', 'name': 'Little School', 'coinCost': 100, 'gemCost': 0, 'woodCost': 60, 'metalCost': 20, 'happinessBonus': 15, 'constructionMinutes': 120},
+    {'type': 'hospital', 'name': 'Clinic', 'coinCost': 120, 'gemCost': 0, 'woodCost': 50, 'metalCost': 40, 'happinessBonus': 12, 'constructionMinutes': 180},
+    {'type': 'water_plant', 'name': 'Water Tower', 'coinCost': 80, 'gemCost': 0, 'woodCost': 20, 'metalCost': 30, 'happinessBonus': 10, 'constructionMinutes': 90},
+    {'type': 'power_plant', 'name': 'Power Station', 'coinCost': 90, 'gemCost': 0, 'woodCost': 30, 'metalCost': 50, 'happinessBonus': 10, 'constructionMinutes': 120},
   ];
 
   static int upgradeCoinCost(int baseCost, int currentLevel) =>
@@ -180,7 +180,7 @@ class GameConstants {
   static int gemCostToSpeedUp(Duration remaining) {
     final minutes = remaining.inMinutes;
     if (minutes <= 0) return 0;
-    return (minutes / 3).ceil();
+    return (minutes / 5).ceil();
   }
 
   static String spriteForBuilding(String type, int level) {

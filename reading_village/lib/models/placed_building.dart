@@ -13,6 +13,7 @@ class PlacedBuilding {
   String? constructionStart;
   int constructionDurationMinutes;
   bool isConstructed;
+  bool isFlipped;
 
   PlacedBuilding({
     this.id,
@@ -29,6 +30,7 @@ class PlacedBuilding {
     this.constructionStart,
     this.constructionDurationMinutes = 60,
     this.isConstructed = false,
+    this.isFlipped = false,
   });
 
   bool get isBuilt => isConstructed && level > 0;
@@ -66,6 +68,7 @@ class PlacedBuilding {
       'construction_start': constructionStart,
       'construction_duration_minutes': constructionDurationMinutes,
       'is_constructed': isConstructed ? 1 : 0,
+      'is_flipped': isFlipped ? 1 : 0,
     };
   }
 
@@ -86,6 +89,7 @@ class PlacedBuilding {
       constructionDurationMinutes:
           map['construction_duration_minutes'] as int? ?? 60,
       isConstructed: (map['is_constructed'] as int? ?? 0) == 1,
+      isFlipped: (map['is_flipped'] as int? ?? 0) == 1,
     );
   }
 
@@ -95,6 +99,7 @@ class PlacedBuilding {
     bool? isConstructed,
     String? constructionStart,
     int? constructionDurationMinutes,
+    bool? isFlipped,
   }) {
     return PlacedBuilding(
       id: id ?? this.id,
@@ -112,6 +117,7 @@ class PlacedBuilding {
       constructionDurationMinutes:
           constructionDurationMinutes ?? this.constructionDurationMinutes,
       isConstructed: isConstructed ?? this.isConstructed,
+      isFlipped: isFlipped ?? this.isFlipped,
     );
   }
 }

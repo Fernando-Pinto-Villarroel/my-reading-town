@@ -31,10 +31,30 @@ class DatabaseHelper {
       CREATE TABLE books (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
+        author TEXT,
         total_pages INTEGER NOT NULL,
         pages_read INTEGER NOT NULL DEFAULT 0,
         is_completed INTEGER NOT NULL DEFAULT 0,
+        cover_image_path TEXT,
         created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        color_value INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE book_tags (
+        book_id INTEGER NOT NULL,
+        tag_id INTEGER NOT NULL,
+        PRIMARY KEY (book_id, tag_id),
+        FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
       )
     ''');
 
@@ -87,7 +107,8 @@ class DatabaseHelper {
         happiness_bonus INTEGER NOT NULL DEFAULT 0,
         construction_start TEXT,
         construction_duration_minutes INTEGER NOT NULL DEFAULT 60,
-        is_constructed INTEGER NOT NULL DEFAULT 0
+        is_constructed INTEGER NOT NULL DEFAULT 0,
+        is_flipped INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -298,11 +319,33 @@ class DatabaseHelper {
     }, where: 'id = ?', whereArgs: [buildingId]);
   }
 
+  Future<void> deletePlacedBuilding(int buildingId) async {
+    final db = await database;
+    await db.delete('placed_buildings', where: 'id = ?', whereArgs: [buildingId]);
+  }
+
+  Future<void> revertBuildingUpgrade(int buildingId, int previousLevel, int constructionMinutes) async {
+    final db = await database;
+    await db.update('placed_buildings', {
+      'level': previousLevel,
+      'is_constructed': 1,
+      'construction_start': null,
+      'construction_duration_minutes': constructionMinutes,
+    }, where: 'id = ?', whereArgs: [buildingId]);
+  }
+
   Future<void> movePlacedBuilding(int buildingId, int newTileX, int newTileY) async {
     final db = await database;
     await db.update('placed_buildings', {
       'tile_x': newTileX,
       'tile_y': newTileY,
+    }, where: 'id = ?', whereArgs: [buildingId]);
+  }
+
+  Future<void> flipBuilding(int buildingId, bool isFlipped) async {
+    final db = await database;
+    await db.update('placed_buildings', {
+      'is_flipped': isFlipped ? 1 : 0,
     }, where: 'id = ?', whereArgs: [buildingId]);
   }
 
@@ -384,5 +427,63 @@ class DatabaseHelper {
   Future<void> updateTownName(String townName) async {
     final db = await database;
     await db.update('game_state', {'town_name': townName}, where: 'id = 1');
+  }
+
+  // --- Tags ---
+
+  Future<List<Map<String, dynamic>>> getTags() async {
+    final db = await database;
+    return db.query('tags', orderBy: 'title ASC');
+  }
+
+  Future<int> insertTag(Map<String, dynamic> tag) async {
+    final db = await database;
+    return db.insert('tags', tag);
+  }
+
+  Future<void> updateTag(int tagId, Map<String, dynamic> values) async {
+    final db = await database;
+    await db.update('tags', values, where: 'id = ?', whereArgs: [tagId]);
+  }
+
+  Future<void> deleteTag(int tagId) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'tag_id = ?', whereArgs: [tagId]);
+    await db.delete('tags', where: 'id = ?', whereArgs: [tagId]);
+  }
+
+  // --- Book Tags ---
+
+  Future<List<Map<String, dynamic>>> getBookTags(int bookId) async {
+    final db = await database;
+    return db.rawQuery('''
+      SELECT t.* FROM tags t
+      INNER JOIN book_tags bt ON bt.tag_id = t.id
+      WHERE bt.book_id = ?
+      ORDER BY t.title ASC
+    ''', [bookId]);
+  }
+
+  Future<void> setBookTags(int bookId, List<int> tagIds) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
+    for (final tagId in tagIds) {
+      await db.insert('book_tags', {'book_id': bookId, 'tag_id': tagId},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+
+  // --- Books (extended) ---
+
+  Future<void> updateBook(int bookId, Map<String, dynamic> values) async {
+    final db = await database;
+    await db.update('books', values, where: 'id = ?', whereArgs: [bookId]);
+  }
+
+  Future<void> deleteBook(int bookId) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
+    await db.delete('reading_sessions', where: 'book_id = ?', whereArgs: [bookId]);
+    await db.delete('books', where: 'id = ?', whereArgs: [bookId]);
   }
 }

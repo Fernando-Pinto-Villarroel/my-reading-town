@@ -257,6 +257,7 @@ class VillageProvider extends ChangeNotifier {
     required int metalCost,
     required int happinessBonus,
     required int constructionMinutes,
+    bool isFlipped = false,
   }) async {
     if (_coins < coinCost || _gems < gemCost || _wood < woodCost || _metal < metalCost) return null;
 
@@ -279,13 +280,13 @@ class VillageProvider extends ChangeNotifier {
       constructionStart: DateTime.now().toIso8601String(),
       constructionDurationMinutes: constructionMinutes,
       isConstructed: false,
+      isFlipped: isFlipped,
     );
 
     final id = await _db.insertPlacedBuilding(building.toMap());
     final saved = building.copyWith(id: id);
     _placedBuildings.add(saved);
 
-    await addExp(GameConstants.expPerBuildingPlaced);
     notifyListeners();
     return saved;
   }
@@ -295,8 +296,12 @@ class VillageProvider extends ChangeNotifier {
     for (int i = 0; i < _placedBuildings.length; i++) {
       final b = _placedBuildings[i];
       if (!b.isConstructed && b.isConstructionComplete) {
+        final expAmount = b.level > 1
+            ? GameConstants.expPerBuildingUpgraded
+            : GameConstants.expPerBuildingPlaced;
         b.isConstructed = true;
         await _db.markBuildingConstructed(b.id!);
+        await addExp(expAmount);
         completed.add(b);
       }
     }
@@ -345,7 +350,6 @@ class VillageProvider extends ChangeNotifier {
     _placedBuildings[idx].constructionStart = constructionStart;
     _placedBuildings[idx].constructionDurationMinutes = constructionMinutes;
 
-    await addExp(GameConstants.expPerBuildingUpgraded);
     notifyListeners();
     return true;
   }
@@ -365,9 +369,64 @@ class VillageProvider extends ChangeNotifier {
     await _db.subtractResources(gems: gemCost);
     _gems -= gemCost;
 
+    final expAmount = building.level > 1
+        ? GameConstants.expPerBuildingUpgraded
+        : GameConstants.expPerBuildingPlaced;
     building.isConstructed = true;
     building.constructionStart = DateTime.now().subtract(Duration(hours: 24)).toIso8601String();
     await _db.markBuildingConstructed(buildingId);
+    await addExp(expAmount);
+
+    await _reconcileVillagers();
+    _updateVillagerHappiness();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> cancelConstruction(int buildingId) async {
+    final idx = _placedBuildings.indexWhere((b) => b.id == buildingId);
+    if (idx == -1) return false;
+
+    final building = _placedBuildings[idx];
+    if (building.isConstructed) return false;
+
+    final isUpgrade = building.level > 1;
+
+    if (isUpgrade) {
+      final previousLevel = building.level - 1;
+      final template = GameConstants.buildingTemplates.firstWhere(
+        (t) => t['type'] == building.type,
+      );
+      final refundCoins = GameConstants.upgradeCoinCost(template['coinCost'] as int, previousLevel);
+      final refundWood = GameConstants.upgradeWoodCost(template['woodCost'] as int, previousLevel);
+      final refundMetal = GameConstants.upgradeMetalCost(template['metalCost'] as int, previousLevel);
+
+      await _db.addResources(coins: refundCoins, wood: refundWood, metal: refundMetal);
+      _coins += refundCoins;
+      _wood += refundWood;
+      _metal += refundMetal;
+
+      final baseMinutes = template['constructionMinutes'] as int;
+      await _db.revertBuildingUpgrade(buildingId, previousLevel, baseMinutes);
+      _placedBuildings[idx].level = previousLevel;
+      _placedBuildings[idx].isConstructed = true;
+      _placedBuildings[idx].constructionStart = null;
+      _placedBuildings[idx].constructionDurationMinutes = baseMinutes;
+    } else {
+      await _db.addResources(
+        coins: building.coinCost,
+        gems: building.gemCost,
+        wood: building.woodCost,
+        metal: building.metalCost,
+      );
+      _coins += building.coinCost;
+      _gems += building.gemCost;
+      _wood += building.woodCost;
+      _metal += building.metalCost;
+
+      await _db.deletePlacedBuilding(buildingId);
+      _placedBuildings.removeAt(idx);
+    }
 
     await _reconcileVillagers();
     _updateVillagerHappiness();
@@ -386,6 +445,14 @@ class VillageProvider extends ChangeNotifier {
     _placedBuildings[idx].tileY = newTileY;
     notifyListeners();
     return true;
+  }
+
+  Future<void> flipBuilding(int buildingId) async {
+    final idx = _placedBuildings.indexWhere((b) => b.id == buildingId);
+    if (idx == -1) return;
+    _placedBuildings[idx].isFlipped = !_placedBuildings[idx].isFlipped;
+    await _db.flipBuilding(buildingId, _placedBuildings[idx].isFlipped);
+    notifyListeners();
   }
 
   Future<void> toggleRoad(int x, int y) async {
@@ -425,6 +492,25 @@ class VillageProvider extends ChangeNotifier {
     _expansionCount++;
     notifyListeners();
     return true;
+  }
+
+  /// Returns the need types not covered for a specific villager.
+  List<String> missingNeedsForVillager(Villager villager) {
+    final idx = _villagers.indexOf(villager);
+    if (idx == -1) return [];
+
+    final capacityByType = <String, int>{};
+    for (final type in _needTypes) {
+      int cap = 0;
+      for (var b in _placedBuildings) {
+        if (!b.isConstructed || b.type != type) continue;
+        if (!isBuildingRoadConnected(b)) continue;
+        cap += GameConstants.buildingCapacity(b.type, b.level);
+      }
+      capacityByType[type] = cap;
+    }
+
+    return _needTypes.where((type) => idx >= (capacityByType[type] ?? 0)).toList();
   }
 
   void _updateVillagerHappiness() {

@@ -20,7 +20,7 @@ class BuildingComponent extends PositionComponent {
     required this.building,
     required Vector2 position,
     required Vector2 size,
-  }) : super(position: position, size: size, priority: 5);
+  }) : super(position: position, size: size, priority: 10 + building.tileY);
 
   @override
   Future<void> onLoad() async {
@@ -41,6 +41,7 @@ class BuildingComponent extends PositionComponent {
       _pulseTimer = 0;
     }
     building = updated;
+    priority = 10 + building.tileY;
     if (building.level != _loadedLevel && building.isConstructed) {
       _loadLevelSprite();
     }
@@ -83,10 +84,16 @@ class BuildingComponent extends PositionComponent {
     final cx = offsetX + spriteW / 2;
     final cy = offsetY + spriteH / 2;
     canvas.translate(cx, cy);
-    canvas.scale(_pulseScale, _pulseScale);
+    if (building.isFlipped) {
+      canvas.scale(-_pulseScale, _pulseScale);
+    } else {
+      canvas.scale(_pulseScale, _pulseScale);
+    }
     canvas.translate(-cx, -cy);
 
     sprite.render(canvas, position: Vector2(offsetX, offsetY), size: Vector2(spriteW, spriteH));
+
+    canvas.restore();
 
     if (!building.isConstructed && building.constructionStart != null) {
       final zoom = (findGame() as VillageGame?)?.currentZoom ?? 1.0;
@@ -148,7 +155,5 @@ class BuildingComponent extends PositionComponent {
         Paint()..color = const Color(0xFFFFB3BA),
       );
     }
-
-    canvas.restore();
   }
 }

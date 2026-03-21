@@ -42,7 +42,7 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
           position: position,
           size: Vector2(GameConstants.tilePixelSize * 0.38, GameConstants.tilePixelSize * 0.50),
           anchor: Anchor.center,
-          priority: 10,
+          priority: 200,
         ) {
     _targetPosition = position.clone();
     _waitTimer = _random.nextDouble() * 2;

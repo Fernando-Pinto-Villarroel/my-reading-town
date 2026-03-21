@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/app_theme.dart';
+import 'widgets/skeleton.dart';
 import 'providers/book_provider.dart';
+import 'providers/tag_provider.dart';
 import 'providers/village_provider.dart';
 import 'screens/game_screen.dart';
 
@@ -18,6 +20,7 @@ class ReadingVillageApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => BookProvider()),
+        ChangeNotifierProvider(create: (_) => TagProvider()),
         ChangeNotifierProvider(create: (_) => VillageProvider()),
       ],
       child: MaterialApp(
@@ -48,8 +51,10 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initializeApp() async {
     final bookProvider = context.read<BookProvider>();
+    final tagProvider = context.read<TagProvider>();
     final villageProvider = context.read<VillageProvider>();
 
+    await tagProvider.loadTags();
     await bookProvider.loadData();
     await villageProvider.loadData();
 
@@ -88,9 +93,9 @@ class _AppInitializerState extends State<AppInitializer> {
                 ),
               ),
               SizedBox(height: 24),
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.pink),
-              ),
+              Skeleton(width: 180, height: 12, borderRadius: 6),
+              SizedBox(height: 10),
+              Skeleton(width: 120, height: 12, borderRadius: 6),
             ],
           ),
         ),
