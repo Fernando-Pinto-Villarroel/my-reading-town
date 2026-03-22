@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/database_helper.dart';
 import '../models/placed_building.dart';
 import '../models/villager.dart';
+import '../models/inventory_item.dart';
 import '../config/game_constants.dart';
 
 class VillageProvider extends ChangeNotifier {
@@ -23,6 +24,11 @@ class VillageProvider extends ChangeNotifier {
   String _username = '';
   String _townName = 'My Village';
 
+  // Inventory & powerups
+  List<InventoryItem> _inventoryItems = [];
+  List<ActivePowerup> _activePowerups = [];
+  List<MinigameCooldown> _minigameCooldowns = [];
+
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
   int get coins => _coins;
@@ -37,6 +43,67 @@ class VillageProvider extends ChangeNotifier {
   int get playerLevel => _playerLevel;
   String get username => _username;
   String get townName => _townName;
+
+  List<InventoryItem> get inventoryItems => _inventoryItems;
+  List<ActivePowerup> get activePowerups => _activePowerups;
+  List<MinigameCooldown> get minigameCooldowns => _minigameCooldowns;
+
+  // Constructor system
+  static const int baseMaxConstructors = 3;
+
+  int get maxConstructors {
+    int max = baseMaxConstructors;
+    for (final p in _activePowerups) {
+      if (p.type == 'hammer_constructor' && p.isActive) {
+        max++;
+      }
+    }
+    return max;
+  }
+
+  int get busyConstructors {
+    return _placedBuildings.where((b) => !b.isConstructed).length;
+  }
+
+  bool get canStartConstruction => busyConstructors < maxConstructors;
+
+  // Check if sandwich speed powerup is active
+  bool get isSpeedBoostActive {
+    return _activePowerups.any(
+      (p) => p.type == 'sandwich_speed' && p.isActive,
+    );
+  }
+
+  // Get construction speed multiplier
+  double get constructionSpeedMultiplier {
+    return isSpeedBoostActive ? 2.0 : 1.0;
+  }
+
+  // Check if a villager has book happiness powerup
+  bool villagerHasHappinessBoost(int villagerId) {
+    return _activePowerups.any(
+      (p) => p.type == 'book_happiness' && p.targetVillagerId == villagerId && p.isActive,
+    );
+  }
+
+  // Get item quantity
+  int itemQuantity(String type) {
+    final item = _inventoryItems.where((i) => i.type == type).firstOrNull;
+    return item?.quantity ?? 0;
+  }
+
+  // Check minigame cooldown
+  bool isMinigameOnCooldown(String minigameId) {
+    final cd = _minigameCooldowns.where((c) => c.minigameId == minigameId).firstOrNull;
+    if (cd == null) return false;
+    return cd.isOnCooldown;
+  }
+
+  Duration minigameCooldownRemaining(String minigameId) {
+    final cd = _minigameCooldowns.where((c) => c.minigameId == minigameId).firstOrNull;
+    if (cd == null) return Duration.zero;
+    return cd.remainingCooldown;
+  }
 
   static String tileKey(int x, int y) => '$x,$y';
 
@@ -174,6 +241,17 @@ class VillageProvider extends ChangeNotifier {
     _username = gameState['username'] as String;
     _townName = gameState['town_name'] as String;
 
+    // Load inventory, powerups, cooldowns
+    final invMaps = await _db.getInventoryItems();
+    _inventoryItems = invMaps.map((m) => InventoryItem.fromMap(m)).toList();
+
+    await _db.deleteExpiredPowerups();
+    final powerupMaps = await _db.getActivePowerups();
+    _activePowerups = powerupMaps.map((m) => ActivePowerup.fromMap(m)).toList();
+
+    final cdMaps = await _db.getMinigameCooldowns();
+    _minigameCooldowns = cdMaps.map((m) => MinigameCooldown.fromMap(m)).toList();
+
     await _reconcileVillagers();
     _updateVillagerHappiness();
     notifyListeners();
@@ -260,12 +338,15 @@ class VillageProvider extends ChangeNotifier {
     bool isFlipped = false,
   }) async {
     if (_coins < coinCost || _gems < gemCost || _wood < woodCost || _metal < metalCost) return null;
+    if (!canStartConstruction) return null;
 
     await _db.subtractResources(coins: coinCost, gems: gemCost, wood: woodCost, metal: metalCost);
     _coins -= coinCost;
     _gems -= gemCost;
     _wood -= woodCost;
     _metal -= metalCost;
+
+    final adjustedMinutes = (constructionMinutes / constructionSpeedMultiplier).round();
 
     final building = PlacedBuilding(
       type: type,
@@ -278,7 +359,7 @@ class VillageProvider extends ChangeNotifier {
       metalCost: metalCost,
       happinessBonus: happinessBonus,
       constructionStart: DateTime.now().toIso8601String(),
-      constructionDurationMinutes: constructionMinutes,
+      constructionDurationMinutes: adjustedMinutes,
       isConstructed: false,
       isFlipped: isFlipped,
     );
@@ -320,6 +401,7 @@ class VillageProvider extends ChangeNotifier {
     final building = _placedBuildings[idx];
     if (!building.isConstructed) return false;
     if (building.level >= GameConstants.maxBuildingLevel) return false;
+    if (!canStartConstruction) return false;
 
     final template = GameConstants.buildingTemplates.firstWhere(
       (t) => t['type'] == building.type,
@@ -337,10 +419,11 @@ class VillageProvider extends ChangeNotifier {
     _metal -= metalCost;
 
     final newLevel = building.level + 1;
-    final constructionMinutes = GameConstants.upgradeConstructionMinutes(
+    final baseConstructionMinutes = GameConstants.upgradeConstructionMinutes(
       template['constructionMinutes'] as int,
       building.level,
     );
+    final constructionMinutes = (baseConstructionMinutes / constructionSpeedMultiplier).round();
     final constructionStart = DateTime.now().toIso8601String();
 
     await _db.upgradePlacedBuilding(buildingId, newLevel, constructionStart, constructionMinutes);
@@ -376,6 +459,12 @@ class VillageProvider extends ChangeNotifier {
     building.constructionStart = DateTime.now().subtract(Duration(hours: 24)).toIso8601String();
     await _db.markBuildingConstructed(buildingId);
     await addExp(expAmount);
+
+    // Reload buildings & villagers from DB to ensure consistent state
+    final placedMaps = await _db.getPlacedBuildings();
+    _placedBuildings = placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
+    final villagerMaps = await _db.getVillagers();
+    _villagers = villagerMaps.map((m) => Villager.fromMap(m)).toList();
 
     await _reconcileVillagers();
     _updateVillagerHappiness();
@@ -539,11 +628,165 @@ class VillageProvider extends ChangeNotifier {
           sum += 1.0; // this villager's need is covered
         }
       }
-      final happiness = ((sum / _needTypes.length) * 100).round();
+      int happiness = ((sum / _needTypes.length) * 100).round();
+
+      // Book happiness powerup overrides to 100%
+      if (_villagers[i].id != null && villagerHasHappinessBoost(_villagers[i].id!)) {
+        happiness = 100;
+      }
+
       _villagers[i].happiness = happiness;
       if (_villagers[i].id != null) {
         _db.updateVillagerHappiness(_villagers[i].id!, happiness);
       }
     }
+  }
+
+  // --- Inventory Management ---
+
+  Future<void> addItemToInventory(String type, {int amount = 1}) async {
+    await _db.addInventoryItem(type, amount: amount);
+    final idx = _inventoryItems.indexWhere((i) => i.type == type);
+    if (idx != -1) {
+      _inventoryItems[idx].quantity += amount;
+    }
+    notifyListeners();
+  }
+
+  Future<bool> useBookItem(int villagerId) async {
+    if (itemQuantity('book') <= 0) return false;
+    if (villagerHasHappinessBoost(villagerId)) return false;
+    await _db.removeInventoryItem('book');
+    final idx = _inventoryItems.indexWhere((i) => i.type == 'book');
+    if (idx != -1) _inventoryItems[idx].quantity--;
+
+    final powerup = ActivePowerup(
+      type: 'book_happiness',
+      targetVillagerId: villagerId,
+      activatedAt: DateTime.now().toIso8601String(),
+      durationHours: 24,
+    );
+    final id = await _db.insertPowerup(powerup.toMap());
+    _activePowerups.add(ActivePowerup(
+      id: id,
+      type: powerup.type,
+      targetVillagerId: powerup.targetVillagerId,
+      activatedAt: powerup.activatedAt,
+      durationHours: powerup.durationHours,
+    ));
+
+    _updateVillagerHappiness();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> useSandwichItem() async {
+    if (itemQuantity('sandwich') <= 0) return false;
+    if (isSpeedBoostActive) return false;
+    await _db.removeInventoryItem('sandwich');
+    final idx = _inventoryItems.indexWhere((i) => i.type == 'sandwich');
+    if (idx != -1) _inventoryItems[idx].quantity--;
+
+    final powerup = ActivePowerup(
+      type: 'sandwich_speed',
+      activatedAt: DateTime.now().toIso8601String(),
+      durationHours: 1,
+    );
+    final id = await _db.insertPowerup(powerup.toMap());
+    _activePowerups.add(ActivePowerup(
+      id: id,
+      type: powerup.type,
+      activatedAt: powerup.activatedAt,
+      durationHours: powerup.durationHours,
+    ));
+
+    notifyListeners();
+    return true;
+  }
+
+  bool get isHammerActive {
+    return _activePowerups.any(
+      (p) => p.type == 'hammer_constructor' && p.isActive,
+    );
+  }
+
+  Future<bool> useHammerItem() async {
+    if (itemQuantity('hammer') <= 0) return false;
+    if (isHammerActive) return false;
+    await _db.removeInventoryItem('hammer');
+    final idx = _inventoryItems.indexWhere((i) => i.type == 'hammer');
+    if (idx != -1) _inventoryItems[idx].quantity--;
+
+    final powerup = ActivePowerup(
+      type: 'hammer_constructor',
+      activatedAt: DateTime.now().toIso8601String(),
+      durationHours: 24,
+    );
+    final id = await _db.insertPowerup(powerup.toMap());
+    _activePowerups.add(ActivePowerup(
+      id: id,
+      type: powerup.type,
+      activatedAt: powerup.activatedAt,
+      durationHours: powerup.durationHours,
+    ));
+
+    notifyListeners();
+    return true;
+  }
+
+  // --- Minigame Cooldowns ---
+
+  Future<void> setMinigameCooldown(String minigameId, int cooldownHours) async {
+    final cooldownEnd = DateTime.now().add(Duration(hours: cooldownHours)).toIso8601String();
+    await _db.setMinigameCooldown(minigameId, cooldownEnd);
+    final existing = _minigameCooldowns.indexWhere((c) => c.minigameId == minigameId);
+    final cd = MinigameCooldown(minigameId: minigameId, cooldownEnd: cooldownEnd);
+    if (existing != -1) {
+      _minigameCooldowns[existing] = cd;
+    } else {
+      _minigameCooldowns.add(cd);
+    }
+    notifyListeners();
+  }
+
+  // --- Minigame Rewards ---
+
+  /// Returns the reward type: 'gems', 'book', 'sandwich', 'hammer'
+  Future<String> grantMinigameReward() async {
+    final random = Random();
+    final roll = random.nextDouble();
+
+    String rewardType;
+    if (roll < 0.45) {
+      // 45% - 5 gems
+      rewardType = 'gems';
+      await _db.addResources(gems: 5);
+      _gems += 5;
+    } else if (roll < 0.70) {
+      // 25% - book item
+      rewardType = 'book';
+      await addItemToInventory('book');
+    } else if (roll < 0.95) {
+      // 25% - sandwich item
+      rewardType = 'sandwich';
+      await addItemToInventory('sandwich');
+    } else {
+      // 5% - hammer item
+      rewardType = 'hammer';
+      await addItemToInventory('hammer');
+    }
+
+    notifyListeners();
+    return rewardType;
+  }
+
+  // --- Cleanup expired powerups ---
+
+  Future<void> cleanupExpiredPowerups() async {
+    await _db.deleteExpiredPowerups();
+    _activePowerups.removeWhere((p) => !p.isActive);
+    // Special case: hammer powerup - don't remove if there's still a 4th building in progress
+    _updateVillagerHappiness();
+    notifyListeners();
   }
 }

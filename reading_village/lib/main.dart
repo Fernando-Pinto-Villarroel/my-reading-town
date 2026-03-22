@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/app_theme.dart';
+import 'data/villager_favorites.dart';
 import 'widgets/skeleton.dart';
 import 'providers/book_provider.dart';
 import 'providers/tag_provider.dart';
@@ -54,6 +55,7 @@ class _AppInitializerState extends State<AppInitializer> {
     final tagProvider = context.read<TagProvider>();
     final villageProvider = context.read<VillageProvider>();
 
+    await VillagerFavorites.load();
     await tagProvider.loadTags();
     await bookProvider.loadData();
     await villageProvider.loadData();

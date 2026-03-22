@@ -4,7 +4,7 @@ import 'package:flame/events.dart';
 import 'package:flutter/material.dart' hide Image;
 import '../../models/villager.dart';
 import '../../config/game_constants.dart';
-import '../../data/villager_favorites.dart';
+import '../../data/villager_favorites.dart' show VillagerFavorites;
 
 class VillagerComponent extends PositionComponent with TapCallbacks {
   Villager villager;
@@ -221,8 +221,8 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   void _renderHappyBubble(Canvas canvas) {
     if (!_showHappyBubble) return;
 
-    final idx = (villager.id ?? 0) % favoriteAuthors.length;
-    final text = '❤️ ${favoriteAuthors[idx]}';
+    final idx = villager.id ?? 0;
+    final text = '❤️ ${VillagerFavorites.author(idx)}';
 
     final painter = TextPainter(
       text: TextSpan(

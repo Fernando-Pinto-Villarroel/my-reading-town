@@ -140,6 +140,36 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE inventory_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL UNIQUE,
+        quantity INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE minigame_cooldowns (
+        minigame_id TEXT PRIMARY KEY,
+        cooldown_end TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE active_powerups (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        target_villager_id INTEGER,
+        activated_at TEXT NOT NULL,
+        duration_hours INTEGER NOT NULL DEFAULT 24
+      )
+    ''');
+
+    // Initialize inventory items
+    for (final type in ['book', 'sandwich', 'hammer']) {
+      await db.insert('inventory_items', {'type': type, 'quantity': 0});
+    }
+
     await db.insert('resources', {
       'id': 1,
       'coins': GameConstants.startingCoins,
@@ -485,5 +515,71 @@ class DatabaseHelper {
     await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
     await db.delete('reading_sessions', where: 'book_id = ?', whereArgs: [bookId]);
     await db.delete('books', where: 'id = ?', whereArgs: [bookId]);
+  }
+
+  // --- Inventory ---
+
+  Future<List<Map<String, dynamic>>> getInventoryItems() async {
+    final db = await database;
+    return db.query('inventory_items');
+  }
+
+  Future<void> addInventoryItem(String type, {int amount = 1}) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE inventory_items SET quantity = quantity + ? WHERE type = ?',
+      [amount, type],
+    );
+  }
+
+  Future<void> removeInventoryItem(String type, {int amount = 1}) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE inventory_items SET quantity = MAX(0, quantity - ?) WHERE type = ?',
+      [amount, type],
+    );
+  }
+
+  // --- Minigame Cooldowns ---
+
+  Future<List<Map<String, dynamic>>> getMinigameCooldowns() async {
+    final db = await database;
+    return db.query('minigame_cooldowns');
+  }
+
+  Future<void> setMinigameCooldown(String minigameId, String cooldownEnd) async {
+    final db = await database;
+    await db.insert(
+      'minigame_cooldowns',
+      {'minigame_id': minigameId, 'cooldown_end': cooldownEnd},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // --- Active Powerups ---
+
+  Future<List<Map<String, dynamic>>> getActivePowerups() async {
+    final db = await database;
+    return db.query('active_powerups');
+  }
+
+  Future<int> insertPowerup(Map<String, dynamic> powerup) async {
+    final db = await database;
+    return db.insert('active_powerups', powerup);
+  }
+
+  Future<void> deletePowerup(int id) async {
+    final db = await database;
+    await db.delete('active_powerups', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteExpiredPowerups() async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    // Delete powerups where activated_at + duration_hours has passed
+    await db.rawDelete('''
+      DELETE FROM active_powerups
+      WHERE datetime(activated_at, '+' || duration_hours || ' hours') < datetime(?)
+    ''', [now]);
   }
 }

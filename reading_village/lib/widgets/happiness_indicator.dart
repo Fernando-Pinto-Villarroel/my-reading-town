@@ -3,8 +3,9 @@ import '../config/app_theme.dart';
 
 class HappinessIndicator extends StatelessWidget {
   final int happiness;
+  final bool landscape;
 
-  const HappinessIndicator({super.key, required this.happiness});
+  const HappinessIndicator({super.key, required this.happiness, this.landscape = false});
 
   IconData get _moodIcon {
     if (happiness >= 80) return Icons.sentiment_very_satisfied;
@@ -31,7 +32,7 @@ class HappinessIndicator extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: SizedBox(
-        width: 150,
+        width: landscape ? 195 : 165,
         child: Row(
           children: [
             Icon(_moodIcon, color: _barColor, size: 28),
@@ -49,7 +50,7 @@ class HappinessIndicator extends StatelessWidget {
             ),
             SizedBox(width: 6),
             SizedBox(
-              width: 38,
+              width: 46,
               child: Text(
                 '$happiness%',
                 textAlign: TextAlign.right,

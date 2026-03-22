@@ -698,3 +698,81 @@ high readability at small size
 white background
 simple and adorable tile design
 ```
+
+---
+
+## Cat Constructor (64x64px, transparent background)
+
+### cat_constructor.png
+
+```
+cute kawaii cat constructor worker character icon
+front view, small character
+wearing a tiny yellow hard hat / construction helmet
+holding a small hammer or wrench
+adorable chubby kitty in construction outfit
+round chubby body, short little legs, small paws
+very simple design, minimal details
+
+kawaii style
+pastel color palette
+soft pastel colors
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute mouth
+super cute chubby proportions
+
+2D mobile game icon
+high readability at small size
+white background
+simple and adorable character design
+```
+
+---
+
+## Powerup Items (64x64px, transparent background)
+
+### book_item.png
+
+```
+cute kawaii book item icon (must be the exact same book design from the book the cat has in its hand in the reference image asset)
+
+2D mobile game icon, high readability at small size
+
+white background
+
+simple and adorable item design
+```
+
+### sandwich_item.png
+
+```
+cute kawaii construction sandwich item icon
+a chubby delicious sandwich with layers visible (lettuce, cheese, tomato)
+the sandwich has a tiny construction-themed toothpick flag on top
+looks energizing and yummy, with tiny sparkle effects
+kawaii style, pastel color palette, soft warm pastel colors (cream, green, yellow, red)
+clean simple outlines, simple shapes
+2D mobile game icon, high readability at small size
+white background
+simple and adorable food item design
+no shadows anywhere in the design
+```
+
+### hammer_item.png
+
+```
+cute kawaii golden construction hammer item icon
+a chubby golden hammer with a short wooden handle
+the hammer head is shiny gold with sparkle effects
+looks powerful and special, like a magical tool
+kawaii style, pastel color palette, soft golden and brown pastel colors
+clean simple outlines, simple shapes
+subtle shine/glow effect on the golden hammer head
+2D mobile game icon, high readability at small size
+white background
+simple and adorable tool item design
+no shadows anywhere in the design
+```

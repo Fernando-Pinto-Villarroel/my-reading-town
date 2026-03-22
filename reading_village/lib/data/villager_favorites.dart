@@ -1,45 +1,32 @@
-const List<String> favoriteAuthors = [
-  'Gabriel García Márquez',
-  'Jorge Luis Borges',
-  'Isabel Allende',
-  'Pablo Neruda',
-  'Julio Cortázar',
-  'Mario Vargas Llosa',
-  'Octavio Paz',
-  'Eduardo Galeano',
-  'Laura Esquivel',
-  'Carlos Fuentes',
-  'J.K. Rowling',
-  'J.R.R. Tolkien',
-  'Stephen King',
-  'Agatha Christie',
-  'Jane Austen',
-  'Mark Twain',
-  'Ernest Hemingway',
-  'Antoine de Saint-Exupéry',
-  'Lewis Carroll',
-  'Roald Dahl',
-];
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
-const List<String> favoriteQuotes = [
-  'A reader lives a thousand lives before he dies.',
-  'Not all those who wander are lost.',
-  'It is our choices that show what we truly are.',
-  'One has to be careful of books and what is inside them.',
-  'There is no friend as loyal as a book.',
-  'A room without books is like a body without a soul.',
-  'The only thing you absolutely have to know, is the location of the library.',
-  'Reading is dreaming with open eyes.',
-  'Books are a uniquely portable magic.',
-  'We read to know we are not alone.',
-  'Today a reader, tomorrow a leader.',
-  'Once you learn to read, you will be forever free.',
-  'I have always imagined that paradise will be a kind of library.',
-  'Reading gives us someplace to go when we have to stay where we are.',
-  'A book is a gift you can open again and again.',
-  'So many books, so little time.',
-  'The more that you read, the more things you will know.',
-  'Reading is to the mind what exercise is to the body.',
-  'Books are the quietest and most constant of friends.',
-  'A good book has no ending.',
-];
+class VillagerFavorites {
+  static List<Map<String, String>> _favorites = [];
+  static bool _loaded = false;
+
+  static Future<void> load() async {
+    if (_loaded) return;
+    final jsonStr = await rootBundle.loadString('assets/data/villager_favorites.json');
+    final data = json.decode(jsonStr) as Map<String, dynamic>;
+    _favorites = (data['favorites'] as List)
+        .map((e) => {
+              'author': e['author'] as String,
+              'quote': e['quote'] as String,
+            })
+        .toList();
+    _loaded = true;
+  }
+
+  static int get length => _favorites.length;
+
+  static String author(int index) {
+    if (_favorites.isEmpty) return '';
+    return _favorites[index % _favorites.length]['author']!;
+  }
+
+  static String quote(int index) {
+    if (_favorites.isEmpty) return '';
+    return _favorites[index % _favorites.length]['quote']!;
+  }
+}

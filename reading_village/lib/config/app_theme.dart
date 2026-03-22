@@ -12,6 +12,8 @@ class AppTheme {
   static const Color softWhite = Color(0xFFFFFEFC);
   static const Color darkText = Color(0xFF4A4A4A);
   static const Color darkOrange = Color(0xFFCC7722);
+  static const Color darkMint = Color(0xFF2E9E6B);
+  static const Color darkSkyBlue = Color(0xFF3A7FBF);
 
   static const List<Color> tagColors = [
     Color(0xFFFFB3BA), // pink

@@ -10,6 +10,7 @@ import '../data/database_helper.dart';
 import '../game/village_game.dart';
 import '../models/placed_building.dart';
 import '../models/villager.dart';
+import '../models/inventory_item.dart';
 import '../providers/book_provider.dart';
 import '../providers/village_provider.dart';
 import '../widgets/book_card.dart';
@@ -24,6 +25,8 @@ import '../widgets/tag_manager_dialog.dart';
 import '../models/book.dart';
 import '../providers/tag_provider.dart';
 import '../data/villager_favorites.dart';
+import 'guess_author_screen.dart';
+import 'match_character_role_screen.dart';
 
 enum GameMode { normal, construction, road }
 
@@ -213,6 +216,17 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
+    if (!village.canStartConstruction) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('All constructors are busy! (${village.busyConstructors}/${village.maxConstructors})', style: TextStyle(color: AppTheme.darkText)),
+          backgroundColor: AppTheme.peach,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final coinCost = template['coinCost'] as int;
     final gemCost = template['gemCost'] as int;
     final woodCost = template['woodCost'] as int;
@@ -274,8 +288,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showVillagerInfoSheet(Villager villager) {
-    final authorIdx = (villager.id ?? 0) % favoriteAuthors.length;
-    final quoteIdx = (villager.id ?? 0) % favoriteQuotes.length;
+    final villagerIdx = villager.id ?? 0;
 
     showModalBottomSheet(
       context: context,
@@ -369,6 +382,40 @@ class _GameScreenState extends State<GameScreen> {
                     ],
                   ),
                 ),
+                if (villager.id != null && _villageProvider.villagerHasHappinessBoost(villager.id!)) ...[
+                  SizedBox(height: 8),
+                  Builder(builder: (_) {
+                    final powerup = _villageProvider.activePowerups.firstWhere(
+                      (p) => p.type == 'book_happiness' && p.targetVillagerId == villager.id && p.isActive,
+                    );
+                    final remaining = powerup.remainingTime;
+                    final timeStr = _formatDuration(remaining);
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.pink.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppTheme.pink.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset('assets/images/book_item.png', width: 22, height: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'Happiness Book active',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.darkText),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            timeStr,
+                            style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
                 if (villager.happiness < 100) ...[
                   SizedBox(height: 8),
                   Builder(builder: (_) {
@@ -403,9 +450,9 @@ class _GameScreenState extends State<GameScreen> {
                   }),
                 ],
                 SizedBox(height: 16),
-                _villagerInfoRow(Icons.auto_stories, 'Favorite Author', favoriteAuthors[authorIdx]),
+                _villagerInfoRow(Icons.auto_stories, 'Favorite Author', VillagerFavorites.author(villagerIdx)),
                 SizedBox(height: 10),
-                _villagerInfoRow(Icons.format_quote, 'Favorite Quote', '"${favoriteQuotes[quoteIdx]}"'),
+                _villagerInfoRow(Icons.format_quote, 'Favorite Quote', '"${VillagerFavorites.quote(villagerIdx)}"'),
               ],
             ),
           ),
@@ -647,7 +694,7 @@ class _GameScreenState extends State<GameScreen> {
     final woodCost = atMaxLevel ? 0 : GameConstants.upgradeWoodCost(template['woodCost'] as int, building.level);
     final metalCost = atMaxLevel ? 0 : GameConstants.upgradeMetalCost(template['metalCost'] as int, building.level);
     final upgradeMinutes = atMaxLevel ? 0 : GameConstants.upgradeConstructionMinutes(template['constructionMinutes'] as int, building.level);
-    final canAfford = !atMaxLevel && village.coins >= coinCost && village.wood >= woodCost && village.metal >= metalCost;
+    final canAfford = !atMaxLevel && village.coins >= coinCost && village.wood >= woodCost && village.metal >= metalCost && village.canStartConstruction;
 
     showModalBottomSheet(
       context: context,
@@ -773,7 +820,11 @@ class _GameScreenState extends State<GameScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       child: Text(
-                        canAfford ? 'Upgrade ${building.name}!' : 'Not enough resources',
+                        canAfford
+                            ? 'Upgrade ${building.name}!'
+                            : !village.canStartConstruction
+                                ? 'All constructors busy!'
+                                : 'Not enough resources',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -1503,6 +1554,496 @@ class _GameScreenState extends State<GameScreen> {
     };
   }
 
+  void _showMinigamesModal() {
+    final village = _villageProvider;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.sports_esports, size: 24, color: AppTheme.lavender),
+                    const SizedBox(width: 8),
+                    Text('Minigames',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                    const Spacer(),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _minigameCard(
+                  ctx: ctx,
+                  icon: Icons.auto_stories,
+                  title: 'Guess the Author',
+                  subtitle: 'Name the author of famous books!',
+                  winsNeeded: 10,
+                  color: AppTheme.mint,
+                  darkColor: AppTheme.darkMint,
+                  minigameId: 'guess_author',
+                  cooldownHours: 4,
+                  village: village,
+                  onPlay: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GuessAuthorScreen()),
+                    ).then((_) {
+                      _villageProvider.loadData();
+                      _syncGameState();
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _minigameCard(
+                  ctx: ctx,
+                  icon: Icons.person_search,
+                  title: 'Match Character Role',
+                  subtitle: 'Match characters to their roles!',
+                  winsNeeded: 5,
+                  color: AppTheme.skyBlue,
+                  darkColor: AppTheme.darkSkyBlue,
+                  minigameId: 'match_character_role',
+                  cooldownHours: 5,
+                  village: village,
+                  onPlay: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MatchCharacterRoleScreen()),
+                    ).then((_) {
+                      _villageProvider.loadData();
+                      _syncGameState();
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _minigameCard({
+    required BuildContext ctx,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required int winsNeeded,
+    required Color color,
+    required Color darkColor,
+    required String minigameId,
+    required int cooldownHours,
+    required VillageProvider village,
+    required VoidCallback onPlay,
+  }) {
+    final isOnCooldown = village.isMinigameOnCooldown(minigameId);
+    final remaining = village.minigameCooldownRemaining(minigameId);
+
+    return GestureDetector(
+      onTap: isOnCooldown ? null : onPlay,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isOnCooldown ? Colors.grey.shade200 : color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isOnCooldown ? Colors.grey.shade300 : color.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isOnCooldown ? Colors.grey.shade300 : color.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 28, color: isOnCooldown ? Colors.grey : AppTheme.darkText),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isOnCooldown ? Colors.grey : AppTheme.darkText,
+                    ),
+                  ),
+                  Text(
+                    isOnCooldown
+                        ? 'Cooldown: ${_formatDuration(remaining)}'
+                        : subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isOnCooldown ? Colors.grey : AppTheme.darkText.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  Text(
+                    'Win $winsNeeded in a row!',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isOnCooldown ? Colors.grey.shade400 : darkColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isOnCooldown)
+              Icon(Icons.lock, size: 24, color: Colors.grey.shade400)
+            else
+              Icon(Icons.play_circle_fill, size: 32, color: darkColor),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    if (h > 0) return '${h}h ${m}m';
+    return '${m}m';
+  }
+
+  void _showBackpackModal() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final village = _villageProvider;
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(maxHeight: 500),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.backpack, size: 24, color: AppTheme.peach),
+                    const SizedBox(width: 8),
+                    Text('Backpack',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                    const Spacer(),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Active powerups
+                if (village.activePowerups.where((p) => p.isActive).isNotEmpty) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Active Powerups',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
+                  ),
+                  const SizedBox(height: 6),
+                  ...village.activePowerups.where((p) => p.isActive).map((p) => _activePowerupTile(p)),
+                  const SizedBox(height: 12),
+                ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Items',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
+                ),
+                const SizedBox(height: 6),
+                _itemTile(
+                  ctx: ctx,
+                  assetPath: 'assets/images/book_item.png',
+                  name: 'Happiness Book',
+                  description: 'Boost a villager to 100% happiness for 24h',
+                  quantity: village.itemQuantity('book'),
+                  color: AppTheme.pink,
+                  onUse: () {
+                    Navigator.pop(ctx);
+                    _showSelectVillagerForBook();
+                  },
+                ),
+                const SizedBox(height: 8),
+                _itemTile(
+                  ctx: ctx,
+                  assetPath: 'assets/images/sandwich_item.png',
+                  name: 'Constructor Sandwich',
+                  description: village.isSpeedBoostActive
+                      ? 'Already active!'
+                      : '2x construction speed for 1 hour',
+                  quantity: village.itemQuantity('sandwich'),
+                  color: AppTheme.peach,
+                  alreadyActive: village.isSpeedBoostActive,
+                  onUse: () async {
+                    Navigator.pop(ctx);
+                    final success = await _villageProvider.useSandwichItem();
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Construction speed doubled for 1 hour!', style: TextStyle(color: AppTheme.darkText)),
+                          backgroundColor: AppTheme.mint,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                _itemTile(
+                  ctx: ctx,
+                  assetPath: 'assets/images/hammer_item.png',
+                  name: 'Constructor Hammer',
+                  description: village.isHammerActive
+                      ? 'Already active!'
+                      : '+1 extra constructor for 24 hours',
+                  quantity: village.itemQuantity('hammer'),
+                  color: AppTheme.coinGold,
+                  alreadyActive: village.isHammerActive,
+                  onUse: () async {
+                    Navigator.pop(ctx);
+                    final success = await _villageProvider.useHammerItem();
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Extra constructor slot for 24 hours!', style: TextStyle(color: AppTheme.darkText)),
+                          backgroundColor: AppTheme.mint,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _activePowerupTile(ActivePowerup powerup) {
+    String name;
+    String assetPath;
+    Color color;
+    switch (powerup.type) {
+      case 'book_happiness':
+        name = 'Happiness Boost';
+        assetPath = 'assets/images/book_item.png';
+        color = AppTheme.pink;
+        break;
+      case 'sandwich_speed':
+        name = '2x Speed';
+        assetPath = 'assets/images/sandwich_item.png';
+        color = AppTheme.peach;
+        break;
+      case 'hammer_constructor':
+        name = 'Extra Constructor';
+        assetPath = 'assets/images/hammer_item.png';
+        color = AppTheme.coinGold;
+        break;
+      default:
+        name = powerup.type;
+        assetPath = 'assets/images/gem.png';
+        color = AppTheme.lavender;
+    }
+
+    final remaining = powerup.remainingTime;
+    final timeStr = _formatDuration(remaining);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Image.asset(assetPath, width: 24, height: 24),
+          const SizedBox(width: 8),
+          Expanded(child: Text(name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.darkText))),
+          Text(timeStr, style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
+        ],
+      ),
+    );
+  }
+
+  Widget _itemTile({
+    required BuildContext ctx,
+    required String assetPath,
+    required String name,
+    required String description,
+    required int quantity,
+    required Color color,
+    required VoidCallback onUse,
+    bool alreadyActive = false,
+  }) {
+    final canUse = quantity > 0 && !alreadyActive;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: canUse ? color.withValues(alpha: 0.08) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: canUse ? color.withValues(alpha: 0.3) : Colors.grey.shade300,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: canUse ? color.withValues(alpha: 0.2) : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Opacity(
+                opacity: canUse ? 1.0 : 0.4,
+                child: Image.asset(assetPath, width: 32, height: 32),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                Text(description, style: TextStyle(fontSize: 11, color: alreadyActive ? AppTheme.mint : AppTheme.darkText.withValues(alpha: 0.5))),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            children: [
+              Text('x$quantity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+              if (canUse)
+                GestureDetector(
+                  onTap: onUse,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('Use', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                )
+              else if (alreadyActive)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.mint.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.mint)),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSelectVillagerForBook() {
+    final village = _villageProvider;
+    if (village.villagers.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(maxHeight: 400),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_stories, size: 24, color: AppTheme.pink),
+                    const SizedBox(width: 8),
+                    Text('Give Book To...',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                    const Spacer(),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: village.villagers.length,
+                    itemBuilder: (_, i) {
+                      final v = village.villagers[i];
+                      final hasBuff = village.villagerHasHappinessBoost(v.id!);
+                      return ListTile(
+                        leading: Image.asset(
+                          'assets/images/${v.spriteFile}',
+                          width: 32, height: 42,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                        title: Text(v.name, style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                        subtitle: Text(
+                          hasBuff ? 'Already boosted!' : 'Happiness: ${v.happiness}%',
+                          style: TextStyle(fontSize: 12, color: hasBuff ? AppTheme.mint : AppTheme.darkText.withValues(alpha: 0.5)),
+                        ),
+                        trailing: hasBuff
+                            ? Icon(Icons.check_circle, color: AppTheme.mint)
+                            : null,
+                        onTap: hasBuff
+                            ? null
+                            : () async {
+                                Navigator.pop(ctx);
+                                final success = await _villageProvider.useBookItem(v.id!);
+                                if (success && mounted) {
+                                  _syncGameState();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('${v.name} is now ecstatic! 100% happiness for 24h!', style: TextStyle(color: AppTheme.darkText)),
+                                      backgroundColor: AppTheme.mint,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   bool _isLandscape(BuildContext context) =>
       MediaQuery.of(context).orientation == Orientation.landscape;
 
@@ -1571,8 +2112,10 @@ class _GameScreenState extends State<GameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                HappinessIndicator(happiness: village.villageHappiness),
-                SizedBox(height: landscape ? 6 : 10),
+                HappinessIndicator(happiness: village.villageHappiness, landscape: landscape),
+                SizedBox(height: landscape ? 4 : 6),
+                _buildConstructorCounter(village, landscape),
+                SizedBox(height: landscape ? 2 : 3),
                 _buildZoomControls(),
                 SizedBox(height: landscape ? 6 : 10),
                 _buildSideMenu(),
@@ -1782,6 +2325,44 @@ class _GameScreenState extends State<GameScreen> {
     _transformController.addListener(_onTransformChanged);
   }
 
+  Widget _buildConstructorCounter(VillageProvider village, bool landscape) {
+    final busy = village.busyConstructors;
+    final max = village.maxConstructors;
+    final iconSize = landscape ? 32.0 : 32.0;
+
+    return Container(
+      width: landscape ? 110 : 120,
+      padding: EdgeInsets.symmetric(horizontal: landscape ? 8 : 10, vertical: landscape ? 7 : 8),
+      decoration: BoxDecoration(
+        color: const Color(0xAA000000),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/images/cat_constructor.png',
+            width: iconSize,
+            height: iconSize,
+            filterQuality: FilterQuality.medium,
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$busy / $max',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: landscape ? 18 : 18,
+                fontWeight: FontWeight.bold,
+                color: busy >= max ? Colors.red.shade300 : Colors.white,
+                shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildZoomControls() {
     return SizedBox.shrink();
     // return Container(
@@ -1851,45 +2432,71 @@ class _GameScreenState extends State<GameScreen> {
         ),
         if (_menuOpen) ...[
           SizedBox(height: 6),
-          _SideMenuButton(
-            icon: Icons.house,
-            isActive: _mode == GameMode.construction,
-            onTap: () {
-              setState(() {
-                if (_mode == GameMode.construction) {
-                  _mode = GameMode.normal;
-                  _selectedBuildingType = null;
-                  _flipNextBuilding = false;
-                } else {
-                  _mode = GameMode.construction;
-                }
-              });
-              _syncGameState();
-            },
-          ),
-          SizedBox(height: 6),
-          _SideMenuButton(
-            icon: Icons.add_road,
-            isActive: _mode == GameMode.road,
-            onTap: () {
-              setState(() {
-                _mode = _mode == GameMode.road ? GameMode.normal : GameMode.road;
-                _selectedBuildingType = null;
-              });
-              _syncGameState();
-            },
-          ),
-          SizedBox(height: 6),
-          _SideMenuButton(
-            icon: Icons.bar_chart,
-            isActive: false,
-            onTap: () => _showStatsModal(),
-          ),
-          SizedBox(height: 6),
-          _SideMenuButton(
-            icon: Icons.settings,
-            isActive: false,
-            onTap: () => _showSettingsModal(),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.55,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _SideMenuButton(
+                    icon: Icons.house,
+                    isActive: _mode == GameMode.construction,
+                    onTap: () {
+                      setState(() {
+                        if (_mode == GameMode.construction) {
+                          _mode = GameMode.normal;
+                          _selectedBuildingType = null;
+                          _flipNextBuilding = false;
+                        } else {
+                          _mode = GameMode.construction;
+                        }
+                      });
+                      _syncGameState();
+                    },
+                  ),
+                  SizedBox(height: 6),
+                  _SideMenuButton(
+                    icon: Icons.add_road,
+                    isActive: _mode == GameMode.road,
+                    onTap: () {
+                      setState(() {
+                        _mode = _mode == GameMode.road ? GameMode.normal : GameMode.road;
+                        _selectedBuildingType = null;
+                      });
+                      _syncGameState();
+                    },
+                  ),
+                  SizedBox(height: 6),
+                  _SideMenuButton(
+                    icon: Icons.sports_esports,
+                    isActive: false,
+                    onTap: () => _showMinigamesModal(),
+                  ),
+                  SizedBox(height: 6),
+                  _SideMenuButton(
+                    icon: Icons.backpack,
+                    isActive: false,
+                    onTap: () => _showBackpackModal(),
+                  ),
+                  SizedBox(height: 6),
+                  _SideMenuButton(
+                    icon: Icons.bar_chart,
+                    isActive: false,
+                    onTap: () => _showStatsModal(),
+                  ),
+                  SizedBox(height: 6),
+                  _SideMenuButton(
+                    icon: Icons.settings,
+                    isActive: false,
+                    onTap: () => _showSettingsModal(),
+                  ),
+                  SizedBox(height: 40),
+                ],
+              ),
+            ),
           ),
         ],
       ],
@@ -2073,22 +2680,26 @@ class _GameScreenState extends State<GameScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: 1),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ResourceIcon.coin(size: 12),
-                            Text(' $coinCost', style: TextStyle(fontSize: 10)),
-                            if (woodCost > 0) ...[
-                              SizedBox(width: 3),
-                              ResourceIcon.wood(size: 12),
-                              Text(' $woodCost', style: TextStyle(fontSize: 10)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ResourceIcon.coin(size: 12),
+                              Text(' $coinCost', style: TextStyle(fontSize: 10)),
+                              if (woodCost > 0) ...[
+                                SizedBox(width: 3),
+                                ResourceIcon.wood(size: 12),
+                                Text(' $woodCost', style: TextStyle(fontSize: 10)),
+                              ],
+                              if (metalCost > 0) ...[
+                                SizedBox(width: 3),
+                                ResourceIcon.metal(size: 12),
+                                Text(' $metalCost', style: TextStyle(fontSize: 10)),
+                              ],
                             ],
-                            if (metalCost > 0) ...[
-                              SizedBox(width: 3),
-                              ResourceIcon.metal(size: 12),
-                              Text(' $metalCost', style: TextStyle(fontSize: 10)),
-                            ],
-                          ],
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
