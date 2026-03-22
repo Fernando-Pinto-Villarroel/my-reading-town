@@ -122,16 +122,21 @@ class VillageGame extends FlameGame {
         building.tileX * GameConstants.tilePixelSize,
         building.tileY * GameConstants.tilePixelSize,
       );
+      final compSize = Vector2(
+        building.tileWidth * GameConstants.tilePixelSize,
+        building.tileHeight * GameConstants.tilePixelSize,
+      );
 
       if (_buildingComponents.containsKey(building.id)) {
         final comp = _buildingComponents[building.id!]!;
         comp.updateBuilding(building);
         comp.position = worldPos;
+        comp.size = compSize;
       } else {
         final comp = BuildingComponent(
           building: building,
           position: worldPos,
-          size: Vector2.all(GameConstants.tilePixelSize),
+          size: compSize,
         );
         _buildingComponents[building.id!] = comp;
         world.add(comp);

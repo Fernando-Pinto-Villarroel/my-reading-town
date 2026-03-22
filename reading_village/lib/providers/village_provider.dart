@@ -135,17 +135,39 @@ class VillageProvider extends ChangeNotifier {
 
   /// Returns true if the building has at least one adjacent road tile.
   bool isBuildingRoadConnected(PlacedBuilding b) {
-    return _roadTiles.contains(tileKey(b.tileX + 1, b.tileY)) ||
-        _roadTiles.contains(tileKey(b.tileX - 1, b.tileY)) ||
-        _roadTiles.contains(tileKey(b.tileX, b.tileY + 1)) ||
-        _roadTiles.contains(tileKey(b.tileX, b.tileY - 1));
+    // Check all border tiles around the building footprint
+    for (int dx = 0; dx < b.tileWidth; dx++) {
+      for (int dy = 0; dy < b.tileHeight; dy++) {
+        final tx = b.tileX + dx;
+        final ty = b.tileY + dy;
+        // Check the 4 directions for each occupied tile, but only if neighbor is outside footprint
+        for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+          final nx = tx + d.$1;
+          final ny = ty + d.$2;
+          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY && ny < b.tileY + b.tileHeight) continue;
+          if (_roadTiles.contains(tileKey(nx, ny))) return true;
+        }
+      }
+    }
+    return false;
   }
 
   /// Returns the road tile key adjacent to a building, or null.
   String? adjacentRoadTile(PlacedBuilding b) {
-    for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
-      final key = tileKey(b.tileX + d.$1, b.tileY + d.$2);
-      if (_roadTiles.contains(key)) return key;
+    for (int dx = 0; dx < b.tileWidth; dx++) {
+      for (int dy = 0; dy < b.tileHeight; dy++) {
+        final tx = b.tileX + dx;
+        final ty = b.tileY + dy;
+        for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+          final nx = tx + d.$1;
+          final ny = ty + d.$2;
+          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY && ny < b.tileY + b.tileHeight) continue;
+          final key = tileKey(nx, ny);
+          if (_roadTiles.contains(key)) return key;
+        }
+      }
     }
     return null;
   }
@@ -171,14 +193,42 @@ class VillageProvider extends ChangeNotifier {
   bool isRoadTile(int x, int y) => _roadTiles.contains(tileKey(x, y));
 
   bool hasBuildingAt(int x, int y) =>
-      _placedBuildings.any((b) => b.tileX == x && b.tileY == y);
+      _placedBuildings.any((b) => b.occupiesTile(x, y));
 
   PlacedBuilding? getBuildingAt(int x, int y) {
     try {
-      return _placedBuildings.firstWhere((b) => b.tileX == x && b.tileY == y);
+      return _placedBuildings.firstWhere((b) => b.occupiesTile(x, y));
     } catch (_) {
       return null;
     }
+  }
+
+  /// Check if placing a building of given dimensions at (x,y) would overlap any existing building.
+  bool canPlaceBuildingAtArea(int x, int y, int width, int height) {
+    for (int dx = 0; dx < width; dx++) {
+      for (int dy = 0; dy < height; dy++) {
+        if (hasBuildingAt(x + dx, y + dy)) return false;
+        if (isRoadTile(x + dx, y + dy)) return false;
+        if (!isTileUnlocked(x + dx, y + dy)) return false;
+      }
+    }
+    return true;
+  }
+
+  /// Try all possible top-left positions where the tapped tile (tapX, tapY) is
+  /// within the building footprint (width x height). Returns the first valid
+  /// top-left corner, or null if none works.
+  ({int x, int y})? findValidPlacement(int tapX, int tapY, int width, int height) {
+    for (int dy = 0; dy < height; dy++) {
+      for (int dx = 0; dx < width; dx++) {
+        final originX = tapX - dx;
+        final originY = tapY - dy;
+        if (canPlaceBuildingAtArea(originX, originY, width, height)) {
+          return (x: originX, y: originY);
+        }
+      }
+    }
+    return null;
   }
 
   bool isChunkAdjacentToUnlocked(int chunkX, int chunkY) {
@@ -336,6 +386,9 @@ class VillageProvider extends ChangeNotifier {
     required int happinessBonus,
     required int constructionMinutes,
     bool isFlipped = false,
+    int tileWidth = 1,
+    int tileHeight = 1,
+    bool isDecoration = false,
   }) async {
     if (_coins < coinCost || _gems < gemCost || _wood < woodCost || _metal < metalCost) return null;
     if (!canStartConstruction) return null;
@@ -353,6 +406,8 @@ class VillageProvider extends ChangeNotifier {
       name: name,
       tileX: tileX,
       tileY: tileY,
+      tileWidth: tileWidth,
+      tileHeight: tileHeight,
       coinCost: coinCost,
       gemCost: gemCost,
       woodCost: woodCost,
@@ -362,6 +417,7 @@ class VillageProvider extends ChangeNotifier {
       constructionDurationMinutes: adjustedMinutes,
       isConstructed: false,
       isFlipped: isFlipped,
+      isDecoration: isDecoration,
     );
 
     final id = await _db.insertPlacedBuilding(building.toMap());
@@ -377,9 +433,11 @@ class VillageProvider extends ChangeNotifier {
     for (int i = 0; i < _placedBuildings.length; i++) {
       final b = _placedBuildings[i];
       if (!b.isConstructed && b.isConstructionComplete) {
+        final template = GameConstants.findTemplate(b.type);
+        final baseExp = template?['exp'] as int? ?? 20;
         final expAmount = b.level > 1
-            ? GameConstants.expPerBuildingUpgraded
-            : GameConstants.expPerBuildingPlaced;
+            ? (baseExp * GameConstants.upgradeExpMultiplier).round()
+            : baseExp;
         b.isConstructed = true;
         await _db.markBuildingConstructed(b.id!);
         await addExp(expAmount);
@@ -400,12 +458,12 @@ class VillageProvider extends ChangeNotifier {
 
     final building = _placedBuildings[idx];
     if (!building.isConstructed) return false;
+    if (building.isDecoration) return false;
     if (building.level >= GameConstants.maxBuildingLevel) return false;
     if (!canStartConstruction) return false;
 
-    final template = GameConstants.buildingTemplates.firstWhere(
-      (t) => t['type'] == building.type,
-    );
+    final template = GameConstants.findTemplate(building.type);
+    if (template == null) return false;
 
     final coinCost = GameConstants.upgradeCoinCost(template['coinCost'] as int, building.level);
     final woodCost = GameConstants.upgradeWoodCost(template['woodCost'] as int, building.level);
@@ -452,9 +510,11 @@ class VillageProvider extends ChangeNotifier {
     await _db.subtractResources(gems: gemCost);
     _gems -= gemCost;
 
+    final template = GameConstants.findTemplate(building.type);
+    final baseExp = template?['exp'] as int? ?? 20;
     final expAmount = building.level > 1
-        ? GameConstants.expPerBuildingUpgraded
-        : GameConstants.expPerBuildingPlaced;
+        ? (baseExp * GameConstants.upgradeExpMultiplier).round()
+        : baseExp;
     building.isConstructed = true;
     building.constructionStart = DateTime.now().subtract(Duration(hours: 24)).toIso8601String();
     await _db.markBuildingConstructed(buildingId);
@@ -483,9 +543,8 @@ class VillageProvider extends ChangeNotifier {
 
     if (isUpgrade) {
       final previousLevel = building.level - 1;
-      final template = GameConstants.buildingTemplates.firstWhere(
-        (t) => t['type'] == building.type,
-      );
+      final template = GameConstants.findTemplate(building.type);
+      if (template == null) return false;
       final refundCoins = GameConstants.upgradeCoinCost(template['coinCost'] as int, previousLevel);
       final refundWood = GameConstants.upgradeWoodCost(template['woodCost'] as int, previousLevel);
       final refundMetal = GameConstants.upgradeMetalCost(template['metalCost'] as int, previousLevel);
@@ -526,12 +585,26 @@ class VillageProvider extends ChangeNotifier {
   Future<bool> moveBuilding(int buildingId, int newTileX, int newTileY) async {
     final idx = _placedBuildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
-    if (hasBuildingAt(newTileX, newTileY)) return false;
-    if (!isTileUnlocked(newTileX, newTileY)) return false;
+    final building = _placedBuildings[idx];
 
-    await _db.movePlacedBuilding(buildingId, newTileX, newTileY);
-    _placedBuildings[idx].tileX = newTileX;
-    _placedBuildings[idx].tileY = newTileY;
+    // Temporarily remove building from collision checks
+    final oldX = building.tileX;
+    final oldY = building.tileY;
+    building.tileX = -999;
+    building.tileY = -999;
+
+    // Try smart placement: find valid top-left corner near tapped tile
+    final placement = findValidPlacement(newTileX, newTileY, building.tileWidth, building.tileHeight);
+
+    if (placement == null) {
+      building.tileX = oldX;
+      building.tileY = oldY;
+      return false;
+    }
+
+    building.tileX = placement.x;
+    building.tileY = placement.y;
+    await _db.movePlacedBuilding(buildingId, placement.x, placement.y);
     notifyListeners();
     return true;
   }

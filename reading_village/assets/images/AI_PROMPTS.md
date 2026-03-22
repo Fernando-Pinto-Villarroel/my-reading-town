@@ -776,3 +776,65 @@ white background
 simple and adorable tool item design
 no shadows anywhere in the design
 ```
+
+---
+
+## Decoration Buildings (192x192px, transparent background)
+
+### water_font.png
+
+```
+cute kawaii water fountain decoration for a village game
+a small ornamental stone water fountain with water gently flowing
+round basin at the bottom catching the water
+soft pastel blue water, light gray/cream stone
+kawaii style, pastel color palette, soft pastel colors
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### lamp_post.png
+
+```
+cute kawaii public lamp post decoration for a village game
+a single ornamental street lamp post with a round glowing lamp on top
+slim elegant post with a small decorative base
+soft warm yellow glow from the lamp, dark gray/iron colored post
+kawaii style, pastel color palette, soft pastel colors
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### villager_statue.png
+
+```
+cute kawaii cat villager statue decoration for a village game
+a stone statue of the cat villager character (same design: chubby round body, short little legs, small paws, simple dot eyes, tiny mouth)
+the cat statue is made of light gray stone and dressed as a colonizer explorer like Cristobal Colon (wearing a wide-brimmed hat and a long coat/cape)
+standing upright on a small stone pedestal
+the statue looks proud and noble in a cute kawaii way
+kawaii style, pastel color palette, soft gray stone colors with subtle cream/beige tones
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```

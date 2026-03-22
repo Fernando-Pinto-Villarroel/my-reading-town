@@ -37,7 +37,7 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late VillageGame _game;
   late VillageProvider _villageProvider;
   late BookProvider _bookProvider;
@@ -50,6 +50,7 @@ class _GameScreenState extends State<GameScreen> {
   bool _resourceHudExpanded = false;
   bool _flipNextBuilding = false;
   late final TransformationController _transformController;
+  late final TabController _buildingTabController;
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _GameScreenState extends State<GameScreen> {
     );
     _transformController = TransformationController();
     _transformController.addListener(_onTransformChanged);
+    _buildingTabController = TabController(length: 3, vsync: this);
   }
 
   void _onTransformChanged() {
@@ -81,6 +83,7 @@ class _GameScreenState extends State<GameScreen> {
     _constructionTimer?.cancel();
     _transformController.removeListener(_onTransformChanged);
     _transformController.dispose();
+    _buildingTabController.dispose();
     super.dispose();
   }
 
@@ -103,7 +106,7 @@ class _GameScreenState extends State<GameScreen> {
     _game.updatePlacedBuildings(village.placedBuildings);
     _game.updateVillagers(village.villagers, missingBuildingTypes: village.missingBuildingTypes, houseRoadTiles: village.houseAdjacentRoadTiles);
     _game.isConstructionMode = _mode == GameMode.construction;
-    _game.isRoadMode = _mode == GameMode.road;
+    _game.isRoadMode = _mode == GameMode.road || (_mode == GameMode.construction && _selectedBuildingType != null && GameConstants.isTileType(_selectedBuildingType!));
     _game.updateGridState();
   }
 
@@ -148,7 +151,8 @@ class _GameScreenState extends State<GameScreen> {
       }
 
       if (_movingBuildingId != null) {
-        if (village.hasBuildingAt(tileX, tileY)) {
+        final existingBuilding = village.getBuildingAt(tileX, tileY);
+        if (existingBuilding != null && existingBuilding.id != _movingBuildingId) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('This tile is already occupied', style: TextStyle(color: AppTheme.darkText)), backgroundColor: AppTheme.peach, behavior: SnackBarBehavior.floating),
           );
@@ -158,20 +162,26 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
+      if (_selectedBuildingType != null && GameConstants.isTileType(_selectedBuildingType!)) {
+        if (!village.isTileUnlocked(tileX, tileY)) return;
+        if (village.hasBuildingAt(tileX, tileY)) return;
+        village.toggleRoad(tileX, tileY);
+        _syncGameState();
+        return;
+      }
+
       if (_selectedBuildingType != null) {
-        if (village.hasBuildingAt(tileX, tileY)) {
+        final tw = GameConstants.buildingTileWidth(_selectedBuildingType!);
+        final th = GameConstants.buildingTileHeight(_selectedBuildingType!);
+        // Try smart placement: find valid top-left corner near tapped tile
+        final placement = village.findValidPlacement(tileX, tileY, tw, th);
+        if (placement == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('This tile is already occupied', style: TextStyle(color: AppTheme.darkText)), backgroundColor: AppTheme.peach, behavior: SnackBarBehavior.floating),
+            SnackBar(content: Text('Cannot place here — tiles are occupied, blocked, or not unlocked', style: TextStyle(color: AppTheme.darkText)), backgroundColor: AppTheme.peach, behavior: SnackBarBehavior.floating),
           );
           return;
         }
-        if (village.isRoadTile(tileX, tileY)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Remove the road first', style: TextStyle(color: AppTheme.darkText)), backgroundColor: AppTheme.peach, behavior: SnackBarBehavior.floating),
-          );
-          return;
-        }
-        _placeBuilding(tileX, tileY);
+        _placeBuilding(placement.x, placement.y);
         return;
       }
 
@@ -201,11 +211,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _placeBuilding(int tileX, int tileY) async {
     final village = _villageProvider;
-    final template = GameConstants.buildingTemplates.firstWhere(
-      (t) => t['type'] == _selectedBuildingType,
-    );
+    final template = GameConstants.findTemplate(_selectedBuildingType!);
+    if (template == null) return;
+    final isDecoration = GameConstants.isDecorationType(_selectedBuildingType!);
 
-    if (!village.canPlaceBuildingType(_selectedBuildingType!)) {
+    if (!isDecoration && !village.canPlaceBuildingType(_selectedBuildingType!)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Building limit reached! Level up to unlock more.', style: TextStyle(color: AppTheme.darkText)),
@@ -244,6 +254,9 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
+    final tw = GameConstants.buildingTileWidth(_selectedBuildingType!);
+    final th = GameConstants.buildingTileHeight(_selectedBuildingType!);
+
     await village.placeBuilding(
       type: _selectedBuildingType!,
       name: template['name'] as String,
@@ -256,6 +269,9 @@ class _GameScreenState extends State<GameScreen> {
       happinessBonus: template['happinessBonus'] as int,
       constructionMinutes: template['constructionMinutes'] as int,
       isFlipped: _flipNextBuilding,
+      tileWidth: tw,
+      tileHeight: th,
+      isDecoration: isDecoration,
     );
 
     setState(() {
@@ -541,9 +557,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _showConstructionCompleteDialog(PlacedBuilding building) {
     final isUpgrade = building.level > 1;
+    final template = GameConstants.findTemplate(building.type);
+    final baseExp = template?['exp'] as int? ?? 20;
     final expEarned = isUpgrade
-        ? GameConstants.expPerBuildingUpgraded
-        : GameConstants.expPerBuildingPlaced;
+        ? (baseExp * GameConstants.upgradeExpMultiplier).round()
+        : baseExp;
 
     showDialog(
       context: context,
@@ -684,11 +702,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _showBuildingInfoSheet(PlacedBuilding building) {
     final village = _villageProvider;
-    final atMaxLevel = building.level >= GameConstants.maxBuildingLevel;
+    final isDecoration = building.isDecoration;
+    final atMaxLevel = isDecoration || building.level >= GameConstants.maxBuildingLevel;
 
-    final template = GameConstants.buildingTemplates.firstWhere(
-      (t) => t['type'] == building.type,
-    );
+    final template = GameConstants.findTemplate(building.type);
+    if (template == null) return;
 
     final coinCost = atMaxLevel ? 0 : GameConstants.upgradeCoinCost(template['coinCost'] as int, building.level);
     final woodCost = atMaxLevel ? 0 : GameConstants.upgradeWoodCost(template['woodCost'] as int, building.level);
@@ -726,21 +744,25 @@ class _GameScreenState extends State<GameScreen> {
                   'assets/images/${GameConstants.spriteForBuilding(building.type, building.level)}',
                   width: 88, height: 88,
                   filterQuality: FilterQuality.medium,
+                  errorBuilder: (_, __, ___) => Icon(Icons.park, size: 88, color: AppTheme.mint),
                 ),
                 SizedBox(height: 8),
                 Text(
                   building.name,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.darkText),
                 ),
-                Text(
-                  'Level ${building.level}',
-                  style: TextStyle(fontSize: 14, color: AppTheme.lavender, fontWeight: FontWeight.bold),
-                ),
+                if (!isDecoration)
+                  Text(
+                    'Level ${building.level}',
+                    style: TextStyle(fontSize: 14, color: AppTheme.lavender, fontWeight: FontWeight.bold),
+                  ),
                 SizedBox(height: 8),
                 Text(
-                  building.type == 'house'
-                      ? 'Houses ${GameConstants.villagersPerHouse(building.level)} villager(s)'
-                      : 'Covers ${GameConstants.buildingCapacity(building.type, building.level)} villager needs',
+                  isDecoration
+                      ? 'Decorative — makes your village look cute!'
+                      : building.type == 'house'
+                          ? 'Houses ${GameConstants.villagersPerHouse(building.level)} villager(s)'
+                          : 'Covers ${GameConstants.buildingCapacity(building.type, building.level)} villager needs',
                   style: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.6)),
                 ),
                 if (building.type == 'house' && building.id != null) ...[
@@ -773,12 +795,34 @@ class _GameScreenState extends State<GameScreen> {
                 SizedBox(height: 16),
                 if (atMaxLevel)
                   Text(
-                    'Max Level Reached!',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.coinGold),
+                    isDecoration ? 'Decoration' : 'Max Level Reached!',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDecoration ? AppTheme.lavender : AppTheme.coinGold),
                   )
                 else ...[
                   Text('Upgrade to Lv${building.level + 1}:',
                       style: TextStyle(fontSize: 14, color: AppTheme.darkText)),
+                  SizedBox(height: 4),
+                  Builder(builder: (_) {
+                    final currentCap = building.type == 'house'
+                        ? GameConstants.villagersPerHouse(building.level)
+                        : GameConstants.buildingCapacity(building.type, building.level);
+                    final nextCap = building.type == 'house'
+                        ? GameConstants.villagersPerHouse(building.level + 1)
+                        : GameConstants.buildingCapacity(building.type, building.level + 1);
+                    final diff = nextCap - currentCap;
+                    final label = building.type == 'house' ? 'villager capacity' : 'villager needs covered';
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.people, size: 14, color: AppTheme.lavender),
+                        SizedBox(width: 4),
+                        Text(
+                          '$currentCap → $nextCap $label (+$diff)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.lavender),
+                        ),
+                      ],
+                    );
+                  }),
                   SizedBox(height: 8),
                   Wrap(
                     spacing: 12,
@@ -799,6 +843,25 @@ class _GameScreenState extends State<GameScreen> {
                         style: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.6)),
                       ),
                     ],
+                  ),
+                  SizedBox(height: 6),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.coinGold.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star, size: 14, color: const Color(0xFFB8860B)),
+                        SizedBox(width: 4),
+                        Text(
+                          '+${((template['exp'] as int? ?? 20) * GameConstants.upgradeExpMultiplier).round()} EXP',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFFB8860B)),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 SizedBox(height: 16),
@@ -845,6 +908,18 @@ class _GameScreenState extends State<GameScreen> {
       return m > 0 ? '${h}h ${m}m' : '${h}h';
     }
     return '${minutes}m';
+  }
+
+  /// Returns a short capacity description for a building type at a given level.
+  /// e.g. "Houses 1 villager" or "Covers 3 villager needs"
+  String _capacityText(String type, int level) {
+    if (GameConstants.isDecorationType(type)) return '';
+    if (type == 'house') {
+      final cap = GameConstants.villagersPerHouse(level);
+      return 'Houses $cap villager${cap > 1 ? 's' : ''}';
+    }
+    final cap = GameConstants.buildingCapacity(type, level);
+    return 'Covers $cap villager needs';
   }
 
   Widget _costChip(Widget icon, int amount) {
@@ -1751,84 +1826,93 @@ class _GameScreenState extends State<GameScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Active powerups
-                if (village.activePowerups.where((p) => p.isActive).isNotEmpty) ...[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Active Powerups',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Active powerups
+                        if (village.activePowerups.where((p) => p.isActive).isNotEmpty) ...[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Active Powerups',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
+                          ),
+                          const SizedBox(height: 6),
+                          ...village.activePowerups.where((p) => p.isActive).map((p) => _activePowerupTile(p)),
+                          const SizedBox(height: 12),
+                        ],
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text('Items',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
+                        ),
+                        const SizedBox(height: 6),
+                        _itemTile(
+                          ctx: ctx,
+                          assetPath: 'assets/images/book_item.png',
+                          name: 'Happiness Book',
+                          description: 'Boost a villager to 100% happiness for 24h',
+                          quantity: village.itemQuantity('book'),
+                          color: AppTheme.pink,
+                          onUse: () {
+                            Navigator.pop(ctx);
+                            _showSelectVillagerForBook();
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _itemTile(
+                          ctx: ctx,
+                          assetPath: 'assets/images/sandwich_item.png',
+                          name: 'Constructor Sandwich',
+                          description: village.isSpeedBoostActive
+                              ? 'Already active!'
+                              : '2x construction speed for 1 hour',
+                          quantity: village.itemQuantity('sandwich'),
+                          color: AppTheme.peach,
+                          alreadyActive: village.isSpeedBoostActive,
+                          onUse: () async {
+                            Navigator.pop(ctx);
+                            final success = await _villageProvider.useSandwichItem();
+                            if (success && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Construction speed doubled for 1 hour!', style: TextStyle(color: AppTheme.darkText)),
+                                  backgroundColor: AppTheme.mint,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _itemTile(
+                          ctx: ctx,
+                          assetPath: 'assets/images/hammer_item.png',
+                          name: 'Constructor Hammer',
+                          description: village.isHammerActive
+                              ? 'Already active!'
+                              : '+1 extra constructor for 24 hours',
+                          quantity: village.itemQuantity('hammer'),
+                          color: AppTheme.coinGold,
+                          alreadyActive: village.isHammerActive,
+                          onUse: () async {
+                            Navigator.pop(ctx);
+                            final success = await _villageProvider.useHammerItem();
+                            if (success && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Extra constructor slot for 24 hours!', style: TextStyle(color: AppTheme.darkText)),
+                                  backgroundColor: AppTheme.mint,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  ...village.activePowerups.where((p) => p.isActive).map((p) => _activePowerupTile(p)),
-                  const SizedBox(height: 12),
-                ],
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Items',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.lavender)),
-                ),
-                const SizedBox(height: 6),
-                _itemTile(
-                  ctx: ctx,
-                  assetPath: 'assets/images/book_item.png',
-                  name: 'Happiness Book',
-                  description: 'Boost a villager to 100% happiness for 24h',
-                  quantity: village.itemQuantity('book'),
-                  color: AppTheme.pink,
-                  onUse: () {
-                    Navigator.pop(ctx);
-                    _showSelectVillagerForBook();
-                  },
-                ),
-                const SizedBox(height: 8),
-                _itemTile(
-                  ctx: ctx,
-                  assetPath: 'assets/images/sandwich_item.png',
-                  name: 'Constructor Sandwich',
-                  description: village.isSpeedBoostActive
-                      ? 'Already active!'
-                      : '2x construction speed for 1 hour',
-                  quantity: village.itemQuantity('sandwich'),
-                  color: AppTheme.peach,
-                  alreadyActive: village.isSpeedBoostActive,
-                  onUse: () async {
-                    Navigator.pop(ctx);
-                    final success = await _villageProvider.useSandwichItem();
-                    if (success && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Construction speed doubled for 1 hour!', style: TextStyle(color: AppTheme.darkText)),
-                          backgroundColor: AppTheme.mint,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 8),
-                _itemTile(
-                  ctx: ctx,
-                  assetPath: 'assets/images/hammer_item.png',
-                  name: 'Constructor Hammer',
-                  description: village.isHammerActive
-                      ? 'Already active!'
-                      : '+1 extra constructor for 24 hours',
-                  quantity: village.itemQuantity('hammer'),
-                  color: AppTheme.coinGold,
-                  alreadyActive: village.isHammerActive,
-                  onUse: () async {
-                    Navigator.pop(ctx);
-                    final success = await _villageProvider.useHammerItem();
-                    if (success && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Extra constructor slot for 24 hours!', style: TextStyle(color: AppTheme.darkText)),
-                          backgroundColor: AppTheme.mint,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
                 ),
               ],
             ),
@@ -2459,18 +2543,6 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   SizedBox(height: 6),
                   _SideMenuButton(
-                    icon: Icons.add_road,
-                    isActive: _mode == GameMode.road,
-                    onTap: () {
-                      setState(() {
-                        _mode = _mode == GameMode.road ? GameMode.normal : GameMode.road;
-                        _selectedBuildingType = null;
-                      });
-                      _syncGameState();
-                    },
-                  ),
-                  SizedBox(height: 6),
-                  _SideMenuButton(
                     icon: Icons.sports_esports,
                     isActive: false,
                     onTap: () => _showMinigamesModal(),
@@ -2503,9 +2575,30 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  static const ColorFilter _grayscaleFilter = ColorFilter.matrix(<double>[
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0,      0,      0,      1, 0,
+  ]);
+
+  Widget _buildAssetPreview(String type, double size, bool enabled) {
+    final image = Image.asset(
+      'assets/images/$type.png',
+      width: size, height: size,
+      filterQuality: FilterQuality.medium,
+      errorBuilder: (_, __, ___) => Icon(Icons.park, size: size, color: AppTheme.mint),
+    );
+    if (enabled) return image;
+    return ColorFiltered(
+      colorFilter: _grayscaleFilter,
+      child: Opacity(opacity: 0.7, child: image),
+    );
+  }
+
   Widget _buildBuildingSelector(VillageProvider village, bool landscape) {
     return Container(
-      height: landscape ? 88 : 195,
+      height: landscape ? 150 : 310,
       margin: EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: AppTheme.cream.withValues(alpha: 0.95),
@@ -2521,19 +2614,39 @@ class _GameScreenState extends State<GameScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!landscape)
+          // Tab bar row
+          Padding(
+            padding: EdgeInsets.fromLTRB(8, 4, 8, 0),
+            child: TabBar(
+              controller: _buildingTabController,
+              labelColor: AppTheme.darkText,
+              unselectedLabelColor: AppTheme.darkText.withValues(alpha: 0.5),
+              indicatorColor: AppTheme.pink,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: TextStyle(fontSize: landscape ? 11 : 13, fontWeight: FontWeight.bold),
+              unselectedLabelStyle: TextStyle(fontSize: landscape ? 11 : 13),
+              tabs: [
+                Tab(text: 'Buildings', height: landscape ? 26 : 30),
+                Tab(text: 'Decorations', height: landscape ? 26 : 30),
+                Tab(text: 'Tiles', height: landscape ? 26 : 30),
+              ],
+            ),
+          ),
+          // Action hints row (flip / tap to move)
+          if (_selectedBuildingType != null || _movingBuildingId == null)
             Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: landscape ? 2 : 4),
               child: Row(
                 children: [
-                  Text('Select Building:',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
-                  Spacer(),
-                  if (_selectedBuildingType != null) ...[
+                  if (_selectedBuildingType != null && GameConstants.isTileType(_selectedBuildingType!)) ...[
+                    Icon(Icons.touch_app, size: 14, color: AppTheme.darkText.withValues(alpha: 0.5)),
+                    SizedBox(width: 4),
+                    Text('Tap tiles to place or remove', style: TextStyle(fontSize: 11, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                  ] else if (_selectedBuildingType != null) ...[
                     GestureDetector(
                       onTap: () => setState(() => _flipNextBuilding = !_flipNextBuilding),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: _flipNextBuilding ? AppTheme.mint : AppTheme.darkText.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
@@ -2541,187 +2654,309 @@ class _GameScreenState extends State<GameScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.flip, size: 16, color: _flipNextBuilding ? Colors.white : AppTheme.darkText),
-                            SizedBox(width: 4),
-                            Text('Flip', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _flipNextBuilding ? Colors.white : AppTheme.darkText)),
+                            Icon(Icons.flip, size: 14, color: _flipNextBuilding ? Colors.white : AppTheme.darkText),
+                            SizedBox(width: 3),
+                            Text('Flip', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _flipNextBuilding ? Colors.white : AppTheme.darkText)),
                           ],
                         ),
                       ),
                     ),
                     SizedBox(width: 8),
-                    Text('Tap a tile to place',
-                        style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                    Text('Tap a tile to place', style: TextStyle(fontSize: 11, color: AppTheme.darkText.withValues(alpha: 0.6))),
                   ] else if (_movingBuildingId == null)
-                    Text('Tap building to move',
-                        style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
+                    Text('Tap a building on the map to move it', style: TextStyle(fontSize: 11, color: AppTheme.darkText.withValues(alpha: 0.6))),
                 ],
               ),
             ),
           Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              itemCount: GameConstants.buildingTemplates.length,
-              itemBuilder: (ctx, index) {
-                final template = GameConstants.buildingTemplates[index];
-                final type = template['type'] as String;
-                final isSelected = _selectedBuildingType == type;
-                final coinCost = template['coinCost'] as int;
-                final woodCost = template['woodCost'] as int;
-                final metalCost = template['metalCost'] as int;
-                final buildMinutes = template['constructionMinutes'] as int;
-                final canAfford = village.coins >= coinCost &&
-                    village.wood >= woodCost && village.metal >= metalCost;
-                final canPlace = village.canPlaceBuildingType(type);
-
-                if (landscape) {
-                  return GestureDetector(
-                    onTap: canPlace ? () => setState(() { _selectedBuildingType = type; _movingBuildingId = null; }) : null,
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected ? AppTheme.mint : Colors.grey.shade300,
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/images/$type.png',
-                            width: 32, height: 32,
-                            filterQuality: FilterQuality.medium,
-                            color: (canAfford && canPlace) ? null : Colors.grey,
-                            colorBlendMode: (canAfford && canPlace) ? null : BlendMode.saturation,
-                          ),
-                          SizedBox(width: 6),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                template['name'] as String,
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkText),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ResourceIcon.coin(size: 10),
-                                  Text(' $coinCost', style: TextStyle(fontSize: 9)),
-                                  if (woodCost > 0) ...[
-                                    SizedBox(width: 2),
-                                    ResourceIcon.wood(size: 10),
-                                    Text(' $woodCost', style: TextStyle(fontSize: 9)),
-                                  ],
-                                  if (metalCost > 0) ...[
-                                    SizedBox(width: 2),
-                                    ResourceIcon.metal(size: 10),
-                                    Text(' $metalCost', style: TextStyle(fontSize: 9)),
-                                  ],
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.timer_outlined, size: 10, color: AppTheme.peach),
-                                  SizedBox(width: 2),
-                                  Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    '${village.buildingCountOfType(type)}/${GameConstants.maxBuildingsOfTypeForPlayerLevel(type, village.playerLevel)}',
-                                    style: TextStyle(fontSize: 9, color: canPlace ? AppTheme.darkText.withValues(alpha: 0.5) : Colors.red.shade300),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return GestureDetector(
-                  onTap: canPlace ? () => setState(() { _selectedBuildingType = type; _movingBuildingId = null; }) : null,
-                  child: Container(
-                    width: 110,
-                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                    padding: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? AppTheme.mint : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/$type.png',
-                          width: 44, height: 44,
-                          filterQuality: FilterQuality.medium,
-                          color: (canAfford && canPlace) ? null : Colors.grey,
-                          colorBlendMode: (canAfford && canPlace) ? null : BlendMode.saturation,
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          template['name'] as String,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkText),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 1),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ResourceIcon.coin(size: 12),
-                              Text(' $coinCost', style: TextStyle(fontSize: 10)),
-                              if (woodCost > 0) ...[
-                                SizedBox(width: 3),
-                                ResourceIcon.wood(size: 12),
-                                Text(' $woodCost', style: TextStyle(fontSize: 10)),
-                              ],
-                              if (metalCost > 0) ...[
-                                SizedBox(width: 3),
-                                ResourceIcon.metal(size: 12),
-                                Text(' $metalCost', style: TextStyle(fontSize: 10)),
-                              ],
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.timer_outlined, size: 13, color: AppTheme.peach),
-                            SizedBox(width: 3),
-                            Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
-                          ],
-                        ),
-                        Text(
-                          '${village.buildingCountOfType(type)}/${GameConstants.maxBuildingsOfTypeForPlayerLevel(type, village.playerLevel)}',
-                          style: TextStyle(fontSize: 9, color: canPlace ? AppTheme.darkText.withValues(alpha: 0.5) : Colors.red.shade300),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+            child: TabBarView(
+              controller: _buildingTabController,
+              children: [
+                _buildTemplateList(village, landscape, GameConstants.buildingTemplates, false),
+                _buildTemplateList(village, landscape, GameConstants.decorationTemplates, true),
+                _buildTileList(village, landscape),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTemplateList(VillageProvider village, bool landscape, List<Map<String, dynamic>> templates, bool isDecorationTab) {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      itemCount: templates.length,
+      itemBuilder: (ctx, index) {
+        final template = templates[index];
+        final type = template['type'] as String;
+        final isSelected = _selectedBuildingType == type;
+        final coinCost = template['coinCost'] as int;
+        final gemCost = template['gemCost'] as int;
+        final woodCost = template['woodCost'] as int;
+        final metalCost = template['metalCost'] as int;
+        final buildMinutes = template['constructionMinutes'] as int;
+        final canAfford = village.coins >= coinCost &&
+            village.gems >= gemCost &&
+            village.wood >= woodCost && village.metal >= metalCost;
+        final canPlace = isDecorationTab ? true : village.canPlaceBuildingType(type);
+
+        if (landscape) {
+          return GestureDetector(
+            onTap: canPlace ? () => setState(() { _selectedBuildingType = _selectedBuildingType == type ? null : type; _movingBuildingId = null; }) : null,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? AppTheme.mint : Colors.grey.shade300,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildAssetPreview(type, 64, canAfford && canPlace),
+                  SizedBox(width: 6),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        template['name'] as String,
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkText),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ResourceIcon.coin(size: 10),
+                          Text(' $coinCost', style: TextStyle(fontSize: 9)),
+                          if (woodCost > 0) ...[
+                            SizedBox(width: 2),
+                            ResourceIcon.wood(size: 10),
+                            Text(' $woodCost', style: TextStyle(fontSize: 9)),
+                          ],
+                          if (metalCost > 0) ...[
+                            SizedBox(width: 2),
+                            ResourceIcon.metal(size: 10),
+                            Text(' $metalCost', style: TextStyle(fontSize: 9)),
+                          ],
+                          if (gemCost > 0) ...[
+                            SizedBox(width: 2),
+                            ResourceIcon.gem(size: 10),
+                            Text(' $gemCost', style: TextStyle(fontSize: 9)),
+                          ],
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timer_outlined, size: 10, color: AppTheme.peach),
+                          SizedBox(width: 2),
+                          Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
+                          SizedBox(width: 6),
+                          Icon(Icons.star, size: 10, color: const Color(0xFFB8860B)),
+                          SizedBox(width: 2),
+                          Text('+${template['exp'] as int? ?? 20} EXP', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: const Color(0xFFB8860B))),
+                        ],
+                      ),
+                      if (!isDecorationTab) Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.people, size: 10, color: AppTheme.lavender),
+                          SizedBox(width: 2),
+                          Text(_capacityText(type, 1), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return GestureDetector(
+          onTap: canPlace ? () => setState(() { _selectedBuildingType = _selectedBuildingType == type ? null : type; _movingBuildingId = null; }) : null,
+          child: Container(
+            width: 140,
+            margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? AppTheme.mint : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildAssetPreview(type, 80, canAfford && canPlace),
+                SizedBox(height: 2),
+                Text(
+                  template['name'] as String,
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkText),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 1),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ResourceIcon.coin(size: 12),
+                      Text(' $coinCost', style: TextStyle(fontSize: 10)),
+                      if (woodCost > 0) ...[
+                        SizedBox(width: 3),
+                        ResourceIcon.wood(size: 12),
+                        Text(' $woodCost', style: TextStyle(fontSize: 10)),
+                      ],
+                      if (metalCost > 0) ...[
+                        SizedBox(width: 3),
+                        ResourceIcon.metal(size: 12),
+                        Text(' $metalCost', style: TextStyle(fontSize: 10)),
+                      ],
+                      if (gemCost > 0) ...[
+                        SizedBox(width: 3),
+                        ResourceIcon.gem(size: 12),
+                        Text(' $gemCost', style: TextStyle(fontSize: 10)),
+                      ],
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.timer_outlined, size: 13, color: AppTheme.peach),
+                    SizedBox(width: 3),
+                    Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.star, size: 12, color: const Color(0xFFB8860B)),
+                    SizedBox(width: 2),
+                    Text('+${template['exp'] as int? ?? 20} EXP', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFFB8860B))),
+                  ],
+                ),
+                if (!isDecorationTab) Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people, size: 12, color: AppTheme.lavender),
+                    SizedBox(width: 2),
+                    Text(_capacityText(type, 1), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static const Color _roadTileColor = Color(0xFFE0D8C8);
+  static const Color _roadDetailColor = Color(0xFFD0C8B8);
+
+  Widget _buildTilePreview(String type, double size) {
+    if (type == 'road') {
+      return Container(
+        width: size, height: size,
+        decoration: BoxDecoration(
+          color: _roadTileColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+      );
+    }
+    return Container(width: size, height: size, color: Colors.grey.shade300);
+  }
+
+  Widget _buildTileList(VillageProvider village, bool landscape) {
+    final templates = GameConstants.tileTemplates;
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      itemCount: templates.length,
+      itemBuilder: (ctx, index) {
+        final template = templates[index];
+        final type = template['type'] as String;
+        final isSelected = _selectedBuildingType == type;
+
+        if (landscape) {
+          return GestureDetector(
+            onTap: () => setState(() { _selectedBuildingType = _selectedBuildingType == type ? null : type; _movingBuildingId = null; }),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? AppTheme.mint : Colors.grey.shade300,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTilePreview(type, 48),
+                  SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(template['name'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                      Text('Free', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.darkMint)),
+                      Text('No build time', style: TextStyle(fontSize: 9, color: AppTheme.darkText.withValues(alpha: 0.5))),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return GestureDetector(
+          onTap: () => setState(() { _selectedBuildingType = _selectedBuildingType == type ? null : type; _movingBuildingId = null; }),
+          child: Container(
+            width: 140,
+            margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isSelected ? AppTheme.mint.withValues(alpha: 0.3) : AppTheme.softWhite,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? AppTheme.mint : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTilePreview(type, 80),
+                SizedBox(height: 4),
+                Text(template['name'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                SizedBox(height: 2),
+                Text('Free', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkMint)),
+                Text('No build time', style: TextStyle(fontSize: 10, color: AppTheme.darkText.withValues(alpha: 0.5))),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

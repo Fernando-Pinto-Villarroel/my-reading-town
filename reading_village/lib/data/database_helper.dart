@@ -99,6 +99,8 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         tile_x INTEGER NOT NULL,
         tile_y INTEGER NOT NULL,
+        tile_width INTEGER NOT NULL DEFAULT 1,
+        tile_height INTEGER NOT NULL DEFAULT 1,
         level INTEGER NOT NULL DEFAULT 1,
         coin_cost INTEGER NOT NULL,
         gem_cost INTEGER NOT NULL DEFAULT 0,
@@ -108,7 +110,8 @@ class DatabaseHelper {
         construction_start TEXT,
         construction_duration_minutes INTEGER NOT NULL DEFAULT 60,
         is_constructed INTEGER NOT NULL DEFAULT 0,
-        is_flipped INTEGER NOT NULL DEFAULT 0
+        is_flipped INTEGER NOT NULL DEFAULT 0,
+        is_decoration INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -214,7 +217,9 @@ class DatabaseHelper {
       'type': 'house',
       'name': 'Home',
       'tile_x': centerTile + 1,
-      'tile_y': centerTile - 1,
+      'tile_y': centerTile - 2,
+      'tile_width': GameConstants.buildingTileWidth('house'),
+      'tile_height': GameConstants.buildingTileHeight('house'),
       'level': 1,
       'coin_cost': 0,
       'gem_cost': 0,
