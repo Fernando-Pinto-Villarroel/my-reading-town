@@ -27,6 +27,8 @@ import '../providers/tag_provider.dart';
 import '../data/villager_favorites.dart';
 import 'guess_author_screen.dart';
 import 'match_character_role_screen.dart';
+import '../widgets/missions_modal.dart';
+import '../widgets/level_up_popup.dart';
 
 enum GameMode { normal, construction, road }
 
@@ -39,7 +41,8 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late VillageGame _game;
-  late VillageProvider _villageProvider;
+  VillageProvider? _villageProviderRef;
+  VillageProvider get _villageProvider => _villageProviderRef!;
   late BookProvider _bookProvider;
   GameMode _mode = GameMode.normal;
   String? _selectedBuildingType;
@@ -65,6 +68,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       onTileTapped: _handleTileTap,
       onConstructionComplete: _onConstructionComplete,
       onVillagerTapped: _onVillagerTapped,
+      onExpansionSignTapped: _onExpansionSignTapped,
     );
     _transformController = TransformationController();
     _transformController.addListener(_onTransformChanged);
@@ -80,6 +84,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _villageProviderRef?.removeListener(_onVillageProviderChanged);
     _constructionTimer?.cancel();
     _transformController.removeListener(_onTransformChanged);
     _transformController.dispose();
@@ -90,13 +95,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _villageProvider = context.read<VillageProvider>();
+    final newProvider = context.read<VillageProvider>();
+    if (newProvider != _villageProviderRef) {
+      _villageProviderRef?.removeListener(_onVillageProviderChanged);
+      _villageProviderRef = newProvider;
+      _villageProvider.addListener(_onVillageProviderChanged);
+    }
     _bookProvider = context.read<BookProvider>();
     _constructionTimer ??= Timer.periodic(
       const Duration(seconds: 1),
       (_) => _checkConstructions(),
     );
     _syncGameState();
+    // Initial mission check
+    _villageProvider.checkMissions();
+  }
+
+  void _onVillageProviderChanged() {
+    _checkLevelUp();
   }
 
   void _syncGameState() {
@@ -122,7 +138,27 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
     if (completed.isNotEmpty && mounted) {
       _syncGameState();
+      await village.checkMissions();
     }
+  }
+
+  void _checkLevelUp() {
+    final newLevel = _villageProvider.consumeLevelUp();
+    if (newLevel != null && mounted) {
+      _showLevelUpPopup(newLevel);
+    }
+  }
+
+  void _showLevelUpPopup(int newLevel) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      barrierDismissible: true,
+      builder: (ctx) => LevelUpPopup(
+        newLevel: newLevel,
+        onDismiss: () => Navigator.pop(ctx),
+      ),
+    );
   }
 
   void _onConstructionComplete(PlacedBuilding building) {
@@ -816,10 +852,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       children: [
                         Icon(Icons.people, size: 14, color: AppTheme.lavender),
                         SizedBox(width: 4),
-                        Text(
-                          '$currentCap → $nextCap $label (+$diff)',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.lavender),
+                        Text('$currentCap', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(Icons.arrow_forward, size: 14, color: AppTheme.lavender),
                         ),
+                        Text('$nextCap $label (+$diff)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
                       ],
                     );
                   }),
@@ -919,7 +957,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       return 'Houses $cap villager${cap > 1 ? 's' : ''}';
     }
     final cap = GameConstants.buildingCapacity(type, level);
-    return 'Covers $cap villager needs';
+    return 'Covers $cap villagers';
   }
 
   Widget _costChip(Widget icon, int amount) {
@@ -933,6 +971,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _onExpansionSignTapped(int chunkX, int chunkY) {
+    _showExpansionDialog(chunkX, chunkY);
+  }
+
   void _showExpansionDialog(int chunkX, int chunkY) {
     final village = _villageProvider;
     final gemCost = GameConstants.expansionGemCost(village.expansionCount);
@@ -940,79 +982,230 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final canAffordGems = village.gems >= gemCost;
     final canAffordCoins = village.coins >= coinCost;
 
+    // Highlight the 5×5 chunk on the map
+    _game.setHighlightedChunk(chunkX, chunkY);
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Expand Territory'),
-        content: Column(
+      barrierColor: Colors.black26,
+      builder: (ctx) {
+        final isLandscape = MediaQuery.of(ctx).size.width > MediaQuery.of(ctx).size.height;
+        final dialogMaxWidth = isLandscape ? 380.0 : 320.0;
+
+        final gridPreview = Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.softWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.pink.withAlpha(100), width: 2),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: isLandscape ? 70 : 100,
+                height: isLandscape ? 70 : 100,
+                child: GridView.count(
+                  crossAxisCount: 5,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(25, (i) {
+                    final isCenter = i == 12;
+                    return Container(
+                      margin: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        color: isCenter
+                            ? AppTheme.pink.withAlpha(180)
+                            : AppTheme.mint.withAlpha(120),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: isCenter
+                          ? Icon(Icons.signpost, size: isLandscape ? 7 : 10, color: AppTheme.softWhite)
+                          : null,
+                    );
+                  }),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '5 × 5 tiles',
+                style: TextStyle(
+                  fontSize: isLandscape ? 10 : 12,
+                  color: AppTheme.darkText.withAlpha(160),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        final payButtons = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.zoom_out_map, size: 48, color: AppTheme.lavender),
-            SizedBox(height: 12),
-            Text('Unlock this 5x5 area:'),
-            SizedBox(height: 16),
+            Text(
+              'Unlock this area with:',
+              style: TextStyle(
+                fontSize: isLandscape ? 12 : 14,
+                color: AppTheme.darkText,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: isLandscape ? 8 : 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: canAffordCoins
-                        ? () async {
-                            Navigator.pop(ctx);
-                            final success = await village.expandTerritoryWithCoins(chunkX, chunkY);
-                            if (success) _syncGameState();
-                          }
-                        : null,
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Column(
-                      children: [
-                        ResourceIcon.coin(size: 28),
-                        SizedBox(height: 4),
-                        Text('$coinCost', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
+                  child: _expansionPayButton(
+                    icon: ResourceIcon.coin(size: isLandscape ? 22 : 28),
+                    amount: coinCost,
+                    canAfford: canAffordCoins,
+                    color: AppTheme.coinGold,
+                    isCompact: isLandscape,
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      _game.setHighlightedChunk(null, null);
+                      final success = await village.expandTerritoryWithCoins(chunkX, chunkY);
+                      if (success) _syncGameState();
+                    },
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('OR', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    'OR',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkText.withAlpha(140),
+                      fontSize: isLandscape ? 11 : 13,
+                    ),
+                  ),
                 ),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: canAffordGems
-                        ? () async {
-                            Navigator.pop(ctx);
-                            final success = await village.expandTerritoryWithGems(chunkX, chunkY);
-                            if (success) _syncGameState();
-                          }
-                        : null,
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Column(
-                      children: [
-                        ResourceIcon.gem(size: 28),
-                        SizedBox(height: 4),
-                        Text('$gemCost', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
+                  child: _expansionPayButton(
+                    icon: ResourceIcon.gem(size: isLandscape ? 22 : 28),
+                    amount: gemCost,
+                    canAfford: canAffordGems,
+                    color: AppTheme.gemPurple,
+                    isCompact: isLandscape,
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      _game.setHighlightedChunk(null, null);
+                      final success = await village.expandTerritoryWithGems(chunkX, chunkY);
+                      if (success) _syncGameState();
+                    },
                   ),
                 ),
               ],
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel'),
+        );
+
+        return AlertDialog(
+          backgroundColor: AppTheme.cream,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          contentPadding: EdgeInsets.fromLTRB(isLandscape ? 16 : 20, isLandscape ? 10 : 16, isLandscape ? 16 : 20, 8),
+          titlePadding: EdgeInsets.fromLTRB(isLandscape ? 16 : 20, isLandscape ? 14 : 20, isLandscape ? 16 : 20, 0),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.auto_awesome, size: isLandscape ? 18 : 22, color: AppTheme.pink),
+              const SizedBox(width: 8),
+              Text(
+                'Expand Territory',
+                style: TextStyle(
+                  fontSize: isLandscape ? 15 : 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkText,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.auto_awesome, size: isLandscape ? 18 : 22, color: AppTheme.pink),
+            ],
           ),
-        ],
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: isLandscape ? 420.0 : 320.0),
+            child: isLandscape
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      gridPreview,
+                      const SizedBox(width: 16),
+                      Flexible(child: payButtons),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      gridPreview,
+                      const SizedBox(height: 14),
+                      payButtons,
+                    ],
+                  ),
+          ),
+          actions: [
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _game.setHighlightedChunk(null, null);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.darkText.withAlpha(160),
+                ),
+                child: const Text('Cancel'),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      // Clear highlight if dialog dismissed by tapping outside
+      _game.setHighlightedChunk(null, null);
+    });
+  }
+
+  Widget _expansionPayButton({
+    required Widget icon,
+    required int amount,
+    required bool canAfford,
+    required Color color,
+    required VoidCallback onPressed,
+    bool isCompact = false,
+  }) {
+    return AnimatedOpacity(
+      opacity: canAfford ? 1.0 : 0.5,
+      duration: const Duration(milliseconds: 200),
+      child: Material(
+        color: canAfford ? color.withAlpha(30) : Colors.grey.withAlpha(20),
+        borderRadius: BorderRadius.circular(isCompact ? 12 : 16),
+        child: InkWell(
+          onTap: canAfford ? onPressed : null,
+          borderRadius: BorderRadius.circular(isCompact ? 12 : 16),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 12, horizontal: isCompact ? 6 : 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(isCompact ? 12 : 16),
+              border: Border.all(
+                color: canAfford ? color.withAlpha(120) : Colors.grey.withAlpha(60),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                icon,
+                SizedBox(height: isCompact ? 4 : 6),
+                Text(
+                  '$amount',
+                  style: TextStyle(
+                    fontSize: isCompact ? 13 : 16,
+                    fontWeight: FontWeight.bold,
+                    color: canAfford ? AppTheme.darkText : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1418,6 +1611,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 if (expEarned > 0) {
                   await _villageProvider.addExp(expEarned);
                 }
+                // Check missions with updated book stats
+                final db = DatabaseHelper();
+                final totalPages = await db.getTotalPagesRead();
+                final completedBooksCount = await db.getCompletedBooksCount();
+                await _villageProvider.checkMissions(
+                    totalPagesRead: totalPages, completedBooks: completedBooksCount);
               }
 
               if (mounted) {
@@ -1465,6 +1664,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         final progress = GameConstants.expProgressToNextLevel(village.exp);
         final expToNext = GameConstants.expToNextLevel(village.exp);
         return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: _isLandscape(ctx) ? 24 : 6, vertical: _isLandscape(ctx) ? 16 : 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Container(
             padding: EdgeInsets.all(20),
@@ -1565,6 +1765,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         final village = _villageProvider;
         final bookProvider = _bookProvider;
         return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: _isLandscape(ctx) ? 60 : 36, vertical: _isLandscape(ctx) ? 16 : 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Container(
             padding: EdgeInsets.all(20),
@@ -1635,6 +1836,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       context: context,
       builder: (ctx) {
         return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: _isLandscape(ctx) ? 24 : 6, vertical: _isLandscape(ctx) ? 16 : 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Container(
             padding: const EdgeInsets.all(20),
@@ -1804,6 +2006,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       builder: (ctx) {
         final village = _villageProvider;
         return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: _isLandscape(ctx) ? 24 : 6, vertical: _isLandscape(ctx) ? 16 : 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Container(
             padding: const EdgeInsets.all(20),
@@ -2548,6 +2751,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     onTap: () => _showMinigamesModal(),
                   ),
                   SizedBox(height: 6),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _SideMenuButton(
+                        icon: Icons.flag,
+                        isActive: false,
+                        onTap: () => showMissionsModal(context),
+                      ),
+                      if (context.watch<VillageProvider>().unclaimedCompletedMissionCount > 0)
+                        Positioned(
+                          top: -2,
+                          right: -2,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
                   _SideMenuButton(
                     icon: Icons.backpack,
                     isActive: false,
@@ -2701,6 +2929,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             village.gems >= gemCost &&
             village.wood >= woodCost && village.metal >= metalCost;
         final canPlace = isDecorationTab ? true : village.canPlaceBuildingType(type);
+        final currentCount = village.buildingCountOfType(type);
+        final maxCount = GameConstants.maxBuildingsOfTypeForPlayerLevel(type, village.playerLevel);
 
         if (landscape) {
           return GestureDetector(
@@ -2755,7 +2985,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.timer_outlined, size: 10, color: AppTheme.peach),
+                          Icon(Icons.timer_outlined, size: 10, color: AppTheme.darkOrange),
                           SizedBox(width: 2),
                           Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
                           SizedBox(width: 6),
@@ -2764,12 +2994,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           Text('+${template['exp'] as int? ?? 20} EXP', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: const Color(0xFFB8860B))),
                         ],
                       ),
+                      if (!isDecorationTab) Center(
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 2,
+                          children: [
+                            Icon(Icons.people, size: 10, color: AppTheme.lavender),
+                            Text(_capacityText(type, 1), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.lavender), textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
                       if (!isDecorationTab) Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.people, size: 10, color: AppTheme.lavender),
+                          Icon(Icons.home_work, size: 10, color: canPlace ? AppTheme.darkMint : Colors.red.shade300),
                           SizedBox(width: 2),
-                          Text(_capacityText(type, 1), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
+                          Text(
+                            '$currentCount / $maxCount',
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: canPlace ? AppTheme.darkMint : Colors.red.shade300),
+                          ),
                         ],
                       ),
                     ],
@@ -2837,7 +3081,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.timer_outlined, size: 13, color: AppTheme.peach),
+                    Icon(Icons.timer_outlined, size: 13, color: AppTheme.darkOrange),
                     SizedBox(width: 3),
                     Text(_formatMinutes(buildMinutes), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText.withValues(alpha: 0.7))),
                   ],
@@ -2850,12 +3094,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     Text('+${template['exp'] as int? ?? 20} EXP', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFFB8860B))),
                   ],
                 ),
+                if (!isDecorationTab) Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 2,
+                    children: [
+                      Icon(Icons.people, size: 12, color: AppTheme.lavender),
+                      Text(_capacityText(type, 1), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.lavender), textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
                 if (!isDecorationTab) Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.people, size: 12, color: AppTheme.lavender),
-                    SizedBox(width: 2),
-                    Text(_capacityText(type, 1), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.lavender)),
+                    Icon(Icons.home_work, size: 12, color: canPlace ? AppTheme.darkMint : Colors.red.shade300),
+                    SizedBox(width: 3),
+                    Text(
+                      '$currentCount / $maxCount',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: canPlace ? AppTheme.darkMint : Colors.red.shade300),
+                    ),
                   ],
                 ),
               ],

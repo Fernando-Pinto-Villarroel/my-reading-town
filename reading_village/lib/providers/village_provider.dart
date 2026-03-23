@@ -4,6 +4,7 @@ import '../data/database_helper.dart';
 import '../models/placed_building.dart';
 import '../models/villager.dart';
 import '../models/inventory_item.dart';
+import '../models/mission.dart';
 import '../config/game_constants.dart';
 
 class VillageProvider extends ChangeNotifier {
@@ -29,6 +30,13 @@ class VillageProvider extends ChangeNotifier {
   List<ActivePowerup> _activePowerups = [];
   List<MinigameCooldown> _minigameCooldowns = [];
 
+  // Missions
+  Map<String, MissionProgress> _missionProgress = {};
+  bool _bookItemUsedSinceActive = false; // Tracks if book was used while villager mission active
+
+  /// Set when a level-up occurs; UI should read and clear via consumeLevelUp().
+  int? _pendingLevelUp;
+
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
   int get coins => _coins;
@@ -41,12 +49,20 @@ class VillageProvider extends ChangeNotifier {
   int get villageLevel => _villageLevel;
   int get exp => _exp;
   int get playerLevel => _playerLevel;
+  int? get pendingLevelUp => _pendingLevelUp;
+  /// Returns and clears the pending level-up. Call from the UI after showing the popup.
+  int? consumeLevelUp() {
+    final level = _pendingLevelUp;
+    _pendingLevelUp = null;
+    return level;
+  }
   String get username => _username;
   String get townName => _townName;
 
   List<InventoryItem> get inventoryItems => _inventoryItems;
   List<ActivePowerup> get activePowerups => _activePowerups;
   List<MinigameCooldown> get minigameCooldowns => _minigameCooldowns;
+  Map<String, MissionProgress> get missionProgress => _missionProgress;
 
   // Constructor system
   static const int baseMaxConstructors = 3;
@@ -302,6 +318,13 @@ class VillageProvider extends ChangeNotifier {
     final cdMaps = await _db.getMinigameCooldowns();
     _minigameCooldowns = cdMaps.map((m) => MinigameCooldown.fromMap(m)).toList();
 
+    // Load mission progress
+    final missionMaps = await _db.getMissionProgress();
+    _missionProgress = {
+      for (final m in missionMaps)
+        m['mission_id'] as String: MissionProgress.fromMap(m),
+    };
+
     await _reconcileVillagers();
     _updateVillagerHappiness();
     notifyListeners();
@@ -343,15 +366,26 @@ class VillageProvider extends ChangeNotifier {
     await _db.updateVillageLevel(_villageLevel);
   }
 
-  Future<void> addExp(int amount) async {
+  /// Adds exp and returns the new level if leveled up, or null if no level change.
+  Future<int?> addExp(int amount) async {
     _exp += amount;
     await _db.addExp(amount);
     final newLevel = GameConstants.playerLevelFromExp(_exp);
+    int? leveledUpTo;
     if (newLevel != _playerLevel) {
+      final oldLevel = _playerLevel;
       _playerLevel = newLevel;
       await _db.updatePlayerLevel(_playerLevel);
+      // Grant 3 gems per level gained
+      final levelsGained = newLevel - oldLevel;
+      final gemReward = 3 * levelsGained;
+      _gems += gemReward;
+      await _db.addResources(gems: gemReward);
+      leveledUpTo = newLevel;
+      _pendingLevelUp = newLevel;
     }
     notifyListeners();
+    return leveledUpTo;
   }
 
   Future<void> renameVillager(int villagerId, String newName) async {
@@ -749,6 +783,7 @@ class VillageProvider extends ChangeNotifier {
     ));
 
     _updateVillagerHappiness();
+    notifyBookItemUsed();
     notifyListeners();
     return true;
   }
@@ -858,8 +893,261 @@ class VillageProvider extends ChangeNotifier {
   Future<void> cleanupExpiredPowerups() async {
     await _db.deleteExpiredPowerups();
     _activePowerups.removeWhere((p) => !p.isActive);
-    // Special case: hammer powerup - don't remove if there's still a 4th building in progress
     _updateVillagerHappiness();
     notifyListeners();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ─── MISSIONS SYSTEM ──────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════
+
+  /// Whether a branch is unlocked (dependencies satisfied).
+  bool isBranchUnlocked(MissionBranch branch) {
+    final deps = MissionData.branchDependencies(branch);
+    for (final dep in deps) {
+      if (!isBranchFullyCompleted(dep)) return false;
+    }
+    return true;
+  }
+
+  /// Whether all missions in a branch have been claimed.
+  bool isBranchFullyCompleted(MissionBranch branch) {
+    final missions = MissionData.getMissionsForBranch(branch);
+    return missions.every((m) {
+      final progress = _missionProgress[m.id];
+      return progress != null && progress.isClaimed;
+    });
+  }
+
+  /// Get the currently active (next unclaimed) mission for a branch, or null if branch is complete or locked.
+  Mission? getActiveMission(MissionBranch branch) {
+    if (!isBranchUnlocked(branch)) return null;
+    final missions = MissionData.getMissionsForBranch(branch);
+    for (final mission in missions) {
+      final progress = _missionProgress[mission.id];
+      if (progress == null || !progress.isClaimed) {
+        return mission;
+      }
+    }
+    return null; // Branch is fully completed
+  }
+
+  /// Get all currently active missions (one per unlocked branch).
+  List<Mission> getActiveMissions() {
+    final result = <Mission>[];
+    for (final branch in MissionBranch.values) {
+      final active = getActiveMission(branch);
+      if (active != null) result.add(active);
+    }
+    return result;
+  }
+
+  /// Get the progress object for a mission, creating one if needed.
+  MissionProgress _getOrCreateProgress(Mission mission) {
+    if (!_missionProgress.containsKey(mission.id)) {
+      _missionProgress[mission.id] = MissionProgress(missionId: mission.id);
+    }
+    return _missionProgress[mission.id]!;
+  }
+
+  /// Ensure the active mission has its activated_at set (for AM missions).
+  Future<void> _ensureMissionActivated(Mission mission) async {
+    final progress = _getOrCreateProgress(mission);
+    if (progress.activatedAt == null) {
+      progress.activatedAt = DateTime.now().toIso8601String();
+      await _db.upsertMissionProgress(mission.id,
+          activatedAt: progress.activatedAt);
+    }
+  }
+
+  /// Check and update mission completion for all active missions.
+  /// Pass totalPagesRead and completedBooks for book tracking missions.
+  Future<void> checkMissions({int? totalPagesRead, int? completedBooks}) async {
+    for (final branch in MissionBranch.values) {
+      final mission = getActiveMission(branch);
+      if (mission == null) continue;
+
+      final progress = _getOrCreateProgress(mission);
+      if (progress.isCompleted) continue;
+
+      // Ensure activated_at is set
+      await _ensureMissionActivated(mission);
+
+      final isComplete = _checkMissionCondition(mission, progress,
+          totalPagesRead: totalPagesRead, completedBooks: completedBooks);
+      if (isComplete) {
+        progress.isCompleted = true;
+        await _db.upsertMissionProgress(mission.id, isCompleted: true);
+      }
+    }
+    notifyListeners();
+  }
+
+  /// Check if a specific mission's conditions are met.
+  bool _checkMissionCondition(Mission mission, MissionProgress progress,
+      {int? totalPagesRead, int? completedBooks}) {
+    switch (mission.conditionType) {
+      case MissionConditionType.buyBuilding:
+        // Has at least one building of the given type (constructed)
+        return _placedBuildings.any(
+            (b) => b.type == mission.buildingType && b.isConstructed);
+
+      case MissionConditionType.upgradeBuilding:
+        // Has at least one building of given type at or above target level (constructed)
+        return _placedBuildings.any((b) =>
+            b.type == mission.buildingType &&
+            b.level >= (mission.targetLevel ?? 1) &&
+            b.isConstructed);
+
+      case MissionConditionType.reachBuildingCount:
+        // Has N+ buildings of given type at or above target level (constructed)
+        final count = _placedBuildings.where((b) =>
+            b.type == mission.buildingType &&
+            b.level >= (mission.targetLevel ?? 1) &&
+            b.isConstructed).length;
+        return count >= (mission.targetCount ?? 1);
+
+      case MissionConditionType.villagerHappiness:
+        // N villagers at 100% happiness right now
+        final happyCount = _villagers.where((v) => v.happiness >= 100).length;
+        return happyCount >= (mission.targetCount ?? 1);
+
+      case MissionConditionType.villagerHappinessWithBook:
+        // A happiness book was used while this mission is active
+        return _bookItemUsedSinceActive;
+
+      case MissionConditionType.villagerHappinessNatural:
+        // N villagers at 100% happiness with NO book powerup active on any villager
+        final hasAnyBookPowerup = _activePowerups
+            .any((p) => p.type == 'book_happiness' && p.isActive);
+        if (hasAnyBookPowerup) return false;
+        final happyCount = _villagers.where((v) => v.happiness >= 100).length;
+        return happyCount >= (mission.targetCount ?? 1);
+
+      case MissionConditionType.totalPagesRead:
+        return (totalPagesRead ?? 0) >= (mission.targetCount ?? 1);
+
+      case MissionConditionType.booksCompleted:
+        return (completedBooks ?? 0) >= (mission.targetCount ?? 1);
+    }
+  }
+
+  /// Get the current progress value for a mission (for progress bar display).
+  /// Returns (current, target).
+  ({int current, int target}) getMissionProgressValues(Mission mission,
+      {int? totalPagesRead, int? completedBooks}) {
+    final target = mission.targetCount ?? 1;
+    int current = 0;
+
+    switch (mission.conditionType) {
+      case MissionConditionType.buyBuilding:
+        current = _placedBuildings
+            .where((b) => b.type == mission.buildingType && b.isConstructed)
+            .length;
+        return (current: current.clamp(0, 1), target: 1);
+
+      case MissionConditionType.upgradeBuilding:
+        final maxLevel = _placedBuildings
+            .where((b) => b.type == mission.buildingType && b.isConstructed)
+            .fold<int>(0, (max, b) => b.level > max ? b.level : max);
+        current = maxLevel;
+        return (current: current.clamp(0, mission.targetLevel ?? 1),
+            target: mission.targetLevel ?? 1);
+
+      case MissionConditionType.reachBuildingCount:
+        current = _placedBuildings.where((b) =>
+            b.type == mission.buildingType &&
+            b.level >= (mission.targetLevel ?? 1) &&
+            b.isConstructed).length;
+        return (current: current.clamp(0, target), target: target);
+
+      case MissionConditionType.villagerHappiness:
+        current = _villagers.where((v) => v.happiness >= 100).length;
+        return (current: current.clamp(0, target), target: target);
+
+      case MissionConditionType.villagerHappinessWithBook:
+        current = _bookItemUsedSinceActive ? 1 : 0;
+        return (current: current, target: 1);
+
+      case MissionConditionType.villagerHappinessNatural:
+        final hasAnyBookPowerup = _activePowerups
+            .any((p) => p.type == 'book_happiness' && p.isActive);
+        if (hasAnyBookPowerup) {
+          current = 0;
+        } else {
+          current = _villagers.where((v) => v.happiness >= 100).length;
+        }
+        return (current: current.clamp(0, target), target: target);
+
+      case MissionConditionType.totalPagesRead:
+        current = totalPagesRead ?? 0;
+        return (current: current.clamp(0, target), target: target);
+
+      case MissionConditionType.booksCompleted:
+        current = completedBooks ?? 0;
+        return (current: current.clamp(0, target), target: target);
+    }
+  }
+
+  /// Claim a completed mission's reward.
+  Future<bool> claimMissionReward(String missionId) async {
+    final mission = MissionData.getMissionById(missionId);
+    if (mission == null) return false;
+
+    final progress = _missionProgress[missionId];
+    if (progress == null || !progress.isCompleted || progress.isClaimed) {
+      return false;
+    }
+
+    // Grant rewards
+    final reward = mission.reward;
+    if (reward.exp > 0) await addExp(reward.exp);
+    if (reward.coins > 0 || reward.gems > 0) {
+      await _db.addResources(coins: reward.coins, gems: reward.gems);
+      _coins += reward.coins;
+      _gems += reward.gems;
+    }
+
+    // Mark as claimed
+    progress.isClaimed = true;
+    await _db.upsertMissionProgress(missionId, isClaimed: true);
+
+    // If this was the villager book mission, reset the tracker
+    if (mission.id == 'vl_book_happy') {
+      _bookItemUsedSinceActive = false;
+    }
+
+    // Activate the next mission in the branch if applicable
+    final nextMission = getActiveMission(mission.branch);
+    if (nextMission != null) {
+      await _ensureMissionActivated(nextMission);
+    }
+
+    notifyListeners();
+    return true;
+  }
+
+  /// Called when a book item is used - for tracking the villager book mission.
+  void notifyBookItemUsed() {
+    final activeMission = getActiveMission(MissionBranch.villager);
+    if (activeMission != null &&
+        activeMission.conditionType == MissionConditionType.villagerHappinessWithBook) {
+      _bookItemUsedSinceActive = true;
+    }
+  }
+
+  /// Get how many missions are completed (but unclaimed) across all branches.
+  int get unclaimedCompletedMissionCount {
+    int count = 0;
+    for (final branch in MissionBranch.values) {
+      final mission = getActiveMission(branch);
+      if (mission != null) {
+        final progress = _missionProgress[mission.id];
+        if (progress != null && progress.isCompleted && !progress.isClaimed) {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 }

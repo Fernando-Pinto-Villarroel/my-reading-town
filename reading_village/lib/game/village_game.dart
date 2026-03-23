@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide Draggable, Matrix4;
 import 'components/grid_component.dart';
 import 'components/building_component.dart';
 import 'components/villager_component.dart';
+import 'components/expansion_sign_component.dart';
 import '../models/placed_building.dart';
 import '../models/villager.dart';
 import '../config/game_constants.dart';
@@ -13,6 +14,7 @@ class VillageGame extends FlameGame {
   final Function(int tileX, int tileY)? onTileTapped;
   final Function(PlacedBuilding)? onConstructionComplete;
   final Function(Villager)? onVillagerTapped;
+  final Function(int chunkX, int chunkY)? onExpansionSignTapped;
 
   bool isConstructionMode = false;
   bool isRoadMode = false;
@@ -23,12 +25,18 @@ class VillageGame extends FlameGame {
   final Set<String> _unlockedChunks = {};
   final Map<int, BuildingComponent> _buildingComponents = {};
   final List<VillagerComponent> _villagerComponents = [];
+  final Map<String, ExpansionSignComponent> _expansionSigns = {};
   List<String> _roadTilesList = [];
 
   double _constructionCheckTimer = 0;
   final Map<int, PlacedBuilding> _buildingsById = {};
 
-  VillageGame({this.onTileTapped, this.onConstructionComplete, this.onVillagerTapped});
+  VillageGame({
+    this.onTileTapped,
+    this.onConstructionComplete,
+    this.onVillagerTapped,
+    this.onExpansionSignTapped,
+  });
 
   @override
   Color backgroundColor() => const Color(0xFF709070);
@@ -98,7 +106,70 @@ class VillageGame extends FlameGame {
   void updateUnlockedChunks(Set<String> chunks) {
     _unlockedChunks.clear();
     _unlockedChunks.addAll(chunks);
-    if (_isReady) _gridComponent.unlockedChunks = _unlockedChunks;
+    if (_isReady) {
+      _gridComponent.unlockedChunks = _unlockedChunks;
+      _updateExpansionSigns();
+    }
+  }
+
+  /// Sets (or clears) the highlighted chunk overlay on the grid.
+  void setHighlightedChunk(int? chunkX, int? chunkY) {
+    if (!_isReady) return;
+    if (chunkX != null && chunkY != null) {
+      _gridComponent.highlightedChunk = '$chunkX,$chunkY';
+    } else {
+      _gridComponent.highlightedChunk = null;
+    }
+  }
+
+  /// Creates/removes expansion sign components for locked chunks adjacent to
+  /// unlocked territory.
+  void _updateExpansionSigns() {
+    final adjacentLocked = <String>{};
+
+    for (final key in _unlockedChunks) {
+      final parts = key.split(',');
+      final cx = int.parse(parts[0]);
+      final cy = int.parse(parts[1]);
+
+      for (final neighbor in [
+        '${cx - 1},$cy',
+        '${cx + 1},$cy',
+        '$cx,${cy - 1}',
+        '$cx,${cy + 1}',
+      ]) {
+        if (_unlockedChunks.contains(neighbor)) continue;
+        final np = neighbor.split(',');
+        final nx = int.parse(np[0]);
+        final ny = int.parse(np[1]);
+        if (nx < 0 || nx >= GameConstants.chunksPerSide) continue;
+        if (ny < 0 || ny >= GameConstants.chunksPerSide) continue;
+        adjacentLocked.add(neighbor);
+      }
+    }
+
+    // Remove signs that are no longer needed
+    final toRemove = _expansionSigns.keys
+        .where((k) => !adjacentLocked.contains(k))
+        .toList();
+    for (final k in toRemove) {
+      _expansionSigns[k]?.removeFromParent();
+      _expansionSigns.remove(k);
+    }
+
+    // Add new signs
+    for (final key in adjacentLocked) {
+      if (_expansionSigns.containsKey(key)) continue;
+      final parts = key.split(',');
+      final cx = int.parse(parts[0]);
+      final cy = int.parse(parts[1]);
+      final sign = ExpansionSignComponent(
+        chunkX: cx,
+        chunkY: cy,
+      );
+      _expansionSigns[key] = sign;
+      world.add(sign);
+    }
   }
 
   void updatePlacedBuildings(List<PlacedBuilding> buildings) {
@@ -233,6 +304,14 @@ class VillageGame extends FlameGame {
       final rel = worldPos - vc.position;
       if (rel.x.abs() < vc.size.x / 2 && rel.y.abs() < vc.size.y / 2) {
         onVillagerTapped?.call(vc.villager);
+        return;
+      }
+    }
+
+    // Check expansion signs (tappable in any mode)
+    for (final sign in _expansionSigns.values) {
+      if (sign.containsWorldPoint(worldPos)) {
+        onExpansionSignTapped?.call(sign.chunkX, sign.chunkY);
         return;
       }
     }

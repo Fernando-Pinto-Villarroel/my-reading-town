@@ -65,6 +65,7 @@ class GameConstants {
   }
 
   static const int expPerPage = 2;
+
   /// Multiplier applied to a building's base exp when upgrading (e.g. 1.5x).
   static const double upgradeExpMultiplier = 1.5;
 
@@ -91,7 +92,8 @@ class GameConstants {
     int accumulated = 0;
     while (true) {
       final needed = expForLevel(level + 1);
-      if (accumulated + needed > totalExp) return needed - (totalExp - accumulated);
+      if (accumulated + needed > totalExp)
+        return needed - (totalExp - accumulated);
       accumulated += needed;
       level++;
       if (level >= 50) return 0;
@@ -137,12 +139,36 @@ class GameConstants {
   }
 
   static const List<String> villagerNames = [
-    'Mochi', 'Biscuit', 'Clover', 'Pudding', 'Maple',
-    'Cocoa', 'Daisy', 'Pepper', 'Cinnamon', 'Sprout',
-    'Peanut', 'Waffle', 'Olive', 'Marshmallow', 'Ginger',
-    'Honey', 'Cookie', 'Truffle', 'Basil', 'Mango',
-    'Toffee', 'Chai', 'Nutmeg', 'Poppy', 'Dango',
-    'Miso', 'Tofu', 'Latte', 'Mocha', 'Berry',
+    'Mochi',
+    'Biscuit',
+    'Clover',
+    'Pudding',
+    'Maple',
+    'Cocoa',
+    'Daisy',
+    'Pepper',
+    'Cinnamon',
+    'Sprout',
+    'Peanut',
+    'Waffle',
+    'Olive',
+    'Marshmallow',
+    'Ginger',
+    'Honey',
+    'Cookie',
+    'Truffle',
+    'Basil',
+    'Mango',
+    'Toffee',
+    'Chai',
+    'Nutmeg',
+    'Poppy',
+    'Dango',
+    'Miso',
+    'Tofu',
+    'Latte',
+    'Mocha',
+    'Berry',
   ];
 
   static const List<String> villagerSpecies = ['cat', 'dog', 'rabbit'];
@@ -156,25 +182,126 @@ class GameConstants {
   }
 
   static const List<Map<String, dynamic>> buildingTemplates = [
-    {'type': 'house', 'name': 'Home', 'coinCost': 60, 'gemCost': 0, 'woodCost': 40, 'metalCost': 10, 'happinessBonus': 10, 'constructionMinutes': 10, 'exp': 20},
-    {'type': 'park', 'name': 'Tiny Park', 'coinCost': 50, 'gemCost': 0, 'woodCost': 30, 'metalCost': 10, 'happinessBonus': 8, 'constructionMinutes': 40, 'exp': 30},
-    {'type': 'school', 'name': 'Little School', 'coinCost': 100, 'gemCost': 0, 'woodCost': 60, 'metalCost': 20, 'happinessBonus': 15, 'constructionMinutes': 120, 'exp': 60},
-    {'type': 'hospital', 'name': 'Clinic', 'coinCost': 120, 'gemCost': 0, 'woodCost': 50, 'metalCost': 40, 'happinessBonus': 12, 'constructionMinutes': 180, 'exp': 75},
-    {'type': 'water_plant', 'name': 'Water Tower', 'coinCost': 80, 'gemCost': 0, 'woodCost': 20, 'metalCost': 30, 'happinessBonus': 10, 'constructionMinutes': 90, 'exp': 40},
-    {'type': 'power_plant', 'name': 'Power Station', 'coinCost': 90, 'gemCost': 0, 'woodCost': 30, 'metalCost': 50, 'happinessBonus': 10, 'constructionMinutes': 120, 'exp': 50},
+    {
+      'type': 'house',
+      'name': 'Home',
+      'coinCost': 60,
+      'gemCost': 0,
+      'woodCost': 40,
+      'metalCost': 10,
+      'happinessBonus': 10,
+      'constructionMinutes': 10,
+      'exp': 20
+    },
+    {
+      'type': 'park',
+      'name': 'Tiny Park',
+      'coinCost': 50,
+      'gemCost': 0,
+      'woodCost': 30,
+      'metalCost': 10,
+      'happinessBonus': 8,
+      'constructionMinutes': 40,
+      'exp': 30
+    },
+    {
+      'type': 'school',
+      'name': 'Little School',
+      'coinCost': 100,
+      'gemCost': 0,
+      'woodCost': 60,
+      'metalCost': 20,
+      'happinessBonus': 15,
+      'constructionMinutes': 120,
+      'exp': 60
+    },
+    {
+      'type': 'hospital',
+      'name': 'Clinic',
+      'coinCost': 120,
+      'gemCost': 0,
+      'woodCost': 50,
+      'metalCost': 40,
+      'happinessBonus': 12,
+      'constructionMinutes': 180,
+      'exp': 75
+    },
+    {
+      'type': 'water_plant',
+      'name': 'Water Tower',
+      'coinCost': 80,
+      'gemCost': 0,
+      'woodCost': 20,
+      'metalCost': 30,
+      'happinessBonus': 10,
+      'constructionMinutes': 90,
+      'exp': 40
+    },
+    {
+      'type': 'power_plant',
+      'name': 'Power Station',
+      'coinCost': 90,
+      'gemCost': 0,
+      'woodCost': 30,
+      'metalCost': 50,
+      'happinessBonus': 10,
+      'constructionMinutes': 120,
+      'exp': 50
+    },
   ];
 
   static const List<Map<String, dynamic>> decorationTemplates = [
-    {'type': 'water_font', 'name': 'Water Font', 'coinCost': 150, 'gemCost': 0, 'woodCost': 0, 'metalCost': 65, 'happinessBonus': 0, 'constructionMinutes': 30, 'exp': 15},
-    {'type': 'lamp_post', 'name': 'Lamp Post', 'coinCost': 50, 'gemCost': 0, 'woodCost': 0, 'metalCost': 75, 'happinessBonus': 0, 'constructionMinutes': 15, 'exp': 10},
-    {'type': 'cat_colon_statue', 'name': 'Villager Statue', 'coinCost': 300, 'gemCost': 10, 'woodCost': 0, 'metalCost': 200, 'happinessBonus': 0, 'constructionMinutes': 60, 'exp': 25},
+    {
+      'type': 'water_font',
+      'name': 'Water Font',
+      'coinCost': 150,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 65,
+      'happinessBonus': 0,
+      'constructionMinutes': 30,
+      'exp': 15
+    },
+    {
+      'type': 'lamp_post',
+      'name': 'Lamp Post',
+      'coinCost': 50,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 75,
+      'happinessBonus': 0,
+      'constructionMinutes': 15,
+      'exp': 10
+    },
+    {
+      'type': 'cat_colon_statue',
+      'name': 'Villager Statue',
+      'coinCost': 300,
+      'gemCost': 10,
+      'woodCost': 0,
+      'metalCost': 200,
+      'happinessBonus': 0,
+      'constructionMinutes': 60,
+      'exp': 25
+    },
   ];
 
   static const List<Map<String, dynamic>> tileTemplates = [
-    {'type': 'road', 'name': 'Road', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
+    {
+      'type': 'road',
+      'name': 'Road',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
   ];
 
-  static const Set<String> decorationTypes = {'water_font', 'lamp_post', 'cat_colon_statue'};
+  static const Set<String> decorationTypes = {
+    'water_font',
+    'lamp_post',
+    'cat_colon_statue'
+  };
   static const Set<String> tileTypes = {'road'};
 
   static bool isDecorationType(String type) => decorationTypes.contains(type);
@@ -182,13 +309,13 @@ class GameConstants {
 
   /// Returns the tile width for a building type (most are 1x1, power_plant and water_plant are 2x2).
   static int buildingTileWidth(String type) {
-    if (type == 'lamp_post') return 1;
+    if (isDecorationType(type)) return 1;
     return 2;
   }
 
   /// Returns the tile height for a building type.
   static int buildingTileHeight(String type) {
-    if (type == 'lamp_post') return 1;
+    if (isDecorationType(type)) return 1;
     return 2;
   }
 

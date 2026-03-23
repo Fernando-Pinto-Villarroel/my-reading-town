@@ -76,8 +76,15 @@ class BuildingComponent extends PositionComponent {
     final imgH = sprite.image.height.toDouble();
     final aspect = imgW / imgH;
 
-    final spriteW = size.x * 0.95;
-    final spriteH = spriteW / aspect;
+    double spriteW = size.x * 0.95;
+    double spriteH = spriteW / aspect;
+
+    // Clamp sprite to fit within tile bounds
+    if (spriteH > size.y * 0.95) {
+      spriteH = size.y * 0.95;
+      spriteW = spriteH * aspect;
+    }
+
     final offsetX = (size.x - spriteW) / 2;
     final offsetY = size.y - spriteH;
 

@@ -838,3 +838,24 @@ no text inside the image
 no sparkle effects
 only the main image asset, nothing else
 ```
+
+### expansion_sign.png
+
+```
+cute kawaii chubby wooden sign post for a village game expansion zone
+a normal-width wooden post holding a chubby rounded wooden plank on top, the plank has a cute happy face drawn on it (dot eyes and a small smile)
+the post is a regular proportioned wooden stick (not too thick, not too thin), the sign plank on top is rounded and puffy, warm light brown wood
+a few small shiny gold coins and green gems scattered around the base of the sign
+small green grass tufts at the base
+kawaii style, pastel color palette, warm brown wood with gold and green accents
+chubby proportions, everything looks soft and rounded
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```

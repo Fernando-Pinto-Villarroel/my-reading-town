@@ -8,6 +8,13 @@ class GridComponent extends Component with HasGameReference<FlameGame> {
   Set<String> unlockedChunks = {};
   bool showGridLines = false;
 
+  /// When set, highlights the 5×5 chunk area with a glowing border.
+  /// Format: "chunkX,chunkY" or null to clear.
+  String? highlightedChunk;
+
+  static const Color _highlightFill = Color(0x30FFB3BA);
+  static const Color _highlightBorder = Color(0xCCFFB3BA);
+
   static const double _tileSize = GameConstants.tilePixelSize;
   static const int _mapSize = GameConstants.mapSize;
 
@@ -124,6 +131,54 @@ class GridComponent extends Component with HasGameReference<FlameGame> {
               chunkBorderPaint,
             );
           }
+        }
+      }
+    }
+
+    // Render highlighted chunk overlay
+    if (highlightedChunk != null) {
+      final parts = highlightedChunk!.split(',');
+      if (parts.length == 2) {
+        final hcx = int.tryParse(parts[0]) ?? 0;
+        final hcy = int.tryParse(parts[1]) ?? 0;
+        final hx = hcx * GameConstants.chunkSize;
+        final hy = hcy * GameConstants.chunkSize;
+        final highlightRect = Rect.fromLTWH(
+          hx * _tileSize,
+          hy * _tileSize,
+          GameConstants.chunkSize * _tileSize,
+          GameConstants.chunkSize * _tileSize,
+        );
+
+        // Fill
+        canvas.drawRect(highlightRect, Paint()..color = _highlightFill);
+
+        // Animated border (dashed feel via rounded rect + thick stroke)
+        final borderPaint = Paint()
+          ..color = _highlightBorder
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.0;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(highlightRect, const Radius.circular(8)),
+          borderPaint,
+        );
+
+        // Corner accents
+        final accentPaint = Paint()..color = _highlightBorder;
+        final cornerSize = _tileSize * 0.15;
+        for (final corner in [
+          highlightRect.topLeft,
+          highlightRect.topRight + Offset(-cornerSize, 0),
+          highlightRect.bottomLeft + Offset(0, -cornerSize),
+          highlightRect.bottomRight + Offset(-cornerSize, -cornerSize),
+        ]) {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(corner.dx, corner.dy, cornerSize, cornerSize),
+              const Radius.circular(4),
+            ),
+            accentPaint,
+          );
         }
       }
     }

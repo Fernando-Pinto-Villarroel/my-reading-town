@@ -168,6 +168,15 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE mission_progress (
+        mission_id TEXT PRIMARY KEY,
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        is_claimed INTEGER NOT NULL DEFAULT 0,
+        activated_at TEXT
+      )
+    ''');
+
     // Initialize inventory items
     for (final type in ['book', 'sandwich', 'hammer']) {
       await db.insert('inventory_items', {'type': type, 'quantity': 0});
@@ -576,6 +585,40 @@ class DatabaseHelper {
   Future<void> deletePowerup(int id) async {
     final db = await database;
     await db.delete('active_powerups', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Mission Progress ---
+
+  Future<List<Map<String, dynamic>>> getMissionProgress() async {
+    final db = await database;
+    return db.query('mission_progress');
+  }
+
+  Future<void> upsertMissionProgress(String missionId, {
+    bool? isCompleted,
+    bool? isClaimed,
+    String? activatedAt,
+  }) async {
+    final db = await database;
+    final existing = await db.query('mission_progress',
+        where: 'mission_id = ?', whereArgs: [missionId]);
+    if (existing.isEmpty) {
+      await db.insert('mission_progress', {
+        'mission_id': missionId,
+        'is_completed': (isCompleted ?? false) ? 1 : 0,
+        'is_claimed': (isClaimed ?? false) ? 1 : 0,
+        'activated_at': activatedAt,
+      });
+    } else {
+      final updates = <String, dynamic>{};
+      if (isCompleted != null) updates['is_completed'] = isCompleted ? 1 : 0;
+      if (isClaimed != null) updates['is_claimed'] = isClaimed ? 1 : 0;
+      if (activatedAt != null) updates['activated_at'] = activatedAt;
+      if (updates.isNotEmpty) {
+        await db.update('mission_progress', updates,
+            where: 'mission_id = ?', whereArgs: [missionId]);
+      }
+    }
   }
 
   Future<void> deleteExpiredPowerups() async {
