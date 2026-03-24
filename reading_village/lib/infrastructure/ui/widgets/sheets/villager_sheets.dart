@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/adapters/repositories/villager_favorites.dart';
 import 'package:reading_village/domain/entities/villager.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showVillagerInfoSheet(
   BuildContext context, {
@@ -12,6 +14,7 @@ void showVillagerInfoSheet(
   required VoidCallback onSyncGameState,
 }) {
   final villagerIdx = villager.id ?? 0;
+  final langProvider = context.read<LanguageProvider>();
 
   showModalBottomSheet(
     context: context,
@@ -66,7 +69,7 @@ void showVillagerInfoSheet(
               ),
               SizedBox(height: 4),
               Text(
-                '${villager.species.substring(0, 1).toUpperCase()}${villager.species.substring(1)} Villager',
+                '${villager.species.substring(0, 1).toUpperCase()}${villager.species.substring(1)} ${langProvider.translate('villager_label')}',
                 style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.lavender,
@@ -78,21 +81,21 @@ void showVillagerInfoSheet(
                       fontSize: 13,
                       color: AppTheme.darkText.withValues(alpha: 0.6))),
               SizedBox(height: 12),
-              _happinessChip(villager),
+              _happinessChip(villager, langProvider),
               if (villager.id != null &&
                   village.villagerHasHappinessBoost(villager.id!)) ...[
                 SizedBox(height: 8),
-                _happinessBookBadge(village, villager),
+                _happinessBookBadge(village, villager, langProvider),
               ],
               if (villager.happiness < 100) ...[
                 SizedBox(height: 8),
-                _missingNeedsBadges(village, villager),
+                _missingNeedsBadges(village, villager, langProvider),
               ],
               SizedBox(height: 16),
-              _infoRow(Icons.auto_stories, 'Favorite Author',
+              _infoRow(Icons.auto_stories, langProvider.translate('favorite_author_label'),
                   VillagerFavorites.author(villagerIdx)),
               SizedBox(height: 10),
-              _infoRow(Icons.format_quote, 'Favorite Quote',
+              _infoRow(Icons.format_quote, langProvider.translate('favorite_quote_label'),
                   '"${VillagerFavorites.quote(villagerIdx)}"'),
             ],
           ),
@@ -108,12 +111,13 @@ void showRenameVillagerDialog(
   required VillageProvider village,
   required VoidCallback onSyncGameState,
 }) {
+  final langProvider = context.read<LanguageProvider>();
   final controller = TextEditingController(text: villager.name);
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('Rename Villager'),
+      title: Text(langProvider.translate('rename_villager')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -123,7 +127,7 @@ void showRenameVillagerDialog(
           TextField(
             controller: controller,
             decoration: InputDecoration(
-              labelText: 'New Name',
+              labelText: langProvider.translate('new_name_label'),
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -134,7 +138,7 @@ void showRenameVillagerDialog(
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx), child: Text(langProvider.translate('cancel'))),
         ElevatedButton(
           onPressed: () {
             final newName = controller.text.trim();
@@ -143,7 +147,7 @@ void showRenameVillagerDialog(
             Navigator.pop(ctx);
             onSyncGameState();
           },
-          child: Text('Rename'),
+          child: Text(langProvider.translate('rename')),
         ),
       ],
     ),
@@ -161,7 +165,7 @@ Widget _dragHandle() {
   );
 }
 
-Widget _happinessChip(Villager villager) {
+Widget _happinessChip(Villager villager, LanguageProvider langProvider) {
   final color = villager.happiness >= 60
       ? Color(0xFF2E7D32)
       : villager.happiness >= 40
@@ -184,7 +188,7 @@ Widget _happinessChip(Villager villager) {
       children: [
         Icon(icon, size: 22, color: color),
         SizedBox(width: 8),
-        Text('Happiness: ${villager.happiness}%',
+        Text('${langProvider.translate('happiness')}: ${villager.happiness}%',
             style: TextStyle(
                 fontSize: 15, fontWeight: FontWeight.bold, color: color)),
       ],
@@ -192,7 +196,7 @@ Widget _happinessChip(Villager villager) {
   );
 }
 
-Widget _happinessBookBadge(VillageProvider village, Villager villager) {
+Widget _happinessBookBadge(VillageProvider village, Villager villager, LanguageProvider langProvider) {
   final powerup = village.activePowerups.firstWhere(
     (p) =>
         p.type == 'book_happiness' &&
@@ -213,7 +217,7 @@ Widget _happinessBookBadge(VillageProvider village, Villager villager) {
       children: [
         Image.asset('assets/images/book_item.png', width: 22, height: 22),
         SizedBox(width: 8),
-        Text('Happiness Book active',
+        Text(langProvider.translate('happiness_book_active'),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -228,7 +232,7 @@ Widget _happinessBookBadge(VillageProvider village, Villager villager) {
   );
 }
 
-Widget _missingNeedsBadges(VillageProvider village, Villager villager) {
+Widget _missingNeedsBadges(VillageProvider village, Villager villager, LanguageProvider langProvider) {
   const needEmojis = {
     'water_plant': '💧',
     'power_plant': '⚡',
@@ -236,12 +240,12 @@ Widget _missingNeedsBadges(VillageProvider village, Villager villager) {
     'school': '🎒',
     'park': '🌳',
   };
-  const needLabels = {
-    'water_plant': 'Water',
-    'power_plant': 'Power',
-    'hospital': 'Hospital',
-    'school': 'School',
-    'park': 'Park',
+  final needLabelKeys = {
+    'water_plant': 'need_water',
+    'power_plant': 'need_power',
+    'hospital': 'need_hospital',
+    'school': 'need_school',
+    'park': 'need_park',
   };
   final missing = village.missingNeedsForVillager(villager);
   if (missing.isEmpty) return SizedBox.shrink();
@@ -250,6 +254,8 @@ Widget _missingNeedsBadges(VillageProvider village, Villager villager) {
     runSpacing: 4,
     alignment: WrapAlignment.center,
     children: missing.map((type) {
+      final labelKey = needLabelKeys[type];
+      final label = labelKey != null ? langProvider.translate(labelKey) : type;
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -258,7 +264,7 @@ Widget _missingNeedsBadges(VillageProvider village, Villager villager) {
           border: Border.all(color: Colors.red.shade200, width: 1),
         ),
         child: Text(
-          '${needEmojis[type] ?? '❓'} Needs ${needLabels[type] ?? type}',
+          '${needEmojis[type] ?? '❓'} ${langProvider.translate('needs_label')} $label',
           style: TextStyle(
               fontSize: 12,
               color: Colors.red.shade400,

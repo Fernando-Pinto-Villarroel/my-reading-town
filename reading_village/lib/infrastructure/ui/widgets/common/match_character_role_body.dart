@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class MinigameTopBar extends StatelessWidget {
   final String title;
@@ -231,8 +232,8 @@ class ResultFeedback extends StatelessWidget {
           Flexible(
             child: Text(
               isCorrect
-                  ? 'Correct! $consecutiveWins/$winsNeeded'
-                  : 'Wrong! The answer was: $correctAnswer',
+                  ? '${context.t('correct_answer')} $consecutiveWins/$winsNeeded'
+                  : '${context.t('wrong_answer')} $correctAnswer',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

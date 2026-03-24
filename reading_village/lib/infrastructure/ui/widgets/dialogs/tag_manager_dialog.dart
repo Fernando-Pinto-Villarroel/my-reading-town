@@ -4,6 +4,8 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/tag.dart';
 import 'package:reading_village/adapters/providers/tag_provider.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 class TagManagerDialog extends StatefulWidget {
   final List<int>? selectedTagIds;
@@ -59,7 +61,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
                 children: [
                   Icon(Icons.label, size: 22, color: AppTheme.lavender),
                   SizedBox(width: 8),
-                  Text('Manage Tags', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                  Text(context.t('manage_tags_title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
                   Spacer(),
                   IconButton(
                     icon: Icon(Icons.add_circle, size: 28, color: AppTheme.pink),
@@ -70,14 +72,14 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
               if (isBookMode)
                 Padding(
                   padding: EdgeInsets.only(bottom: 8),
-                  child: Text('Tap a tag to add or remove it from this book',
+                  child: Text(context.t('tap_tag_hint'),
                       style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.5))),
                 ),
               SizedBox(height: 8),
               if (tagProvider.tags.isEmpty)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Text('No tags yet. Tap + to create one!',
+                  child: Text(context.t('no_tags_yet'),
                       style: TextStyle(color: AppTheme.darkText.withValues(alpha: 0.5))),
                 )
               else
@@ -151,6 +153,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
   }
 
   void _showAddEditTagDialog(Tag? existing) {
+    final langProvider = context.read<LanguageProvider>();
     final controller = TextEditingController(text: existing?.title ?? '');
     int selectedColor = existing?.colorValue ?? AppTheme.tagColors.first.toARGB32();
 
@@ -159,15 +162,15 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(existing == null ? 'New Tag' : 'Edit Tag'),
+          title: Text(existing == null ? langProvider.translate('new_tag') : langProvider.translate('edit_tag')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  labelText: 'Tag Name',
-                  hintText: 'e.g. Fantasy',
+                  labelText: langProvider.translate('tag_name_label'),
+                  hintText: langProvider.translate('tag_name_hint'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 textCapitalization: TextCapitalization.words,
@@ -196,7 +199,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(langProvider.translate('cancel'))),
             ElevatedButton(
               onPressed: () async {
                 final title = controller.text.trim();
@@ -210,7 +213,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: Text(existing == null ? 'Create' : 'Save'),
+              child: Text(existing == null ? langProvider.translate('create') : langProvider.translate('save')),
             ),
           ],
         ),
@@ -219,14 +222,15 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
   }
 
   void _confirmDelete(Tag tag) {
+    final langProvider = context.read<LanguageProvider>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Tag?'),
-        content: Text('Remove "${tag.title}" from all books?'),
+        title: Text(langProvider.translate('delete_tag_title')),
+        content: Text('${langProvider.translate('delete_tag_confirm_prefix')}${tag.title}${langProvider.translate('delete_tag_confirm_suffix')}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(langProvider.translate('cancel'))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
             onPressed: () async {
@@ -235,7 +239,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
               if (mounted) context.read<BookProvider>().refreshBookTags();
               if (ctx.mounted) Navigator.pop(ctx);
             },
-            child: Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(langProvider.translate('delete'), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

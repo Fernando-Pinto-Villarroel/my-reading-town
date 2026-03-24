@@ -4,6 +4,7 @@ import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class TemplateList extends StatelessWidget {
   final VillageProvider village;
@@ -23,14 +24,17 @@ class TemplateList extends StatelessWidget {
     required this.onSelect,
   });
 
-  String _capacityText(String type, int level) {
+  String _capacityText(String type, int level, BuildContext context) {
     if (VillageRules.isDecorationType(type)) return '';
     if (type == 'house') {
       final cap = VillageRules.villagersPerHouse(level);
-      return 'Houses $cap villager${cap > 1 ? 's' : ''}';
+      final unit = cap == 1
+          ? context.t('villager_one', fallback: 'villager')
+          : context.t('villager_many', fallback: 'villagers');
+      return '${context.t('capacity_houses', fallback: 'Houses')} $cap $unit';
     }
     final cap = VillageRules.buildingCapacity(type, level);
-    return 'Covers $cap villagers';
+    return '${context.t('capacity_covers', fallback: 'Covers')} $cap ${context.t('villager_many', fallback: 'villagers')}';
   }
 
   @override
@@ -58,23 +62,28 @@ class TemplateList extends StatelessWidget {
         final maxCount = VillageRules.maxBuildingsOfTypeForPlayerLevel(
             type, village.playerLevel);
 
+        final translatedName = context.t(
+          'building_name_$type',
+          fallback: template['name'] as String,
+        );
         return GestureDetector(
           onTap: canPlace
               ? () => onSelect(selectedType == type ? null : type)
               : null,
           child: landscape
-              ? _landscapeCard(template, type, isSelected, coinCost, gemCost,
-                  woodCost, metalCost, buildMinutes, canAfford, canPlace,
-                  currentCount, maxCount)
-              : _portraitCard(template, type, isSelected, coinCost, gemCost,
-                  woodCost, metalCost, buildMinutes, canAfford, canPlace,
-                  currentCount, maxCount),
+              ? _landscapeCard(context, translatedName, template, type,
+                  isSelected, coinCost, gemCost, woodCost, metalCost,
+                  buildMinutes, canAfford, canPlace, currentCount, maxCount)
+              : _portraitCard(context, translatedName, template, type,
+                  isSelected, coinCost, gemCost, woodCost, metalCost,
+                  buildMinutes, canAfford, canPlace, currentCount, maxCount),
         );
       },
     );
   }
 
   Widget _landscapeCard(
+      BuildContext context, String translatedName,
       Map<String, dynamic> template, String type, bool isSelected,
       int coinCost, int gemCost, int woodCost, int metalCost,
       int buildMinutes, bool canAfford, bool canPlace,
@@ -95,7 +104,7 @@ class TemplateList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(template['name'] as String,
+                  Text(translatedName,
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -103,7 +112,7 @@ class TemplateList extends StatelessWidget {
                   _costRow(coinCost, gemCost, woodCost, metalCost, 9, 12),
                   _timeExpRow(buildMinutes, template['exp'] as int? ?? 20, 9, 10),
                   if (!isDecorationTab)
-                    _capacityRow(type, 9, 10),
+                    _capacityRow(type, 9, 10, context),
                   if (!isDecorationTab)
                     _countRow(currentCount, maxCount, canPlace, 9, 10),
                 ],
@@ -116,6 +125,7 @@ class TemplateList extends StatelessWidget {
   }
 
   Widget _portraitCard(
+      BuildContext context, String translatedName,
       Map<String, dynamic> template, String type, bool isSelected,
       int coinCost, int gemCost, int woodCost, int metalCost,
       int buildMinutes, bool canAfford, bool canPlace,
@@ -131,7 +141,7 @@ class TemplateList extends StatelessWidget {
         children: [
           buildAssetPreview(type, 80, canAfford && canPlace),
           SizedBox(height: 2),
-          Text(template['name'] as String,
+          Text(translatedName,
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -146,7 +156,7 @@ class TemplateList extends StatelessWidget {
           ),
           _timeExpRow(buildMinutes, template['exp'] as int? ?? 20, 11, 13),
           if (!isDecorationTab)
-            _capacityRow(type, 10, 12),
+            _capacityRow(type, 10, 12, context),
           if (!isDecorationTab)
             _countRow(currentCount, maxCount, canPlace, 10, 12),
         ],
@@ -229,7 +239,7 @@ class TemplateList extends StatelessWidget {
     );
   }
 
-  Widget _capacityRow(String type, double fontSize, double iconSize) {
+  Widget _capacityRow(String type, double fontSize, double iconSize, BuildContext context) {
     return Center(
       child: Wrap(
         alignment: WrapAlignment.center,
@@ -237,7 +247,7 @@ class TemplateList extends StatelessWidget {
         spacing: 2,
         children: [
           Icon(Icons.people, size: iconSize, color: AppTheme.lavender),
-          Text(_capacityText(type, 1),
+          Text(_capacityText(type, 1, context),
               style: TextStyle(
                   fontSize: fontSize,
                   fontWeight: FontWeight.w600,

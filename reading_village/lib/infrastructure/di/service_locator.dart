@@ -20,6 +20,7 @@ import 'package:reading_village/application/services/tag_service.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/tag_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 final sl = GetIt.instance;
 
@@ -55,4 +56,5 @@ void initServiceLocator() {
     sl<ImagePort>(),
   ));
   sl.registerLazySingleton(() => TagProvider(sl<TagService>()));
+  sl.registerLazySingleton(() => LanguageProvider());
 }

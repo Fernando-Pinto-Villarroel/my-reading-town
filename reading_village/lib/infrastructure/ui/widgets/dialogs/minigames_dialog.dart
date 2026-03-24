@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/screens/guess_author_screen.dart';
 import 'package:reading_village/infrastructure/ui/screens/match_character_role_screen.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showMinigamesDialog(
   BuildContext context, {
   required VillageProvider village,
   required VoidCallback onReturn,
 }) {
+  final langProvider = context.read<LanguageProvider>();
+
   showDialog(
     context: context,
     builder: (ctx) {
@@ -33,7 +37,7 @@ void showMinigamesDialog(
                   Icon(Icons.sports_esports,
                       size: 24, color: AppTheme.lavender),
                   const SizedBox(width: 8),
-                  Text('Minigames',
+                  Text(langProvider.translate('minigames'),
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -47,8 +51,8 @@ void showMinigamesDialog(
               const SizedBox(height: 16),
               MinigameCard(
                 icon: Icons.auto_stories,
-                title: 'Guess the Author',
-                subtitle: 'Name the author of famous books!',
+                title: langProvider.translate('guess_the_author'),
+                subtitle: langProvider.translate('guess_author_desc'),
                 color: AppTheme.mint,
                 darkColor: AppTheme.darkMint,
                 minigameId: 'guess_author',
@@ -65,8 +69,8 @@ void showMinigamesDialog(
               const SizedBox(height: 12),
               MinigameCard(
                 icon: Icons.person_search,
-                title: 'Match Character Role',
-                subtitle: 'Match characters to their roles!',
+                title: langProvider.translate('match_character_role'),
+                subtitle: langProvider.translate('match_role_desc'),
                 color: AppTheme.skyBlue,
                 darkColor: AppTheme.darkSkyBlue,
                 minigameId: 'match_character_role',
@@ -114,6 +118,7 @@ class MinigameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langProvider = context.read<LanguageProvider>();
     final isOnCooldown = village.isMinigameOnCooldown(minigameId);
     final remaining = village.minigameCooldownRemaining(minigameId);
 
@@ -162,7 +167,7 @@ class MinigameCard extends StatelessWidget {
                               : AppTheme.darkText)),
                   Text(
                     isOnCooldown
-                        ? 'Cooldown: ${formatDuration(remaining)}'
+                        ? '${langProvider.translate('cooldown_label')} ${formatDuration(remaining)}'
                         : subtitle,
                     style: TextStyle(
                         fontSize: 12,
@@ -170,7 +175,7 @@ class MinigameCard extends StatelessWidget {
                             ? Colors.grey
                             : AppTheme.darkText.withValues(alpha: 0.6)),
                   ),
-                  Text('Win $winsNeeded in a row!',
+                  Text('${langProvider.translate('win_in_row_prefix')} $winsNeeded ${langProvider.translate('win_in_row_suffix')}',
                       style: TextStyle(
                           fontSize: 11,
                           color: isOnCooldown

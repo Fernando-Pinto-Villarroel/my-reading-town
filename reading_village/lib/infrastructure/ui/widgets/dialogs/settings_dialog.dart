@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 void showSettingsDialog(BuildContext context, VillageProvider village) {
   final usernameController = TextEditingController(text: village.username);
@@ -33,7 +36,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                     Icon(Icons.settings,
                         size: 24, color: AppTheme.lavender),
                     SizedBox(width: 8),
-                    Text('Settings',
+                    Text(ctx.t('settings'),
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -53,7 +56,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                   ),
                   child: Column(
                     children: [
-                      Text('Player Level ${village.playerLevel}',
+                      Text('${ctx.t('player_level')} ${village.playerLevel}',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -80,7 +83,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                       ),
                       SizedBox(height: 4),
                       Text(
-                          '${village.exp} EXP ($expToNext to next level)',
+                          '${village.exp} EXP ($expToNext ${ctx.t('exp_to_next_level')})',
                           style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.darkText
@@ -92,7 +95,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                 TextField(
                   controller: usernameController,
                   decoration: InputDecoration(
-                    labelText: 'Username',
+                    labelText: ctx.t('username'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -102,12 +105,14 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                 TextField(
                   controller: townNameController,
                   decoration: InputDecoration(
-                    labelText: 'Town Name',
+                    labelText: ctx.t('town_name'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   textCapitalization: TextCapitalization.words,
                 ),
+                SizedBox(height: 16),
+                _LanguageSelector(),
                 SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -124,7 +129,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                       }
                       Navigator.pop(ctx);
                     },
-                    child: Text('Save'),
+                    child: Text(ctx.t('save')),
                   ),
                 ),
               ],
@@ -134,4 +139,68 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
       );
     },
   );
+}
+
+class _LanguageSelector extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    final currentLocale = languageProvider.currentLocale;
+
+    return Row(
+      children: [
+        Icon(Icons.language, size: 20, color: AppTheme.lavender),
+        SizedBox(width: 8),
+        Text(context.t('language'),
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.darkText)),
+        Spacer(),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppTheme.lavender.withValues(alpha: 0.1),
+            border: Border.all(color: AppTheme.lavender.withValues(alpha: 0.4)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: currentLocale,
+              isDense: true,
+              borderRadius: BorderRadius.circular(12),
+              dropdownColor: AppTheme.cream,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.lavender,
+              ),
+              icon: Icon(Icons.keyboard_arrow_down,
+                  size: 18, color: AppTheme.lavender),
+              items: LanguageProvider.supportedLanguages.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.key,
+                  child: Text(
+                    entry.value['name']!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: entry.key == currentLocale
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: AppTheme.darkText,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (locale) {
+                if (locale != null) {
+                  context.read<LanguageProvider>().changeLanguage(locale);
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

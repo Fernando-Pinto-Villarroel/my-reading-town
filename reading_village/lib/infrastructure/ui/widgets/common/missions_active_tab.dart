@@ -5,6 +5,7 @@ import 'package:reading_village/domain/entities/mission.dart';
 import 'package:reading_village/domain/entities/mission_data.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class MissionColors {
   static const Color basicConstruction = AppTheme.mint;
@@ -76,13 +77,13 @@ class ActiveMissionsTab extends StatelessWidget {
             Icon(Icons.emoji_events,
                 size: 64, color: AppTheme.coinGold.withValues(alpha: 0.5)),
             const SizedBox(height: 12),
-            Text('All missions completed!',
+            Text(context.t('all_missions_completed'),
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.darkText)),
             const SizedBox(height: 4),
-            Text('You are a true village master!',
+            Text(context.t('true_village_master'),
                 style: TextStyle(
                     fontSize: 13,
                     color: AppTheme.darkText.withValues(alpha: 0.6))),
@@ -139,9 +140,7 @@ class ActiveMissionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isCompleted
-            ? color.withValues(alpha: 0.15)
-            : AppTheme.softWhite,
+        color: isCompleted ? color.withValues(alpha: 0.15) : AppTheme.softWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCompleted
@@ -156,8 +155,7 @@ class ActiveMissionCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
@@ -169,7 +167,10 @@ class ActiveMissionCard extends StatelessWidget {
                         size: 14, color: AppTheme.darkText),
                     const SizedBox(width: 4),
                     Text(
-                      MissionData.branchDisplayName(mission.branch),
+                      context.t(
+                        'branch_${mission.branch.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}',
+                        fallback: MissionData.branchDisplayName(mission.branch),
+                      ),
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -179,13 +180,12 @@ class ActiveMissionCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if (isCompleted)
-                Icon(Icons.check_circle, size: 20, color: color),
+              if (isCompleted) Icon(Icons.check_circle, size: 20, color: color),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            mission.title,
+            context.t('mission_title_${mission.id}', fallback: mission.title),
             style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -193,10 +193,10 @@ class ActiveMissionCard extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            mission.description,
+            context.t('mission_desc_${mission.id}',
+                fallback: mission.description),
             style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.darkText.withValues(alpha: 0.6)),
+                fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6)),
           ),
           const SizedBox(height: 10),
           Row(
@@ -225,13 +225,17 @@ class ActiveMissionCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              RewardBadges(reward: mission.reward),
-              const Spacer(),
+              Expanded(
+                child: RewardBadges(reward: mission.reward),
+              ),
+              const SizedBox(width: 8),
               if (isCompleted)
-                ClaimButton(
-                  mission: mission,
-                  village: village,
-                  onClaimed: onClaimed,
+                Expanded(
+                  child: ClaimButton(
+                    mission: mission,
+                    village: village,
+                    onClaimed: onClaimed,
+                  ),
                 ),
             ],
           ),
@@ -249,6 +253,7 @@ class RewardBadges extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 6,
+      runSpacing: 6,
       children: [
         if (reward.exp > 0)
           _assetBadge(
@@ -324,7 +329,7 @@ class ClaimButton extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Reward claimed: ${mission.reward}',
+                  '${context.t('reward_claimed_prefix')} ${mission.reward}',
                   style: TextStyle(color: AppTheme.darkText),
                 ),
                 backgroundColor: AppTheme.mint,
@@ -350,7 +355,7 @@ class ClaimButton extends StatelessWidget {
           ],
         ),
         child: Text(
-          'Claim Reward',
+          context.t('claim_reward'),
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,

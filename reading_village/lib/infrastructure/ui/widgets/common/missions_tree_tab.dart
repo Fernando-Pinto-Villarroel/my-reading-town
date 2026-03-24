@@ -5,6 +5,7 @@ import 'package:reading_village/domain/entities/mission.dart';
 import 'package:reading_village/domain/entities/mission_data.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/missions_active_tab.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class MissionTreeTab extends StatelessWidget {
   final int totalPagesRead;
@@ -115,7 +116,10 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          MissionData.branchDisplayName(widget.branch),
+                          context.t(
+                            'branch_${widget.branch.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}',
+                            fallback: MissionData.branchDisplayName(widget.branch),
+                          ),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -126,13 +130,13 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
                         ),
                         if (!isUnlocked && deps.isNotEmpty)
                           Text(
-                            'Requires: ${deps.map(MissionData.branchDisplayName).join(', ')}',
+                            '${context.t('requires')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(', ')}',
                             style: TextStyle(
                                 fontSize: 11, color: Colors.grey.shade500),
                           ),
                         if (isUnlocked)
                           Text(
-                            '$claimedCount / ${missions.length} completed',
+                            '$claimedCount / ${missions.length} ${context.t('completed')}',
                             style: TextStyle(
                                 fontSize: 11,
                                 color: AppTheme.darkText
@@ -201,7 +205,7 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                'Complete the ${deps.map(MissionData.branchDisplayName).join(' and ')} branch to unlock.',
+                '${context.t('unlock_requirement_prefix')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(' and ')} ${context.t('unlock_requirement_suffix')}',
                 style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,
@@ -283,7 +287,7 @@ class MissionTreeNode extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  mission.title,
+                  context.t('mission_title_${mission.id}', fallback: mission.title),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight:

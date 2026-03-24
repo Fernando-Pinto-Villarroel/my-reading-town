@@ -8,8 +8,10 @@ import 'package:reading_village/infrastructure/ui/widgets/dialogs/book_form_dial
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/log_pages_dialog.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showBookDetailSheet(BuildContext context, Book book) {
+  final langProvider = context.read<LanguageProvider>();
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -64,8 +66,7 @@ void showBookDetailSheet(BuildContext context, Book book) {
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.darkText)),
-                        if (book.author != null &&
-                            book.author!.isNotEmpty) ...[
+                        if (book.author != null && book.author!.isNotEmpty) ...[
                           SizedBox(height: 2),
                           Text(book.author!,
                               style: TextStyle(
@@ -94,8 +95,8 @@ void showBookDetailSheet(BuildContext context, Book book) {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Color(tag.colorValue)
-                                  .withValues(alpha: 0.5),
+                              color:
+                                  Color(tag.colorValue).withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(tag.title,
@@ -108,40 +109,39 @@ void showBookDetailSheet(BuildContext context, Book book) {
                 ),
               ],
               SizedBox(height: 16),
+              if (!book.isCompleted)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetCtx);
+                      showLogPagesDialog(context, book.id!);
+                    },
+                    icon: Icon(Icons.menu_book, size: 16),
+                    label: Text(langProvider.translate('log_pages')),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.pink),
+                  ),
+                ),
+              if (!book.isCompleted) SizedBox(height: 8),
               Row(
                 children: [
-                  if (!book.isCompleted)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(sheetCtx);
-                          showLogPagesDialog(context, book.id!);
-                        },
-                        icon: Icon(Icons.menu_book, size: 16),
-                        label: Text('Log Pages'),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.pink),
-                      ),
-                    ),
-                  if (!book.isCompleted) SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Navigator.pop(sheetCtx);
                         showDialog(
                           context: context,
-                          builder: (_) =>
-                              BookFormDialog(existingBook: book),
+                          builder: (_) => BookFormDialog(existingBook: book),
                         );
                       },
-                      icon: Icon(Icons.edit,
-                          size: 16, color: AppTheme.lavender),
-                      label: Text('Edit',
+                      icon:
+                          Icon(Icons.edit, size: 16, color: AppTheme.lavender),
+                      label: Text(langProvider.translate('edit'),
                           style: TextStyle(color: AppTheme.lavender)),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                            color:
-                                AppTheme.lavender.withValues(alpha: 0.5)),
+                            color: AppTheme.lavender.withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -154,7 +154,7 @@ void showBookDetailSheet(BuildContext context, Book book) {
                       },
                       icon: Icon(Icons.delete_outline,
                           size: 16, color: Colors.red.shade300),
-                      label: Text('Delete',
+                      label: Text(langProvider.translate('delete'),
                           style: TextStyle(color: Colors.red.shade300)),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Colors.red.shade200),
@@ -173,23 +173,26 @@ void showBookDetailSheet(BuildContext context, Book book) {
 
 void _confirmDeleteBook(BuildContext context, Book book) {
   final bookProvider = context.read<BookProvider>();
+  final langProvider = context.read<LanguageProvider>();
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('Delete Book?'),
-      content: Text('Remove "${book.title}" and all its reading sessions?'),
+      title: Text(langProvider.translate('delete_book_title')),
+      content: Text(
+          '${langProvider.translate('delete_book_confirm_prefix')}${book.title}${langProvider.translate('delete_book_confirm_suffix')}'),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(langProvider.translate('cancel'))),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade300),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
           onPressed: () {
             bookProvider.deleteBook(book.id!);
             Navigator.pop(ctx);
           },
-          child: Text('Delete', style: TextStyle(color: Colors.white)),
+          child: Text(langProvider.translate('delete'),
+              style: TextStyle(color: Colors.white)),
         ),
       ],
     ),

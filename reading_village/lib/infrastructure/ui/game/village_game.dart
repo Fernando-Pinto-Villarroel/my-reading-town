@@ -8,6 +8,7 @@ import 'components/building_component.dart';
 import 'components/villager_component.dart';
 import 'components/expansion_sign_component.dart';
 import 'package:reading_village/application/services/building_service.dart';
+import 'package:reading_village/application/services/villager_service.dart';
 import 'package:reading_village/domain/entities/inventory_item.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/domain/entities/villager.dart';
@@ -35,6 +36,7 @@ class VillageGame extends FlameGame {
   double _constructionCheckTimer = 0;
   final Map<int, PlacedBuilding> _buildingsById = {};
   List<ActivePowerup> _activePowerups = [];
+  VillagerService? _villagerService;
 
   VillageGame({
     this.onTileTapped,
@@ -52,7 +54,7 @@ class VillageGame extends FlameGame {
 
     final centerWorld =
         VillageRules.defaultAreaCenterTile * UiConstants.tilePixelSize +
-        UiConstants.tilePixelSize / 2;
+            UiConstants.tilePixelSize / 2;
     camera.viewfinder.position = Vector2(centerWorld, centerWorld);
     camera.viewfinder.anchor = Anchor.center;
     camera.viewfinder.zoom = UiConstants.defaultZoom;
@@ -68,6 +70,10 @@ class VillageGame extends FlameGame {
 
   void updateActivePowerups(List<ActivePowerup> powerups) {
     _activePowerups = powerups;
+  }
+
+  void setVillagerService(VillagerService service) {
+    _villagerService = service;
   }
 
   @override
@@ -161,9 +167,8 @@ class VillageGame extends FlameGame {
       }
     }
 
-    final toRemove = _expansionSigns.keys
-        .where((k) => !adjacentLocked.contains(k))
-        .toList();
+    final toRemove =
+        _expansionSigns.keys.where((k) => !adjacentLocked.contains(k)).toList();
     for (final k in toRemove) {
       _expansionSigns[k]?.removeFromParent();
       _expansionSigns.remove(k);
@@ -226,7 +231,8 @@ class VillageGame extends FlameGame {
     }
   }
 
-  void updateVillagers(List<Villager> villagers, {
+  void updateVillagers(
+    List<Villager> villagers, {
     List<String> missingBuildingTypes = const [],
     Map<int, String> houseRoadTiles = const {},
   }) {
@@ -239,11 +245,14 @@ class VillageGame extends FlameGame {
       }
     }
 
-    final currentIds = villagers.where((v) => v.id != null).map((v) => v.id!).toSet();
+    final currentIds =
+        villagers.where((v) => v.id != null).map((v) => v.id!).toSet();
 
-    final toRemove = _villagerComponents.where(
-      (c) => c.villager.id == null || !currentIds.contains(c.villager.id!),
-    ).toList();
+    final toRemove = _villagerComponents
+        .where(
+          (c) => c.villager.id == null || !currentIds.contains(c.villager.id!),
+        )
+        .toList();
     for (final comp in toRemove) {
       comp.removeFromParent();
       _villagerComponents.remove(comp);
@@ -251,10 +260,16 @@ class VillageGame extends FlameGame {
 
     for (int i = 0; i < villagers.length; i++) {
       final v = villagers[i];
+      // Calculate missing needs for this specific villager
+      final villagerMissingNeeds = _villagerService != null
+          ? _villagerService!.missingNeedsForVillager(
+              v, villagers, _buildingsById.values.toList(), _roadTiles)
+          : missingBuildingTypes;
+
       if (v.id != null && existingById.containsKey(v.id!)) {
         existingById[v.id!]!.villager = v;
         existingById[v.id!]!.roadTiles = _roadTilesList;
-        existingById[v.id!]!.missingBuildingTypes = missingBuildingTypes;
+        existingById[v.id!]!.missingBuildingTypes = villagerMissingNeeds;
       } else {
         String? spawnTile;
         if (v.houseId != null) {
@@ -272,7 +287,7 @@ class VillageGame extends FlameGame {
           villager: v,
           position: Vector2(startX, startY),
           roadTiles: _roadTilesList,
-          missingBuildingTypes: missingBuildingTypes,
+          missingBuildingTypes: villagerMissingNeeds,
           onTapped: onVillagerTapped,
         );
         _villagerComponents.add(comp);
@@ -286,7 +301,8 @@ class VillageGame extends FlameGame {
 
   void setCameraForCapture(Vector2 position, double zoom) {
     camera.viewfinder.position = position;
-    camera.viewfinder.zoom = zoom.clamp(UiConstants.minZoom, UiConstants.maxZoom);
+    camera.viewfinder.zoom =
+        zoom.clamp(UiConstants.minZoom, UiConstants.maxZoom);
   }
 
   ({int minX, int minY, int maxX, int maxY})? getOccupiedBounds() {
@@ -324,14 +340,16 @@ class VillageGame extends FlameGame {
 
     final centerWorld =
         VillageRules.defaultAreaCenterTile * UiConstants.tilePixelSize +
-        UiConstants.tilePixelSize / 2;
+            UiConstants.tilePixelSize / 2;
 
     final viewSize = size;
     final childCenterX = (viewSize.x / 2 - tx) / scale;
     final childCenterY = (viewSize.y / 2 - ty) / scale;
 
-    final worldX = centerWorld + (childCenterX - viewSize.x / 2) / UiConstants.defaultZoom;
-    final worldY = centerWorld + (childCenterY - viewSize.y / 2) / UiConstants.defaultZoom;
+    final worldX =
+        centerWorld + (childCenterX - viewSize.x / 2) / UiConstants.defaultZoom;
+    final worldY =
+        centerWorld + (childCenterY - viewSize.y / 2) / UiConstants.defaultZoom;
 
     final ws = UiConstants.worldPixelSize;
     camera.viewfinder.position = Vector2(

@@ -8,6 +8,7 @@ import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/match_character_role_body.dart';
 import 'package:reading_village/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class MatchCharacterRoleScreen extends StatefulWidget {
   const MatchCharacterRoleScreen({super.key});
@@ -169,7 +170,7 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
               return Column(
                 children: [
                   MinigameTopBar(
-                    title: 'Match the Character Role',
+                    title: context.t('match_character_role'),
                     isLandscape: isLandscape,
                     consecutiveWins: _consecutiveWins,
                     winsNeeded: _config.winsNeeded,
@@ -199,8 +200,8 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
           const SizedBox(height: 12),
           QuestionBubble(
             villagerSprite: _villagerSprite,
-            subtitle: 'What is their role?',
-            questionText: 'Who is ${_currentQuestion!['character']}?',
+            subtitle: context.t('what_is_their_role'),
+            questionText: '${context.t('who_is')} ${_currentQuestion!['character']}?',
           ),
           const SizedBox(height: 20),
           ..._shuffledOptions.map((option) => Padding(
@@ -237,8 +238,8 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
             padding: const EdgeInsets.all(8),
             child: QuestionBubble(
               villagerSprite: _villagerSprite,
-              subtitle: 'What is their role?',
-              questionText: 'Who is ${_currentQuestion!['character']}?',
+              subtitle: context.t('what_is_their_role'),
+              questionText: '${context.t('who_is')} ${_currentQuestion!['character']}?',
             ),
           ),
         ),

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/inventory_item.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/villager_book_dialog.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 void showBackpackDialog(BuildContext context, VillageProvider village) {
+  final langProvider = context.read<LanguageProvider>();
   showDialog(
     context: context,
     builder: (ctx) {
@@ -28,7 +32,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                 children: [
                   Icon(Icons.backpack, size: 24, color: AppTheme.peach),
                   const SizedBox(width: 8),
-                  Text('Backpack',
+                  Text(langProvider.translate('backpack'),
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -50,7 +54,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                           .isNotEmpty) ...[
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text('Active Powerups',
+                          child: Text(langProvider.translate('active_powerups'),
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
@@ -64,7 +68,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                       ],
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text('Items',
+                        child: Text(langProvider.translate('items'),
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -73,9 +77,8 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                       const SizedBox(height: 6),
                       _ItemTile(
                         assetPath: 'assets/images/book_item.png',
-                        name: 'Happiness Book',
-                        description:
-                            'Boost a villager to 100% happiness for 24h',
+                        name: langProvider.translate('happiness_book'),
+                        description: langProvider.translate('happiness_book_desc'),
                         quantity: village.itemQuantity('book'),
                         color: AppTheme.pink,
                         onUse: () {
@@ -86,10 +89,10 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                       const SizedBox(height: 8),
                       _ItemTile(
                         assetPath: 'assets/images/sandwich_item.png',
-                        name: 'Constructor Sandwich',
+                        name: langProvider.translate('constructor_sandwich'),
                         description: village.isSpeedBoostActive
-                            ? 'Already active!'
-                            : '2x construction speed for 1 hour',
+                            ? langProvider.translate('already_active')
+                            : langProvider.translate('sandwich_desc'),
                         quantity: village.itemQuantity('sandwich'),
                         color: AppTheme.darkOrange,
                         alreadyActive: village.isSpeedBoostActive,
@@ -100,7 +103,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Construction speed doubled for 1 hour!',
+                                    langProvider.translate('speed_doubled_snack'),
                                     style: TextStyle(color: AppTheme.darkText)),
                                 backgroundColor: AppTheme.mint,
                                 behavior: SnackBarBehavior.floating,
@@ -112,10 +115,10 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                       const SizedBox(height: 8),
                       _ItemTile(
                         assetPath: 'assets/images/hammer_item.png',
-                        name: 'Constructor Hammer',
+                        name: langProvider.translate('constructor_hammer'),
                         description: village.isHammerActive
-                            ? 'Already active!'
-                            : '+1 extra constructor for 24 hours',
+                            ? langProvider.translate('already_active')
+                            : langProvider.translate('hammer_desc'),
                         quantity: village.itemQuantity('hammer'),
                         color: AppTheme.coinGold,
                         alreadyActive: village.isHammerActive,
@@ -126,7 +129,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Extra constructor slot for 24 hours!',
+                                    langProvider.translate('extra_slot_snack'),
                                     style: TextStyle(color: AppTheme.darkText)),
                                 backgroundColor: AppTheme.mint,
                                 behavior: SnackBarBehavior.floating,
@@ -157,19 +160,20 @@ class _ActivePowerupTile extends StatelessWidget {
     String name;
     String assetPath;
     Color color;
+    final langProvider = context.read<LanguageProvider>();
     switch (powerup.type) {
       case 'book_happiness':
-        name = 'Happiness Boost';
+        name = langProvider.translate('happiness_boost');
         assetPath = 'assets/images/book_item.png';
         color = AppTheme.pink;
         break;
       case 'sandwich_speed':
-        name = '2x Speed';
+        name = langProvider.translate('speed_2x');
         assetPath = 'assets/images/sandwich_item.png';
         color = AppTheme.peach;
         break;
       case 'hammer_constructor':
-        name = 'Extra Constructor';
+        name = langProvider.translate('extra_constructor');
         assetPath = 'assets/images/hammer_item.png';
         color = AppTheme.coinGold;
         break;
@@ -296,7 +300,7 @@ class _ItemTile extends StatelessWidget {
                       color: color,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text('Use',
+                    child: Text(context.t('use'),
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -311,7 +315,7 @@ class _ItemTile extends StatelessWidget {
                     color: AppTheme.darkMint.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('Active',
+                  child: Text(context.t('active'),
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,

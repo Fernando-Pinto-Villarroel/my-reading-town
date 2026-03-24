@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/book_search_result.dart';
 import 'package:reading_village/adapters/services/book_search_adapter.dart';
 import 'package:reading_village/adapters/services/image_service_adapter.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/book_form_dialog.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 class BookSearchDialog extends StatefulWidget {
   const BookSearchDialog({super.key});
@@ -82,6 +84,7 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final langProvider = context.read<LanguageProvider>();
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return AlertDialog(
@@ -91,7 +94,7 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
         children: [
           Icon(Icons.search, size: 22, color: AppTheme.lavender),
           SizedBox(width: 8),
-          Text('Search Books Online', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          Text(langProvider.translate('search_books_online'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
         ],
       ),
       content: SizedBox(
@@ -106,7 +109,7 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
               autofocus: true,
               style: TextStyle(fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Search by title, author, ISBN...',
+                hintText: langProvider.translate('search_books_hint'),
                 hintStyle: TextStyle(fontSize: 13),
                 prefixIcon: Icon(Icons.search, size: 18),
                 suffixIcon: _searchController.text.isNotEmpty
@@ -135,9 +138,9 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Search failed. Try again or add manually.',
+                          Text(langProvider.translate('search_failed'),
                               style: TextStyle(fontSize: 12, color: Colors.red.shade400)),
-                          Text('Reason: $_error',
+                          Text('${langProvider.translate('reason')} $_error',
                               style: TextStyle(fontSize: 11, color: Colors.red.shade300),
                               maxLines: 2, overflow: TextOverflow.ellipsis),
                         ],
@@ -153,15 +156,15 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
                       ? Center(
                           child: Text(
                             _searchController.text.isEmpty
-                                ? 'Type to search for books'
-                                : 'No results found',
+                                ? langProvider.translate('type_to_search')
+                                : langProvider.translate('no_results_found'),
                             style: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.5)),
                           ),
                         )
                       : ListView.separated(
                           itemCount: _results.length,
                           separatorBuilder: (_, __) => Divider(height: 1),
-                          itemBuilder: (ctx, i) => _resultTile(_results[i]),
+                          itemBuilder: (ctx, i) => _resultTile(_results[i], langProvider),
                         ),
             ),
           ],
@@ -170,18 +173,18 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
+          child: Text(langProvider.translate('cancel')),
         ),
         OutlinedButton.icon(
           onPressed: _goManual,
           icon: Icon(Icons.edit, size: 16),
-          label: Text('Add Manually'),
+          label: Text(langProvider.translate('add_manually')),
         ),
       ],
     );
   }
 
-  Widget _resultTile(BookSearchResult result) {
+  Widget _resultTile(BookSearchResult result, LanguageProvider langProvider) {
     final thumbUrl = result.thumbnailUrl;
     final smallThumb = thumbUrl?.replaceAll('-M.jpg', '-S.jpg');
 
@@ -202,7 +205,7 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
           if (result.author != null)
             Text(result.author!, style: TextStyle(fontSize: 11, color: AppTheme.darkText.withValues(alpha: 0.6)), maxLines: 1, overflow: TextOverflow.ellipsis),
           if (result.pageCount != null)
-            Text('${result.pageCount} pages', style: TextStyle(fontSize: 11, color: AppTheme.lavender)),
+            Text('${result.pageCount} ${langProvider.translate('pages_label')}', style: TextStyle(fontSize: 11, color: AppTheme.lavender)),
         ],
       ),
       onTap: () => _selectResult(result),

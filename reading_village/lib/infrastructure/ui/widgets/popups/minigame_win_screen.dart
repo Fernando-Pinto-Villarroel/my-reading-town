@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class MinigameWinScreen extends StatelessWidget {
   final String? rewardType;
@@ -21,27 +22,27 @@ class MinigameWinScreen extends StatelessWidget {
 
     switch (rewardType) {
       case 'gems':
-        rewardText = '+5 Gems!';
+        rewardText = '+5 ${context.t('gems')}!';
         rewardAsset = 'assets/images/gem.png';
         rewardColor = AppTheme.gemPurple;
         break;
       case 'book':
-        rewardText = 'x1 Happiness Book!';
+        rewardText = 'x1 ${context.t('happiness_book')}!';
         rewardAsset = 'assets/images/book_item.png';
         rewardColor = AppTheme.pink;
         break;
       case 'sandwich':
-        rewardText = 'x1 Constructor Sandwich!';
+        rewardText = 'x1 ${context.t('constructor_sandwich')}!';
         rewardAsset = 'assets/images/sandwich_item.png';
         rewardColor = AppTheme.peach;
         break;
       case 'hammer':
-        rewardText = 'x1 Constructor Hammer!';
+        rewardText = 'x1 ${context.t('constructor_hammer')}!';
         rewardAsset = 'assets/images/hammer_item.png';
         rewardColor = AppTheme.coinGold;
         break;
       default:
-        rewardText = 'Reward!';
+        rewardText = context.t('claim_reward');
         rewardAsset = 'assets/images/gem.png';
         rewardColor = AppTheme.coinGold;
     }
@@ -77,7 +78,7 @@ class MinigameWinScreen extends StatelessWidget {
                   Icon(Icons.emoji_events, size: 64, color: AppTheme.coinGold),
                   const SizedBox(height: 16),
                   Text(
-                    'You Won!',
+                    context.t('you_won'),
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -86,7 +87,7 @@ class MinigameWinScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '$winsNeeded consecutive correct answers!',
+                    '$winsNeeded ${context.t('consecutive_correct')}',
                     style: TextStyle(
                       fontSize: 14,
                       color: AppTheme.darkText.withValues(alpha: 0.6),
@@ -95,11 +96,13 @@ class MinigameWinScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
                       color: rewardColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: rewardColor.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: rewardColor.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -134,9 +137,10 @@ class MinigameWinScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text(
-                        'Back to Village',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: Text(
+                        context.t('back_to_village'),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

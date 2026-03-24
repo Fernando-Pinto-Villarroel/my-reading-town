@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/infrastructure/ui/game/village_game.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showExpansionDialog(
   BuildContext context, {
@@ -19,6 +21,7 @@ void showExpansionDialog(
   final canAffordGems = village.gems >= gemCost;
   final canAffordCoins = village.coins >= coinCost;
 
+  final langProvider = context.read<LanguageProvider>();
   game.setHighlightedChunk(chunkX, chunkY);
 
   showDialog(
@@ -26,9 +29,10 @@ void showExpansionDialog(
     barrierColor: Colors.black26,
     builder: (ctx) {
       final landscape = isLandscape(ctx);
-      final gridPreview = _buildGridPreview(landscape);
+      final gridPreview = _buildGridPreview(landscape, langProvider);
       final payButtons = _buildPayButtons(
         ctx,
+        langProvider: langProvider,
         landscape: landscape,
         coinCost: coinCost,
         gemCost: gemCost,
@@ -55,7 +59,7 @@ void showExpansionDialog(
                 size: landscape ? 18 : 22, color: AppTheme.pink),
             const SizedBox(width: 8),
             Text(
-              'Expand Territory',
+              langProvider.translate('expand_territory'),
               style: TextStyle(
                 fontSize: landscape ? 15 : 18,
                 fontWeight: FontWeight.bold,
@@ -99,7 +103,7 @@ void showExpansionDialog(
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.darkText.withAlpha(160),
               ),
-              child: const Text('Cancel'),
+              child: Text(langProvider.translate('cancel')),
             ),
           ),
         ],
@@ -110,7 +114,7 @@ void showExpansionDialog(
   });
 }
 
-Widget _buildGridPreview(bool landscape) {
+Widget _buildGridPreview(bool landscape, LanguageProvider langProvider) {
   return Container(
     padding: const EdgeInsets.all(8),
     decoration: BoxDecoration(
@@ -147,7 +151,7 @@ Widget _buildGridPreview(bool landscape) {
         ),
         const SizedBox(height: 4),
         Text(
-          '5 × 5 tiles',
+          langProvider.translate('tiles_5x5'),
           style: TextStyle(
             fontSize: landscape ? 10 : 12,
             color: AppTheme.darkText.withAlpha(160),
@@ -161,6 +165,7 @@ Widget _buildGridPreview(bool landscape) {
 
 Widget _buildPayButtons(
   BuildContext ctx, {
+  required LanguageProvider langProvider,
   required bool landscape,
   required int coinCost,
   required int gemCost,
@@ -176,7 +181,7 @@ Widget _buildPayButtons(
     mainAxisSize: MainAxisSize.min,
     children: [
       Text(
-        'Unlock this area with:',
+        langProvider.translate('unlock_area_with'),
         style: TextStyle(
           fontSize: landscape ? 12 : 14,
           color: AppTheme.darkText,
@@ -206,7 +211,7 @@ Widget _buildPayButtons(
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Text(
-              'OR',
+              langProvider.translate('or'),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppTheme.darkText.withAlpha(140),

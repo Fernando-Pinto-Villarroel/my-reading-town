@@ -3,6 +3,7 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/template_list.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class BuildingSelector extends StatelessWidget {
   final VillageProvider village;
@@ -55,17 +56,20 @@ class BuildingSelector extends StatelessWidget {
               indicatorSize: TabBarIndicatorSize.label,
               labelStyle: TextStyle(
                   fontSize: landscape ? 11 : 13, fontWeight: FontWeight.bold),
-              unselectedLabelStyle:
-                  TextStyle(fontSize: landscape ? 11 : 13),
+              unselectedLabelStyle: TextStyle(fontSize: landscape ? 11 : 13),
               tabs: [
-                Tab(text: 'Buildings', height: landscape ? 26 : 30),
-                Tab(text: 'Decorations', height: landscape ? 26 : 30),
-                Tab(text: 'Tiles', height: landscape ? 26 : 30),
+                Tab(
+                    text: context.t('buildings_tab'),
+                    height: landscape ? 26 : 30),
+                Tab(
+                    text: context.t('decorations_tab'),
+                    height: landscape ? 26 : 30),
+                Tab(text: context.t('tiles_tab'), height: landscape ? 26 : 30),
               ],
             ),
           ),
           if (selectedBuildingType != null || movingBuildingId == null)
-            _buildActionHints(),
+            _buildActionHints(context),
           Expanded(
             child: TabBarView(
               controller: tabController,
@@ -100,7 +104,7 @@ class BuildingSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildActionHints() {
+  Widget _buildActionHints(BuildContext context) {
     return Padding(
       padding:
           EdgeInsets.symmetric(horizontal: 12, vertical: landscape ? 2 : 4),
@@ -111,7 +115,7 @@ class BuildingSelector extends StatelessWidget {
             Icon(Icons.touch_app,
                 size: 14, color: AppTheme.darkText.withValues(alpha: 0.5)),
             SizedBox(width: 4),
-            Text('Tap tiles to place or remove',
+            Text(context.t('tap_tiles_road'),
                 style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.darkText.withValues(alpha: 0.6))),
@@ -135,7 +139,7 @@ class BuildingSelector extends StatelessWidget {
                             ? Colors.white
                             : AppTheme.darkText),
                     SizedBox(width: 3),
-                    Text('Flip',
+                    Text(context.t('flip'),
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -147,12 +151,12 @@ class BuildingSelector extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8),
-            Text('Tap a tile to place',
+            Text(context.t('tap_tile_to_place'),
                 style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.darkText.withValues(alpha: 0.6))),
           ] else if (movingBuildingId == null)
-            Text('Tap a building on the map to move it',
+            Text(context.t('tap_tile_to_move'),
                 style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.darkText.withValues(alpha: 0.6))),
@@ -204,15 +208,19 @@ class _TileList extends StatelessWidget {
         return GestureDetector(
           onTap: () => onSelect(selectedType == type ? null : type),
           child: landscape
-              ? _landscapeTile(template, type, isSelected)
-              : _portraitTile(template, type, isSelected),
+              ? _landscapeTile(ctx, template, type, isSelected)
+              : _portraitTile(ctx, template, type, isSelected),
         );
       },
     );
   }
 
-  Widget _landscapeTile(
-      Map<String, dynamic> template, String type, bool isSelected) {
+  Widget _landscapeTile(BuildContext context, Map<String, dynamic> template,
+      String type, bool isSelected) {
+    final translatedName = context.t(
+      'building_name_$type',
+      fallback: template['name'] as String,
+    );
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -227,17 +235,17 @@ class _TileList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(template['name'] as String,
+              Text(translatedName,
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.darkText)),
-              Text('Free',
+              Text(context.t('free'),
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.darkMint)),
-              Text('No build time',
+              Text(context.t('no_build_time'),
                   style: TextStyle(
                       fontSize: 9,
                       color: AppTheme.darkText.withValues(alpha: 0.5))),
@@ -248,8 +256,12 @@ class _TileList extends StatelessWidget {
     );
   }
 
-  Widget _portraitTile(
-      Map<String, dynamic> template, String type, bool isSelected) {
+  Widget _portraitTile(BuildContext context, Map<String, dynamic> template,
+      String type, bool isSelected) {
+    final translatedName = context.t(
+      'building_name_$type',
+      fallback: template['name'] as String,
+    );
     return Container(
       width: 140,
       margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -261,18 +273,21 @@ class _TileList extends StatelessWidget {
         children: [
           _buildTilePreview(type, 80),
           SizedBox(height: 4),
-          Text(template['name'] as String,
+          Text(translatedName,
+              textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.darkText)),
           SizedBox(height: 2),
-          Text('Free',
+          Text(context.t('free'),
+              textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.darkMint)),
-          Text('No build time',
+          Text(context.t('no_build_time'),
+              textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 10,
                   color: AppTheme.darkText.withValues(alpha: 0.5))),

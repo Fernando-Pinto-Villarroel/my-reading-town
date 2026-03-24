@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showSelectVillagerForBook(
     BuildContext context, VillageProvider village) {
   if (village.villagers.isEmpty) return;
+  final langProvider = context.read<LanguageProvider>();
 
   showDialog(
     context: context,
@@ -26,7 +29,7 @@ void showSelectVillagerForBook(
                   Icon(Icons.auto_stories,
                       size: 24, color: AppTheme.pink),
                   const SizedBox(width: 8),
-                  Text('Give Book To...',
+                  Text(langProvider.translate('give_book_to'),
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -59,8 +62,8 @@ void showSelectVillagerForBook(
                               color: AppTheme.darkText)),
                       subtitle: Text(
                         hasBuff
-                            ? 'Already boosted!'
-                            : 'Happiness: ${v.happiness}%',
+                            ? langProvider.translate('already_boosted')
+                            : '${langProvider.translate('villager_happiness')} ${v.happiness}%',
                         style: TextStyle(
                             fontSize: 12,
                             color: hasBuff
@@ -82,7 +85,7 @@ void showSelectVillagerForBook(
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                        '${v.name} is now ecstatic! 100% happiness for 24h!',
+                                        '${v.name} ${langProvider.translate('happiness_book_active')}',
                                         style: TextStyle(
                                             color: AppTheme.darkText)),
                                     backgroundColor: AppTheme.mint,

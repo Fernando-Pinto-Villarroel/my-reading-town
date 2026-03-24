@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/adapters/services/image_service_adapter.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 final _imageAdapter = ImageServiceAdapter();
 
@@ -74,11 +75,11 @@ class CoverImagePicker extends StatelessWidget {
                 ),
               ],
             )
-          : _placeholder(),
+          : _placeholder(context),
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(BuildContext context) {
     return Container(
       width: 90,
       height: 130,
@@ -92,7 +93,7 @@ class CoverImagePicker extends StatelessWidget {
         children: [
           Icon(Icons.add_photo_alternate_outlined, size: 28, color: AppTheme.lavender),
           SizedBox(height: 4),
-          Text('Cover', style: TextStyle(fontSize: 11, color: AppTheme.lavender, fontWeight: FontWeight.w600)),
+          Text(context.t('cover_label'), style: TextStyle(fontSize: 11, color: AppTheme.lavender, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -115,7 +116,7 @@ class CoverImagePicker extends StatelessWidget {
           children: [
             ListTile(
               leading: Icon(Icons.photo_library, color: AppTheme.lavender),
-              title: Text('Choose from Gallery'),
+              title: Text(ctx.t('choose_from_gallery')),
               onTap: () async {
                 Navigator.pop(ctx);
                 final path = await _imageAdapter.pickFromGallery();
@@ -124,7 +125,7 @@ class CoverImagePicker extends StatelessWidget {
             ),
             ListTile(
               leading: Icon(Icons.camera_alt, color: AppTheme.pink),
-              title: Text('Take a Photo'),
+              title: Text(ctx.t('take_a_photo')),
               onTap: () async {
                 Navigator.pop(ctx);
                 final path = await _imageAdapter.pickFromCamera();
@@ -134,7 +135,7 @@ class CoverImagePicker extends StatelessWidget {
             if (imagePath != null && imagePath!.isNotEmpty)
               ListTile(
                 leading: Icon(Icons.delete_outline, color: Colors.red.shade300),
-                title: Text('Remove Cover'),
+                title: Text(ctx.t('remove_cover')),
                 onTap: () {
                   Navigator.pop(ctx);
                   onChanged(null);

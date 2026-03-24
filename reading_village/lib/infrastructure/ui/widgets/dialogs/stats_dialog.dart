@@ -5,6 +5,7 @@ import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 void showStatsDialog(
     BuildContext context, VillageProvider village, BookProvider bookProvider) {
@@ -29,15 +30,15 @@ void showStatsDialog(
               children: [
                 Row(
                   children: [
-                    Icon(Icons.bar_chart,
-                        size: 24, color: AppTheme.lavender),
+                    Icon(Icons.bar_chart, size: 24, color: AppTheme.lavender),
                     SizedBox(width: 8),
-                    Text('Village Stats',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.darkText)),
-                    Spacer(),
+                    Expanded(
+                      child: Text(ctx.t('village_stats'),
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.darkText)),
+                    ),
                     IconButton(
                         icon: Icon(Icons.close),
                         onPressed: () => Navigator.pop(ctx)),
@@ -46,19 +47,19 @@ void showStatsDialog(
                 SizedBox(height: 8),
                 StatRow(
                     icon: ResourceIcon.coin(size: 28),
-                    label: 'Coins',
+                    label: ctx.t('coins'),
                     value: '${village.coins}'),
                 StatRow(
                     icon: ResourceIcon.gem(size: 28),
-                    label: 'Gems',
+                    label: ctx.t('gems'),
                     value: '${village.gems}'),
                 StatRow(
                     icon: ResourceIcon.wood(size: 28),
-                    label: 'Wood',
+                    label: ctx.t('wood'),
                     value: '${village.wood}'),
                 StatRow(
                     icon: ResourceIcon.metal(size: 28),
-                    label: 'Metal',
+                    label: ctx.t('metal'),
                     value: '${village.metal}'),
                 Divider(),
                 FutureBuilder<Map<String, int>>(
@@ -76,49 +77,47 @@ void showStatsDialog(
                         StatRow(
                             icon: Icon(Icons.auto_stories,
                                 size: 28, color: AppTheme.lavender),
-                            label: 'Pages Read',
+                            label: ctx.t('pages_read'),
                             value: '${stats['totalPages']}'),
                         StatRow(
                             icon: Icon(Icons.menu_book,
                                 size: 28, color: AppTheme.pink),
-                            label: 'Books',
+                            label: ctx.t('books_stat'),
                             value: '${bookProvider.books.length}'),
                         StatRow(
                             icon: Icon(Icons.star,
                                 size: 28, color: AppTheme.coinGold),
-                            label: 'Completed',
+                            label: ctx.t('completed'),
                             value: '${stats['completedBooks']}'),
                         StatRow(
                             icon: Icon(Icons.history,
                                 size: 28, color: AppTheme.skyBlue),
-                            label: 'Sessions',
+                            label: ctx.t('sessions'),
                             value: '${stats['totalSessions']}'),
                         if ((stats['totalTimeMinutes'] ?? 0) > 0)
                           StatRow(
                               icon: Icon(Icons.timer,
                                   size: 28, color: AppTheme.mint),
-                              label: 'Reading Time',
-                              value: _formatTotalTime(stats['totalTimeMinutes']!)),
+                              label: ctx.t('reading_time'),
+                              value:
+                                  _formatTotalTime(stats['totalTimeMinutes']!)),
                       ],
                     );
                   },
                 ),
                 Divider(),
                 StatRow(
-                    icon:
-                        Icon(Icons.house, size: 28, color: AppTheme.mint),
-                    label: 'Buildings',
+                    icon: Icon(Icons.house, size: 28, color: AppTheme.mint),
+                    label: ctx.t('buildings'),
                     value:
                         '${village.placedBuildings.where((b) => b.isConstructed).length}'),
                 StatRow(
-                    icon: Icon(Icons.favorite,
-                        size: 28, color: AppTheme.pink),
-                    label: 'Happiness',
+                    icon: Icon(Icons.favorite, size: 28, color: AppTheme.pink),
+                    label: ctx.t('happiness'),
                     value: '${village.villageHappiness}%'),
                 StatRow(
-                    icon:
-                        Icon(Icons.pets, size: 28, color: AppTheme.peach),
-                    label: 'Villagers',
+                    icon: Icon(Icons.pets, size: 28, color: AppTheme.peach),
+                    label: ctx.t('villagers'),
                     value: '${village.villagers.length}'),
               ],
             ),
@@ -165,8 +164,7 @@ class StatRow extends StatelessWidget {
         children: [
           icon,
           SizedBox(width: 12),
-          Text(label,
-              style: TextStyle(fontSize: 15, color: AppTheme.darkText)),
+          Text(label, style: TextStyle(fontSize: 15, color: AppTheme.darkText)),
           Spacer(),
           Text(value,
               style: TextStyle(

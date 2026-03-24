@@ -5,10 +5,12 @@ import 'package:reading_village/infrastructure/persistence/database_helper.dart'
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/popups/reward_popup.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showLogPagesDialog(BuildContext context, int bookId) {
   final bookProvider = context.read<BookProvider>();
   final villageProvider = context.read<VillageProvider>();
+  final langProvider = context.read<LanguageProvider>();
   final pagesController = TextEditingController();
   final timeController = TextEditingController();
   final book = bookProvider.books.firstWhere((b) => b.id == bookId);
@@ -23,16 +25,16 @@ void showLogPagesDialog(BuildContext context, int bookId) {
         builder: (dialogCtx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Log Reading Session'),
+          title: Text(langProvider.translate('log_reading_session')),
           content: SingleChildScrollView(
             child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('How many pages did you read?',
+              Text(langProvider.translate('how_many_pages'),
                   style: TextStyle(
                       color: AppTheme.darkText.withValues(alpha: 0.7))),
               SizedBox(height: 4),
-              Text('$remainingPages pages remaining',
+              Text('$remainingPages ${langProvider.translate('pages_remaining')}',
                   style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.darkText.withValues(alpha: 0.5))),
@@ -40,8 +42,8 @@ void showLogPagesDialog(BuildContext context, int bookId) {
               TextField(
                 controller: pagesController,
                 decoration: InputDecoration(
-                  labelText: 'Pages Read (max $remainingPages)',
-                  hintText: 'e.g. 15',
+                  labelText: '${langProvider.translate('pages_read_label')} $remainingPages)',
+                  hintText: langProvider.translate('pages_read_hint'),
                   errorText: pagesError,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -53,12 +55,12 @@ void showLogPagesDialog(BuildContext context, int bookId) {
               TextField(
                 controller: timeController,
                 decoration: InputDecoration(
-                  labelText: 'Time taken in minutes (optional)',
-                  hintText: 'e.g. 30',
+                  labelText: langProvider.translate('time_minutes_label'),
+                  hintText: langProvider.translate('time_minutes_hint'),
                   errorText: timeError,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  suffixText: 'min',
+                  suffixText: langProvider.translate('time_unit'),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -67,19 +69,19 @@ void showLogPagesDialog(BuildContext context, int bookId) {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx),
-              child: Text('Cancel'),
+              child: Text(langProvider.translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
                 final pages = int.tryParse(pagesController.text.trim());
                 if (pages == null || pages <= 0) {
                   setDialogState(
-                      () => pagesError = 'Enter a valid number');
+                      () => pagesError = langProvider.translate('enter_valid_number'));
                   return;
                 }
                 if (pages > remainingPages) {
                   setDialogState(() => pagesError =
-                      'Cannot exceed $remainingPages remaining pages');
+                      '${langProvider.translate('cannot_exceed')} $remainingPages ${langProvider.translate('remaining_pages_suffix')}');
                   return;
                 }
 
@@ -88,7 +90,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 if (timeText.isNotEmpty) {
                   timeMins = int.tryParse(timeText);
                   if (timeMins == null || timeMins <= 0) {
-                    setDialogState(() => timeError = 'Enter a valid number of minutes');
+                    setDialogState(() => timeError = langProvider.translate('enter_valid_minutes'));
                     return;
                   }
                 }
@@ -134,7 +136,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                   );
                 }
               },
-              child: Text('Log!'),
+              child: Text(langProvider.translate('log_button')),
             ),
           ],
         ),

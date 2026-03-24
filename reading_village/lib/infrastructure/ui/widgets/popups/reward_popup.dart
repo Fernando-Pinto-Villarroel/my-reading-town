@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class RewardPopup extends StatefulWidget {
   final int coinsEarned;
@@ -108,13 +109,14 @@ class _RewardPopupState extends State<RewardPopup>
                         alignment: Alignment.topRight,
                         child: GestureDetector(
                           onTap: widget.onDismiss,
-                          child: Icon(Icons.close, size: 22, color: Colors.grey),
+                          child:
+                              Icon(Icons.close, size: 22, color: Colors.grey),
                         ),
                       ),
                       Text(
                         widget.bookCompleted
-                            ? 'BOOK COMPLETED!'
-                            : 'Reading Rewards!',
+                            ? context.t('book_completed_title')
+                            : context.t('reading_rewards_title'),
                         style: TextStyle(
                           fontSize: widget.bookCompleted ? 22 : 20,
                           fontWeight: FontWeight.bold,
@@ -127,7 +129,7 @@ class _RewardPopupState extends State<RewardPopup>
                       if (widget.coinsEarned > 0) ...[
                         _RewardRow(
                           icon: ResourceIcon.coin(size: 28),
-                          text: '+${widget.coinsEarned} coins!',
+                          text: '+${widget.coinsEarned} ${context.t('coins')}!',
                           color: AppTheme.darkText,
                         ),
                         SizedBox(height: 8),
@@ -135,7 +137,7 @@ class _RewardPopupState extends State<RewardPopup>
                       if (widget.woodEarned > 0) ...[
                         _RewardRow(
                           icon: ResourceIcon.wood(size: 28),
-                          text: '+${widget.woodEarned} wood!',
+                          text: '+${widget.woodEarned} ${context.t('wood')}!',
                           color: AppTheme.darkText,
                         ),
                         SizedBox(height: 8),
@@ -143,7 +145,7 @@ class _RewardPopupState extends State<RewardPopup>
                       if (widget.metalEarned > 0) ...[
                         _RewardRow(
                           icon: ResourceIcon.metal(size: 28),
-                          text: '+${widget.metalEarned} metal!',
+                          text: '+${widget.metalEarned} ${context.t('metal')}!',
                           color: AppTheme.darkText,
                         ),
                         SizedBox(height: 8),
@@ -151,13 +153,13 @@ class _RewardPopupState extends State<RewardPopup>
                       if (widget.gemsEarned > 0)
                         _RewardRow(
                           icon: ResourceIcon.gem(size: 28),
-                          text: '+${widget.gemsEarned} gems!',
+                          text: '+${widget.gemsEarned} ${context.t('gems')}!',
                           color: AppTheme.gemPurple,
                         ),
                       if (widget.bookCompleted) ...[
                         SizedBox(height: 16),
                         Text(
-                          'Amazing job finishing your book!',
+                          context.t('amazing_job_finishing'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -167,7 +169,7 @@ class _RewardPopupState extends State<RewardPopup>
                       ],
                       SizedBox(height: 16),
                       Text(
-                        'Tap anywhere to continue',
+                        context.t('tap_anywhere'),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -190,7 +192,8 @@ class _RewardRow extends StatelessWidget {
   final String text;
   final Color color;
 
-  const _RewardRow({required this.icon, required this.text, required this.color});
+  const _RewardRow(
+      {required this.icon, required this.text, required this.color});
 
   @override
   Widget build(BuildContext context) {

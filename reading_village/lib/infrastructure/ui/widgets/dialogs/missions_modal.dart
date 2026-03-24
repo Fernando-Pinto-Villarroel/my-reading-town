@@ -5,6 +5,7 @@ import 'package:reading_village/infrastructure/persistence/database_helper.dart'
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/missions_active_tab.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/missions_tree_tab.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 export 'package:reading_village/infrastructure/ui/widgets/common/missions_active_tab.dart' show MissionColors;
 
@@ -89,7 +90,7 @@ class _MissionsDialogState extends State<MissionsDialog>
               children: [
                 Icon(Icons.flag, size: 24, color: AppTheme.pink),
                 const SizedBox(width: 8),
-                Text('Missions',
+                Text(context.t('missions'),
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -110,9 +111,9 @@ class _MissionsDialogState extends State<MissionsDialog>
               labelStyle:
                   const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               unselectedLabelStyle: const TextStyle(fontSize: 13),
-              tabs: const [
-                Tab(text: 'Active Missions'),
-                Tab(text: 'Mission Tree'),
+              tabs: [
+                Tab(text: context.t('active_missions')),
+                Tab(text: context.t('mission_tree')),
               ],
             ),
             const SizedBox(height: 8),

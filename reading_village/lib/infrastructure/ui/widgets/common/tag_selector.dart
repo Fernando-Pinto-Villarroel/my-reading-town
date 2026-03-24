@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/tag.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class TagSelector extends StatelessWidget {
   final List<Tag> availableTags;
@@ -29,18 +30,18 @@ class TagSelector extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text('Tags', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.darkText)),
+            Text(context.t('tags_label'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.darkText)),
             Spacer(),
             if (onManageTags != null)
               GestureDetector(
                 onTap: onManageTags,
-                child: Text('Manage', style: TextStyle(fontSize: 12, color: AppTheme.lavender, fontWeight: FontWeight.bold)),
+                child: Text(context.t('manage'), style: TextStyle(fontSize: 12, color: AppTheme.lavender, fontWeight: FontWeight.bold)),
               ),
           ],
         ),
         SizedBox(height: 6),
         if (selectedTags.isEmpty)
-          Text('No tags added', style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.4)))
+          Text(context.t('no_tags_added'), style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.4)))
         else
           Wrap(
             spacing: 6,

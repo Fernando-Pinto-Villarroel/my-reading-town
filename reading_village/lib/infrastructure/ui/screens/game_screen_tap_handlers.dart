@@ -39,29 +39,26 @@ mixin _GameTapHandlers on State<GameScreen> {
             onSyncGameState: _syncGameState);
       } else {
         showConstructingBuildingSheet(context,
-            building: building,
-            village: village,
-            onSpeedUp: () async {
-              Navigator.pop(context);
-              final success =
-                  await village.speedUpConstruction(building.id!);
-              if (success) {
-                _syncGameState();
-                _notifiedCompletions.add(building.id!);
-                if (mounted) showConstructionCompleteDialog(context, building);
-              }
-            },
-            onCancel: () async {
-              Navigator.pop(context);
-              final success = await village.cancelConstruction(building.id!);
-              if (success) _syncGameState();
-            });
+            building: building, village: village, onSpeedUp: () async {
+          Navigator.pop(context);
+          final success = await village.speedUpConstruction(building.id!);
+          if (success) {
+            _syncGameState();
+            _notifiedCompletions.add(building.id!);
+            if (mounted) showConstructionCompleteDialog(context, building);
+          }
+        }, onCancel: () async {
+          Navigator.pop(context);
+          final success = await village.cancelConstruction(building.id!);
+          if (success) _syncGameState();
+        });
       }
     }
   }
 
-  void _handleConstructionTap(
-      int tileX, int tileY, VillageProvider village) {
+  void _handleConstructionTap(int tileX, int tileY, VillageProvider village) {
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+
     if (!village.isTileUnlocked(tileX, tileY)) {
       final chunkX = tileX ~/ VillageRules.chunkSize;
       final chunkY = tileY ~/ VillageRules.chunkSize;
@@ -76,7 +73,7 @@ mixin _GameTapHandlers on State<GameScreen> {
       if (existingBuilding != null &&
           existingBuilding.id != _movingBuildingId) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('This tile is already occupied',
+            content: Text(langProvider.translate('tile_already_occupied'),
                 style: TextStyle(color: AppTheme.darkText)),
             backgroundColor: AppTheme.peach,
             behavior: SnackBarBehavior.floating));
@@ -101,8 +98,7 @@ mixin _GameTapHandlers on State<GameScreen> {
       final placement = village.findValidPlacement(tileX, tileY, tw, th);
       if (placement == null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                'Cannot place here — tiles are occupied, blocked, or not unlocked',
+            content: Text(langProvider.translate('cannot_place_here'),
                 style: TextStyle(color: AppTheme.darkText)),
             backgroundColor: AppTheme.peach,
             behavior: SnackBarBehavior.floating));
@@ -119,7 +115,8 @@ mixin _GameTapHandlers on State<GameScreen> {
         _selectedBuildingType = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Tap a tile to move ${building.name}',
+          content: Text(
+              '${langProvider.translate('tap_tile_to_move_prefix')} ${building.name}',
               style: TextStyle(color: AppTheme.darkText)),
           backgroundColor: AppTheme.mint,
           behavior: SnackBarBehavior.floating));
@@ -127,15 +124,16 @@ mixin _GameTapHandlers on State<GameScreen> {
   }
 
   void _placeBuilding(int tileX, int tileY) async {
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
     final village = _villageProvider;
     final template = VillageRules.findTemplate(_selectedBuildingType!);
     if (template == null) return;
-    final isDecoration =
-        VillageRules.isDecorationType(_selectedBuildingType!);
+    final isDecoration = VillageRules.isDecorationType(_selectedBuildingType!);
 
-    if (!isDecoration && !village.canPlaceBuildingType(_selectedBuildingType!)) {
+    if (!isDecoration &&
+        !village.canPlaceBuildingType(_selectedBuildingType!)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Building limit reached! Level up to unlock more.',
+          content: Text(langProvider.translate('building_limit_reached'),
               style: TextStyle(color: AppTheme.darkText)),
           backgroundColor: AppTheme.peach,
           behavior: SnackBarBehavior.floating));
@@ -145,7 +143,7 @@ mixin _GameTapHandlers on State<GameScreen> {
     if (!village.canStartConstruction) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              'All constructors are busy! (${village.busyConstructors}/${village.maxConstructors})',
+              '${langProvider.translate('all_constructors_busy')} (${village.busyConstructors}/${village.maxConstructors})',
               style: TextStyle(color: AppTheme.darkText)),
           backgroundColor: AppTheme.peach,
           behavior: SnackBarBehavior.floating));
@@ -162,7 +160,8 @@ mixin _GameTapHandlers on State<GameScreen> {
         village.wood < woodCost ||
         village.metal < metalCost) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Not enough resources! Read more to earn them.',
+          content: Text(
+              langProvider.translate('not_enough_resources_read_more'),
               style: TextStyle(color: AppTheme.darkText)),
           backgroundColor: AppTheme.pink,
           behavior: SnackBarBehavior.floating));
@@ -195,6 +194,7 @@ mixin _GameTapHandlers on State<GameScreen> {
   }
 
   void _moveBuilding(int tileX, int tileY) async {
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
     final village = _villageProvider;
     final messenger = ScaffoldMessenger.of(context);
     final success =
@@ -206,7 +206,7 @@ mixin _GameTapHandlers on State<GameScreen> {
       _syncGameState();
     } else {
       messenger.showSnackBar(SnackBar(
-          content: Text('Cannot move here',
+          content: Text(langProvider.translate('cannot_move_here'),
               style: TextStyle(color: AppTheme.darkText)),
           backgroundColor: AppTheme.peach,
           behavior: SnackBarBehavior.floating));

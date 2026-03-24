@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
@@ -7,9 +8,12 @@ import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/application/services/building_service.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 void showConstructionCompleteDialog(
     BuildContext context, PlacedBuilding building) {
+  final langProvider = context.read<LanguageProvider>();
   final isUpgrade = building.level > 1;
   final template = VillageRules.findTemplate(building.type);
   final baseExp = template?['exp'] as int? ?? 20;
@@ -34,7 +38,9 @@ void showConstructionCompleteDialog(
               children: [
                 Expanded(
                   child: Text(
-                    isUpgrade ? 'Upgrade Complete!' : 'Construction Complete!',
+                    isUpgrade
+                        ? langProvider.translate('upgrade_complete')
+                        : langProvider.translate('construction_complete'),
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -61,8 +67,8 @@ void showConstructionCompleteDialog(
             SizedBox(height: 8),
             Text(
               isUpgrade
-                  ? '${building.name} upgraded to Lv${building.level}!'
-                  : '${building.name} is ready!',
+                  ? '${context.t('building_name_${building.type}', fallback: building.name)} upgraded to Lv${building.level}!'
+                  : '${context.t('building_name_${building.type}', fallback: building.name)} is ready!',
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -100,7 +106,7 @@ void showConstructionCompleteDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text('Yay!',
+                child: Text(langProvider.translate('yay'),
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
@@ -195,9 +201,10 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
     final hours = remaining.inHours;
     final mins = remaining.inMinutes % 60;
     final secs = remaining.inSeconds % 60;
+    final remainingLabel = context.t('remaining');
     final timeText = hours > 0
-        ? '${hours}h ${mins}m ${secs}s remaining'
-        : '${mins}m ${secs}s remaining';
+        ? '${hours}h ${mins}m ${secs}s $remainingLabel'
+        : '${mins}m ${secs}s $remainingLabel';
 
     return Padding(
       padding:
@@ -218,14 +225,14 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
                   width: 88, height: 88, filterQuality: FilterQuality.medium),
               SizedBox(height: 8),
               Text(
-                '${widget.building.name} (Lv${widget.building.level})',
+                '${context.t('building_name_${widget.building.type}', fallback: widget.building.name)} (Lv${widget.building.level})',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.darkText),
               ),
               SizedBox(height: 4),
-              Text('Under construction...',
+              Text(context.t('under_construction'),
                   style: TextStyle(
                       fontSize: 14,
                       color: AppTheme.darkOrange,
@@ -258,7 +265,7 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
                       children: [
                         Icon(Icons.flash_on, size: 20),
                         SizedBox(width: 8),
-                        Text('Speed up',
+                        Text(context.t('speed_up'),
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
@@ -285,15 +292,14 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
                   ),
                   child: Text(
                     widget.building.level > 1
-                        ? 'Cancel Upgrade'
-                        : 'Cancel Construction',
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ? context.t('cancel_upgrade')
+                        : context.t('cancel_construction'),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               SizedBox(height: 4),
-              Text('Full resource refund',
+              Text(context.t('full_resource_refund'),
                   style: TextStyle(
                       fontSize: 11,
                       color: AppTheme.darkText.withValues(alpha: 0.5))),

@@ -7,6 +7,8 @@ import 'package:reading_village/domain/entities/reading_session.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 class BookCard extends StatefulWidget {
   final Book book;
@@ -66,18 +68,24 @@ class _BookCardState extends State<BookCard> {
                             if (widget.book.isCompleted)
                               Container(
                                 margin: EdgeInsets.only(left: 6),
-                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.coinGold.withValues(alpha: 0.2),
+                                  color:
+                                      AppTheme.coinGold.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.star, size: 12, color: AppTheme.coinGold),
+                                    Icon(Icons.star,
+                                        size: 12, color: AppTheme.coinGold),
                                     SizedBox(width: 2),
-                                    Text('Done!',
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+                                    Text(context.t('done'),
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.darkText)),
                                   ],
                                 ),
                               ),
@@ -86,16 +94,21 @@ class _BookCardState extends State<BookCard> {
                                 onTap: widget.onEdit,
                                 child: Padding(
                                   padding: EdgeInsets.only(left: 6),
-                                  child: Icon(Icons.edit, size: 18, color: AppTheme.lavender),
+                                  child: Icon(Icons.edit,
+                                      size: 18, color: AppTheme.lavender),
                                 ),
                               ),
                           ],
                         ),
-                        if (widget.book.author != null && widget.book.author!.isNotEmpty) ...[
+                        if (widget.book.author != null &&
+                            widget.book.author!.isNotEmpty) ...[
                           SizedBox(height: 2),
                           Text(
                             widget.book.author!,
-                            style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6)),
+                            style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    AppTheme.darkText.withValues(alpha: 0.6)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -107,14 +120,19 @@ class _BookCardState extends State<BookCard> {
                             runSpacing: 2,
                             children: widget.book.tags.map((tag) {
                               return Container(
-                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: Color(tag.colorValue).withValues(alpha: 0.6),
+                                  color: Color(tag.colorValue)
+                                      .withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   tag.title,
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.darkText),
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.darkText),
                                 ),
                               );
                             }).toList(),
@@ -127,7 +145,9 @@ class _BookCardState extends State<BookCard> {
                             value: widget.book.progress,
                             backgroundColor: Colors.grey.shade200,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              widget.book.isCompleted ? AppTheme.coinGold : AppTheme.lavender,
+                              widget.book.isCompleted
+                                  ? AppTheme.coinGold
+                                  : AppTheme.lavender,
                             ),
                             minHeight: 8,
                           ),
@@ -136,9 +156,14 @@ class _BookCardState extends State<BookCard> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              '${widget.book.pagesRead} / ${widget.book.totalPages} pages',
-                              style: TextStyle(fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.7)),
+                            Expanded(
+                              child: Text(
+                                '${widget.book.pagesRead} / ${widget.book.totalPages} ${context.t('pages_label')}',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.darkText
+                                        .withValues(alpha: 0.7)),
+                              ),
                             ),
                             if (!widget.book.isCompleted)
                               SizedBox(
@@ -146,10 +171,12 @@ class _BookCardState extends State<BookCard> {
                                 child: ElevatedButton.icon(
                                   onPressed: widget.onLogPages,
                                   icon: Icon(Icons.menu_book, size: 14),
-                                  label: Text('Log', style: TextStyle(fontSize: 12)),
+                                  label: Text(context.t('log_pages'),
+                                      style: TextStyle(fontSize: 12)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.pink,
-                                    padding: EdgeInsets.symmetric(horizontal: 10),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
                                   ),
                                 ),
                               ),
@@ -157,22 +184,26 @@ class _BookCardState extends State<BookCard> {
                         ),
                         Consumer<BookProvider>(
                           builder: (ctx, bp, _) {
-                            final total = bp.sessionsForBook(widget.book.id!)
+                            final total = bp
+                                .sessionsForBook(widget.book.id!)
                                 .where((s) => s.timeTakenMinutes != null)
                                 .fold(0, (sum, s) => sum + s.timeTakenMinutes!);
                             if (total == 0) return SizedBox.shrink();
                             final display = total >= 60
-                                ? '${total ~/ 60}h ${total % 60 > 0 ? '${total % 60}m' : ''}'.trim()
+                                ? '${total ~/ 60}h ${total % 60 > 0 ? '${total % 60}m' : ''}'
+                                    .trim()
                                 : '${total}m';
                             return Padding(
                               padding: EdgeInsets.only(top: 2),
                               child: Row(
                                 children: [
-                                  Icon(Icons.timer, size: 12, color: AppTheme.darkMint),
+                                  Icon(Icons.timer,
+                                      size: 12, color: AppTheme.darkMint),
                                   SizedBox(width: 3),
                                   Text(
-                                    'Total time: $display',
-                                    style: TextStyle(fontSize: 11, color: AppTheme.darkMint),
+                                    '${context.t('total_time_label')} $display',
+                                    style: TextStyle(
+                                        fontSize: 11, color: AppTheme.darkMint),
                                   ),
                                 ],
                               ),
@@ -198,13 +229,18 @@ class _BookCardState extends State<BookCard> {
         final sessions = bookProvider.sessionsForBook(widget.book.id!);
         if (sessions.isEmpty) return SizedBox.shrink();
 
+        final sessionLabel = sessions.length == 1
+            ? context.t('reading_session_singular')
+            : context.t('reading_sessions_plural');
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 8),
             Divider(height: 1, color: Colors.grey.shade200),
             GestureDetector(
-              onTap: () => setState(() => _sessionsExpanded = !_sessionsExpanded),
+              onTap: () =>
+                  setState(() => _sessionsExpanded = !_sessionsExpanded),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 6),
                 child: Row(
@@ -212,7 +248,7 @@ class _BookCardState extends State<BookCard> {
                     Icon(Icons.history, size: 14, color: AppTheme.lavender),
                     SizedBox(width: 4),
                     Text(
-                      '${sessions.length} reading session${sessions.length == 1 ? '' : 's'}',
+                      '${sessions.length} $sessionLabel',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.lavender,
@@ -252,7 +288,8 @@ class _BookCardState extends State<BookCard> {
   }
 
   Widget _buildCover() {
-    if (widget.book.coverImagePath != null && widget.book.coverImagePath!.isNotEmpty) {
+    if (widget.book.coverImagePath != null &&
+        widget.book.coverImagePath!.isNotEmpty) {
       return SkeletonImage(
         image: FileImage(File(widget.book.coverImagePath!)),
         width: 48,
@@ -337,7 +374,7 @@ class _SessionRow extends StatelessWidget {
                     Icon(Icons.menu_book, size: 12, color: AppTheme.lavender),
                     SizedBox(width: 3),
                     Text(
-                      '${session.pagesRead} pages',
+                      '${session.pagesRead} ${context.t('pages_label')}',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -346,7 +383,9 @@ class _SessionRow extends StatelessWidget {
                     ),
                     if (session.timeTakenMinutes != null) ...[
                       SizedBox(width: 8),
-                      Icon(Icons.timer, size: 12, color: AppTheme.mint.withValues(alpha: 0.8)),
+                      Icon(Icons.timer,
+                          size: 12,
+                          color: AppTheme.mint.withValues(alpha: 0.8)),
                       SizedBox(width: 3),
                       Text(
                         _formatTime(session.timeTakenMinutes!),
@@ -368,7 +407,8 @@ class _SessionRow extends StatelessWidget {
             onPressed: () => _showEditDialog(context, bookProvider),
           ),
           IconButton(
-            icon: Icon(Icons.delete_outline, size: 16, color: Colors.red.shade300),
+            icon: Icon(Icons.delete_outline,
+                size: 16, color: Colors.red.shade300),
             padding: EdgeInsets.zero,
             constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             onPressed: () => _confirmDelete(context, bookProvider),
@@ -379,9 +419,12 @@ class _SessionRow extends StatelessWidget {
   }
 
   void _showEditDialog(BuildContext context, BookProvider bookProvider) {
+    final langProvider = context.read<LanguageProvider>();
     final pagesController = TextEditingController(text: '${session.pagesRead}');
     final timeController = TextEditingController(
-        text: session.timeTakenMinutes != null ? '${session.timeTakenMinutes}' : '');
+        text: session.timeTakenMinutes != null
+            ? '${session.timeTakenMinutes}'
+            : '');
     final maxPages = otherSessionsPages + session.pagesRead > totalPages
         ? totalPages - otherSessionsPages
         : totalPages - otherSessionsPages;
@@ -393,17 +436,20 @@ class _SessionRow extends StatelessWidget {
         String? timeError;
         return StatefulBuilder(
           builder: (dialogCtx, setDialogState) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('Edit Session'),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(langProvider.translate('edit_session')),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: pagesController,
                   decoration: InputDecoration(
-                    labelText: 'Pages Read (max $maxPages)',
+                    labelText:
+                        '${langProvider.translate('pages_read_label')} $maxPages)',
                     errorText: pagesError,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   keyboardType: TextInputType.number,
                   autofocus: true,
@@ -412,11 +458,12 @@ class _SessionRow extends StatelessWidget {
                 TextField(
                   controller: timeController,
                   decoration: InputDecoration(
-                    labelText: 'Time taken in minutes (optional)',
-                    hintText: 'Leave empty to clear',
+                    labelText: langProvider.translate('time_minutes_label'),
+                    hintText: langProvider.translate('leave_empty_to_clear'),
                     errorText: timeError,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    suffixText: 'min',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    suffixText: langProvider.translate('time_unit'),
                   ),
                   keyboardType: TextInputType.number,
                 ),
@@ -425,17 +472,19 @@ class _SessionRow extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogCtx),
-                child: Text('Cancel'),
+                child: Text(langProvider.translate('cancel')),
               ),
               ElevatedButton(
                 onPressed: () async {
                   final pages = int.tryParse(pagesController.text.trim());
                   if (pages == null || pages <= 0) {
-                    setDialogState(() => pagesError = 'Enter a valid number');
+                    setDialogState(() => pagesError =
+                        langProvider.translate('enter_valid_number'));
                     return;
                   }
                   if (pages > maxPages) {
-                    setDialogState(() => pagesError = 'Cannot exceed $maxPages pages');
+                    setDialogState(() => pagesError =
+                        '${langProvider.translate('cannot_exceed')} $maxPages ${langProvider.translate('pages_label')}');
                     return;
                   }
 
@@ -444,7 +493,8 @@ class _SessionRow extends StatelessWidget {
                   if (timeText.isNotEmpty) {
                     timeMins = int.tryParse(timeText);
                     if (timeMins == null || timeMins <= 0) {
-                      setDialogState(() => timeError = 'Enter a valid number');
+                      setDialogState(() => timeError =
+                          langProvider.translate('enter_valid_number'));
                       return;
                     }
                   }
@@ -452,16 +502,19 @@ class _SessionRow extends StatelessWidget {
 
                   Navigator.pop(dialogCtx);
                   try {
-                    await bookProvider.editSession(session.id!, bookId, pages, timeMins);
+                    await bookProvider.editSession(
+                        session.id!, bookId, pages, timeMins);
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ${e.toString()}')),
+                        SnackBar(
+                            content: Text(
+                                '${langProvider.translate('error_prefix')}${e.toString()}')),
                       );
                     }
                   }
                 },
-                child: Text('Save'),
+                child: Text(langProvider.translate('save')),
               ),
             ],
           ),
@@ -471,19 +524,22 @@ class _SessionRow extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, BookProvider bookProvider) {
+    final langProvider = context.read<LanguageProvider>();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Session?'),
-        content: Text('This will remove ${session.pagesRead} pages from your progress.'),
+        title: Text(langProvider.translate('delete_session_title')),
+        content: Text(
+            '${langProvider.translate('delete_session_confirm_prefix')} ${session.pagesRead} ${langProvider.translate('delete_session_confirm_suffix')}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel'),
+            child: Text(langProvider.translate('cancel')),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
             onPressed: () async {
               Navigator.pop(ctx);
               try {
@@ -491,12 +547,15 @@ class _SessionRow extends StatelessWidget {
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${e.toString()}')),
+                    SnackBar(
+                        content: Text(
+                            '${langProvider.translate('error_prefix')}${e.toString()}')),
                   );
                 }
               }
             },
-            child: Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(langProvider.translate('delete'),
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

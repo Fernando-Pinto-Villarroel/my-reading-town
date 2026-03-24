@@ -22,6 +22,8 @@ class VillageProvider extends ChangeNotifier {
   VillageProvider(this._repo, this._buildingSvc, this._villagerSvc,
       this._inventorySvc, this._missionSvc, this._playerSvc);
 
+  VillagerService get villagerService => _villagerSvc;
+
   List<PlacedBuilding> _placedBuildings = [];
   List<Villager> _villagers = [];
   int _coins = 0;
@@ -43,6 +45,7 @@ class VillageProvider extends ChangeNotifier {
   Map<String, MissionProgress> _missionProgress = {};
   bool _bookItemUsedSinceActive = false;
   int? _pendingLevelUp;
+  String _language = 'en';
 
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
@@ -58,6 +61,7 @@ class VillageProvider extends ChangeNotifier {
   int? get pendingLevelUp => _pendingLevelUp;
   String get username => _username;
   String get townName => _townName;
+  String get language => _language;
 
   List<InventoryItem> get inventoryItems => _inventoryItems;
   List<ActivePowerup> get activePowerups => _activePowerups;
@@ -71,17 +75,21 @@ class VillageProvider extends ChangeNotifier {
   }
 
   int get maxConstructors => _inventorySvc.maxConstructors(_activePowerups);
-  int get busyConstructors => _placedBuildings.where((b) => !b.isConstructed).length;
+  int get busyConstructors =>
+      _placedBuildings.where((b) => !b.isConstructed).length;
   bool get canStartConstruction => busyConstructors < maxConstructors;
-  bool get isSpeedBoostActive => _inventorySvc.isSpeedBoostActive(_activePowerups);
-  double get constructionSpeedMultiplier => _inventorySvc.constructionSpeedMultiplier(_activePowerups);
+  bool get isSpeedBoostActive =>
+      _inventorySvc.isSpeedBoostActive(_activePowerups);
+  double get constructionSpeedMultiplier =>
+      _inventorySvc.constructionSpeedMultiplier(_activePowerups);
   bool get isHammerActive => _inventorySvc.isHammerActive(_activePowerups);
   int get villageHappiness => _villagerSvc.villageHappiness(_villagers);
 
   bool villagerHasHappinessBoost(int villagerId) =>
       _inventorySvc.villagerHasHappinessBoost(villagerId, _activePowerups);
 
-  int itemQuantity(String type) => _inventorySvc.itemQuantity(type, _inventoryItems);
+  int itemQuantity(String type) =>
+      _inventorySvc.itemQuantity(type, _inventoryItems);
 
   bool isMinigameOnCooldown(String minigameId) =>
       _inventorySvc.isMinigameOnCooldown(minigameId, _minigameCooldowns);
@@ -89,8 +97,8 @@ class VillageProvider extends ChangeNotifier {
   Duration minigameCooldownRemaining(String minigameId) =>
       _inventorySvc.minigameCooldownRemaining(minigameId, _minigameCooldowns);
 
-  List<String> get missingBuildingTypes =>
-      _villagerSvc.missingBuildingTypes(_villagers, _placedBuildings, _roadTiles);
+  List<String> get missingBuildingTypes => _villagerSvc.missingBuildingTypes(
+      _villagers, _placedBuildings, _roadTiles);
 
   bool isBuildingRoadConnected(PlacedBuilding b) =>
       _buildingSvc.isBuildingRoadConnected(b, _roadTiles);
@@ -100,20 +108,26 @@ class VillageProvider extends ChangeNotifier {
 
   bool isRoadTile(int x, int y) => _buildingSvc.isRoadTile(x, y, _roadTiles);
 
-  bool hasBuildingAt(int x, int y) => _buildingSvc.hasBuildingAt(x, y, _placedBuildings);
+  bool hasBuildingAt(int x, int y) =>
+      _buildingSvc.hasBuildingAt(x, y, _placedBuildings);
 
-  PlacedBuilding? getBuildingAt(int x, int y) => _buildingSvc.getBuildingAt(x, y, _placedBuildings);
+  PlacedBuilding? getBuildingAt(int x, int y) =>
+      _buildingSvc.getBuildingAt(x, y, _placedBuildings);
 
   bool canPlaceBuildingAtArea(int x, int y, int width, int height) =>
-      _buildingSvc.canPlaceBuildingAtArea(x, y, width, height, _placedBuildings, _roadTiles, _unlockedChunks);
+      _buildingSvc.canPlaceBuildingAtArea(
+          x, y, width, height, _placedBuildings, _roadTiles, _unlockedChunks);
 
-  ({int x, int y})? findValidPlacement(int tapX, int tapY, int width, int height) =>
-      _buildingSvc.findValidPlacement(tapX, tapY, width, height, _placedBuildings, _roadTiles, _unlockedChunks);
+  ({int x, int y})? findValidPlacement(
+          int tapX, int tapY, int width, int height) =>
+      _buildingSvc.findValidPlacement(tapX, tapY, width, height,
+          _placedBuildings, _roadTiles, _unlockedChunks);
 
   bool isChunkAdjacentToUnlocked(int chunkX, int chunkY) =>
       _buildingSvc.isChunkAdjacentToUnlocked(chunkX, chunkY, _unlockedChunks);
 
-  int buildingCountOfType(String type) => _buildingSvc.buildingCountOfType(type, _placedBuildings);
+  int buildingCountOfType(String type) =>
+      _buildingSvc.buildingCountOfType(type, _placedBuildings);
 
   bool canPlaceBuildingType(String type) =>
       _buildingSvc.canPlaceBuildingType(type, _playerLevel, _placedBuildings);
@@ -130,23 +144,33 @@ class VillageProvider extends ChangeNotifier {
   static String tileKey(int x, int y) => BuildingService.tileKey(x, y);
 
   List<String> missingNeedsForVillager(Villager villager) =>
-      _villagerSvc.missingNeedsForVillager(villager, _villagers, _placedBuildings, _roadTiles);
+      _villagerSvc.missingNeedsForVillager(
+          villager, _villagers, _placedBuildings, _roadTiles);
 
   // --- Branch / Mission delegation ---
 
-  bool isBranchUnlocked(MissionBranch branch) => _missionSvc.isBranchUnlocked(branch, _missionProgress);
-  bool isBranchFullyCompleted(MissionBranch branch) => _missionSvc.isBranchFullyCompleted(branch, _missionProgress);
-  Mission? getActiveMission(MissionBranch branch) => _missionSvc.getActiveMission(branch, _missionProgress);
-  List<Mission> getActiveMissions() => _missionSvc.getActiveMissions(_missionProgress);
+  bool isBranchUnlocked(MissionBranch branch) =>
+      _missionSvc.isBranchUnlocked(branch, _missionProgress);
+  bool isBranchFullyCompleted(MissionBranch branch) =>
+      _missionSvc.isBranchFullyCompleted(branch, _missionProgress);
+  Mission? getActiveMission(MissionBranch branch) =>
+      _missionSvc.getActiveMission(branch, _missionProgress);
+  List<Mission> getActiveMissions() =>
+      _missionSvc.getActiveMissions(_missionProgress);
 
-  int get unclaimedCompletedMissionCount => _missionSvc.unclaimedCompletedMissionCount(_missionProgress);
+  int get unclaimedCompletedMissionCount =>
+      _missionSvc.unclaimedCompletedMissionCount(_missionProgress);
 
   ({int current, int target}) getMissionProgressValues(Mission mission,
       {int? totalPagesRead, int? completedBooks}) {
     return _missionSvc.getMissionProgressValues(
-      mission, _placedBuildings, _villagers, _activePowerups,
+      mission,
+      _placedBuildings,
+      _villagers,
+      _activePowerups,
       _bookItemUsedSinceActive,
-      totalPagesRead: totalPagesRead, completedBooks: completedBooks,
+      totalPagesRead: totalPagesRead,
+      completedBooks: completedBooks,
     );
   }
 
@@ -158,9 +182,11 @@ class VillageProvider extends ChangeNotifier {
       final boostDurationHours = row['duration_hours'] as int;
       final boostEnd = boostStart.add(Duration(hours: boostDurationHours));
       for (final b in _placedBuildings) {
-        if (b.isConstructed || b.constructionStart == null || b.id == null) continue;
+        if (b.isConstructed || b.constructionStart == null || b.id == null)
+          continue;
         final constructStart = DateTime.parse(b.constructionStart!);
-        final overlapStart = constructStart.isAfter(boostStart) ? constructStart : boostStart;
+        final overlapStart =
+            constructStart.isAfter(boostStart) ? constructStart : boostStart;
         if (!boostEnd.isAfter(overlapStart)) continue;
         final bonus = boostEnd.difference(overlapStart);
         final newStart = constructStart.subtract(bonus);
@@ -174,7 +200,8 @@ class VillageProvider extends ChangeNotifier {
 
   Future<void> loadData() async {
     final placedMaps = await _repo.getPlacedBuildings();
-    _placedBuildings = placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
+    _placedBuildings =
+        placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
 
     final villagerMaps = await _repo.getVillagers();
     _villagers = villagerMaps.map((m) => Villager.fromMap(m)).toList();
@@ -186,10 +213,14 @@ class VillageProvider extends ChangeNotifier {
     _metal = resources['metal'] as int? ?? 0;
 
     final roadMaps = await _repo.getRoadTiles();
-    _roadTiles = roadMaps.map((m) => tileKey(m['tile_x'] as int, m['tile_y'] as int)).toSet();
+    _roadTiles = roadMaps
+        .map((m) => tileKey(m['tile_x'] as int, m['tile_y'] as int))
+        .toSet();
 
     final chunkMaps = await _repo.getUnlockedChunks();
-    _unlockedChunks = chunkMaps.map((m) => tileKey(m['chunk_x'] as int, m['chunk_y'] as int)).toSet();
+    _unlockedChunks = chunkMaps
+        .map((m) => tileKey(m['chunk_x'] as int, m['chunk_y'] as int))
+        .toSet();
 
     final gameState = await _repo.getGameState();
     _expansionCount = gameState['expansion_count'] as int;
@@ -197,6 +228,7 @@ class VillageProvider extends ChangeNotifier {
     _playerLevel = gameState['player_level'] as int;
     _username = gameState['username'] as String;
     _townName = gameState['town_name'] as String;
+    _language = gameState['language'] as String? ?? 'en';
 
     _inventoryItems = await _inventorySvc.loadInventoryItems();
     await _crystallizeExpiredSpeedups();
@@ -204,13 +236,17 @@ class VillageProvider extends ChangeNotifier {
     _minigameCooldowns = await _inventorySvc.loadMinigameCooldowns();
     _missionProgress = await _missionSvc.loadMissionProgress();
 
-    _villagers = await _villagerSvc.reconcileVillagers(_villagers, _placedBuildings, _roadTiles);
-    _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+    _villagers = await _villagerSvc.reconcileVillagers(
+        _villagers, _placedBuildings, _roadTiles);
+    _villagerSvc.updateVillagerHappiness(
+        _villagers, _placedBuildings, _roadTiles, _activePowerups);
     notifyListeners();
   }
 
-  Future<void> addResources({int coins = 0, int gems = 0, int wood = 0, int metal = 0}) async {
-    await _repo.addResources(coins: coins, gems: gems, wood: wood, metal: metal);
+  Future<void> addResources(
+      {int coins = 0, int gems = 0, int wood = 0, int metal = 0}) async {
+    await _repo.addResources(
+        coins: coins, gems: gems, wood: wood, metal: metal);
     _coins += coins;
     _gems += gems;
     _wood += wood;
@@ -245,14 +281,26 @@ class VillageProvider extends ChangeNotifier {
     int tileHeight = 1,
     bool isDecoration = false,
   }) async {
-    if (_coins < coinCost || _gems < gemCost || _wood < woodCost || _metal < metalCost) return null;
+    if (_coins < coinCost ||
+        _gems < gemCost ||
+        _wood < woodCost ||
+        _metal < metalCost) return null;
     if (!canStartConstruction) return null;
 
     final saved = await _buildingSvc.placeBuilding(
-      type: type, name: name, tileX: tileX, tileY: tileY,
-      coinCost: coinCost, gemCost: gemCost, woodCost: woodCost, metalCost: metalCost,
-      happinessBonus: happinessBonus, constructionMinutes: constructionMinutes,
-      isFlipped: isFlipped, tileWidth: tileWidth, tileHeight: tileHeight,
+      type: type,
+      name: name,
+      tileX: tileX,
+      tileY: tileY,
+      coinCost: coinCost,
+      gemCost: gemCost,
+      woodCost: woodCost,
+      metalCost: metalCost,
+      happinessBonus: happinessBonus,
+      constructionMinutes: constructionMinutes,
+      isFlipped: isFlipped,
+      tileWidth: tileWidth,
+      tileHeight: tileHeight,
       isDecoration: isDecoration,
     );
     if (saved == null) return null;
@@ -267,13 +315,16 @@ class VillageProvider extends ChangeNotifier {
   }
 
   Future<List<PlacedBuilding>> checkAndCompleteConstructions() async {
-    final completed = await _buildingSvc.checkAndCompleteConstructions(_placedBuildings, _activePowerups);
+    final completed = await _buildingSvc.checkAndCompleteConstructions(
+        _placedBuildings, _activePowerups);
     if (completed.isNotEmpty) {
       for (final b in completed) {
         await addExp(_buildingSvc.getExpForConstruction(b));
       }
-      _villagers = await _villagerSvc.reconcileVillagers(_villagers, _placedBuildings, _roadTiles);
-      _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+      _villagers = await _villagerSvc.reconcileVillagers(
+          _villagers, _placedBuildings, _roadTiles);
+      _villagerSvc.updateVillagerHappiness(
+          _villagers, _placedBuildings, _roadTiles, _activePowerups);
       notifyListeners();
     }
     return completed;
@@ -282,13 +333,17 @@ class VillageProvider extends ChangeNotifier {
   Future<bool> upgradeBuilding(int buildingId) async {
     if (!canStartConstruction) return false;
     final result = await _buildingSvc.upgradeBuilding(
-      buildingId, _placedBuildings,
-      coins: _coins, wood: _wood, metal: _metal,
+      buildingId,
+      _placedBuildings,
+      coins: _coins,
+      wood: _wood,
+      metal: _metal,
     );
     if (result) {
       await refreshResources();
       final placedMaps = await _repo.getPlacedBuildings();
-      _placedBuildings = placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
+      _placedBuildings =
+          placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
       notifyListeners();
     }
     return result;
@@ -299,21 +354,26 @@ class VillageProvider extends ChangeNotifier {
     if (idx == -1) return false;
     final building = _placedBuildings[idx];
 
-    final result = await _buildingSvc.speedUpConstruction(buildingId, _placedBuildings, _gems, _activePowerups);
+    final result = await _buildingSvc.speedUpConstruction(
+        buildingId, _placedBuildings, _gems, _activePowerups);
     if (!result) return false;
 
     final expAmount = _buildingSvc.getExpForConstruction(building);
     building.isConstructed = true;
-    building.constructionStart = DateTime.now().subtract(Duration(hours: 24)).toIso8601String();
+    building.constructionStart =
+        DateTime.now().subtract(Duration(hours: 24)).toIso8601String();
     await addExp(expAmount);
 
     final placedMaps = await _repo.getPlacedBuildings();
-    _placedBuildings = placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
+    _placedBuildings =
+        placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
     final villagerMaps = await _repo.getVillagers();
     _villagers = villagerMaps.map((m) => Villager.fromMap(m)).toList();
 
-    _villagers = await _villagerSvc.reconcileVillagers(_villagers, _placedBuildings, _roadTiles);
-    _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+    _villagers = await _villagerSvc.reconcileVillagers(
+        _villagers, _placedBuildings, _roadTiles);
+    _villagerSvc.updateVillagerHappiness(
+        _villagers, _placedBuildings, _roadTiles, _activePowerups);
     await refreshResources();
     notifyListeners();
     return true;
@@ -325,7 +385,8 @@ class VillageProvider extends ChangeNotifier {
     final building = _placedBuildings[idx];
     final isUpgrade = building.level > 1;
 
-    final result = await _buildingSvc.cancelConstruction(buildingId, _placedBuildings);
+    final result =
+        await _buildingSvc.cancelConstruction(buildingId, _placedBuildings);
     if (!result) return false;
 
     if (!isUpgrade) {
@@ -335,17 +396,20 @@ class VillageProvider extends ChangeNotifier {
     await refreshResources();
     if (isUpgrade) {
       final placedMaps = await _repo.getPlacedBuildings();
-      _placedBuildings = placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
+      _placedBuildings =
+          placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
     }
-    _villagers = await _villagerSvc.reconcileVillagers(_villagers, _placedBuildings, _roadTiles);
-    _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+    _villagers = await _villagerSvc.reconcileVillagers(
+        _villagers, _placedBuildings, _roadTiles);
+    _villagerSvc.updateVillagerHappiness(
+        _villagers, _placedBuildings, _roadTiles, _activePowerups);
     notifyListeners();
     return true;
   }
 
   Future<bool> moveBuilding(int buildingId, int newTileX, int newTileY) async {
-    final result = await _buildingSvc.moveBuilding(
-        buildingId, newTileX, newTileY, _placedBuildings, _roadTiles, _unlockedChunks);
+    final result = await _buildingSvc.moveBuilding(buildingId, newTileX,
+        newTileY, _placedBuildings, _roadTiles, _unlockedChunks);
     if (result) notifyListeners();
     return result;
   }
@@ -423,9 +487,11 @@ class VillageProvider extends ChangeNotifier {
   }
 
   Future<bool> useBookItem(int villagerId) async {
-    final result = await _inventorySvc.useBookItem(villagerId, _inventoryItems, _activePowerups);
+    final result = await _inventorySvc.useBookItem(
+        villagerId, _inventoryItems, _activePowerups);
     if (result) {
-      _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+      _villagerSvc.updateVillagerHappiness(
+          _villagers, _placedBuildings, _roadTiles, _activePowerups);
       _notifyBookItemUsed();
       notifyListeners();
     }
@@ -433,19 +499,22 @@ class VillageProvider extends ChangeNotifier {
   }
 
   Future<bool> useSandwichItem() async {
-    final result = await _inventorySvc.useSandwichItem(_inventoryItems, _activePowerups);
+    final result =
+        await _inventorySvc.useSandwichItem(_inventoryItems, _activePowerups);
     if (result) notifyListeners();
     return result;
   }
 
   Future<bool> useHammerItem() async {
-    final result = await _inventorySvc.useHammerItem(_inventoryItems, _activePowerups);
+    final result =
+        await _inventorySvc.useHammerItem(_inventoryItems, _activePowerups);
     if (result) notifyListeners();
     return result;
   }
 
   Future<void> setMinigameCooldown(String minigameId, int cooldownHours) async {
-    await _inventorySvc.setMinigameCooldown(minigameId, cooldownHours, _minigameCooldowns);
+    await _inventorySvc.setMinigameCooldown(
+        minigameId, cooldownHours, _minigameCooldowns);
     notifyListeners();
   }
 
@@ -458,7 +527,8 @@ class VillageProvider extends ChangeNotifier {
 
   Future<void> cleanupExpiredPowerups() async {
     await _inventorySvc.cleanupExpiredPowerups(_activePowerups);
-    _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
+    _villagerSvc.updateVillagerHappiness(
+        _villagers, _placedBuildings, _roadTiles, _activePowerups);
     notifyListeners();
   }
 
@@ -482,7 +552,8 @@ class VillageProvider extends ChangeNotifier {
     if (mission == null) return false;
 
     final reward = mission.reward;
-    final result = await _missionSvc.claimMissionReward(missionId, _missionProgress);
+    final result =
+        await _missionSvc.claimMissionReward(missionId, _missionProgress);
     if (!result) return false;
 
     if (reward.exp > 0) await addExp(reward.exp);
@@ -498,7 +569,8 @@ class VillageProvider extends ChangeNotifier {
   void _notifyBookItemUsed() {
     final activeMission = getActiveMission(MissionBranch.villager);
     if (activeMission != null &&
-        activeMission.conditionType == MissionConditionType.villagerHappinessWithBook) {
+        activeMission.conditionType ==
+            MissionConditionType.villagerHappinessWithBook) {
       _bookItemUsedSinceActive = true;
     }
   }

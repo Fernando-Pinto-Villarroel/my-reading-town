@@ -3,6 +3,7 @@ import 'package:confetti/confetti.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class LevelUpPopup extends StatefulWidget {
   final int newLevel;
@@ -52,7 +53,14 @@ class _LevelUpPopupState extends State<LevelUpPopup>
   @override
   Widget build(BuildContext context) {
     final level = widget.newLevel;
-    final buildingTypes = ['house', 'park', 'school', 'hospital', 'water_plant', 'power_plant'];
+    final buildingTypes = [
+      'house',
+      'park',
+      'school',
+      'hospital',
+      'water_plant',
+      'power_plant'
+    ];
 
     return Material(
       color: Colors.black.withAlpha(80),
@@ -94,7 +102,8 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                         spreadRadius: 6,
                       ),
                     ],
-                    border: Border.all(color: AppTheme.lavender.withAlpha(120), width: 2),
+                    border: Border.all(
+                        color: AppTheme.lavender.withAlpha(120), width: 2),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -103,7 +112,8 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                         alignment: Alignment.topRight,
                         child: GestureDetector(
                           onTap: widget.onDismiss,
-                          child: Icon(Icons.close, size: 20, color: Colors.grey),
+                          child:
+                              Icon(Icons.close, size: 20, color: Colors.grey),
                         ),
                       ),
                       Container(
@@ -117,21 +127,25 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                             end: Alignment.bottomRight,
                           ),
                         ),
-                        child: const Icon(Icons.star_rounded, size: 36, color: Colors.white),
+                        child: const Icon(Icons.star_rounded,
+                            size: 36, color: Colors.white),
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        'LEVEL UP!',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.lavender,
-                          letterSpacing: 1.5,
+                      Center(
+                        child: Text(
+                          context.t('level_up_title'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.lavender,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Level $level',
+                        '${context.t('level_label')} $level',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -140,11 +154,13 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           color: AppTheme.gemPurple.withAlpha(25),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppTheme.gemPurple.withAlpha(60)),
+                          border: Border.all(
+                              color: AppTheme.gemPurple.withAlpha(60)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -152,7 +168,7 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                             ResourceIcon.gem(size: 24),
                             const SizedBox(width: 8),
                             Text(
-                              '+3 Gems!',
+                              context.t('plus_gems_reward'),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -164,7 +180,7 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Building Limits',
+                        context.t('building_limits'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -177,14 +193,20 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                         runSpacing: 6,
                         alignment: WrapAlignment.center,
                         children: buildingTypes.map((type) {
-                          final max = VillageRules.maxBuildingsOfTypeForPlayerLevel(type, level);
-                          final prevMax = VillageRules.maxBuildingsOfTypeForPlayerLevel(type, level - 1);
+                          final max =
+                              VillageRules.maxBuildingsOfTypeForPlayerLevel(
+                                  type, level);
+                          final prevMax =
+                              VillageRules.maxBuildingsOfTypeForPlayerLevel(
+                                  type, level - 1);
                           final increased = max > prevMax;
                           final template = VillageRules.findTemplate(type);
-                          final name = template?['name'] as String? ?? type;
+                          final name = context.t('building_name_$type',
+                              fallback: template?['name'] as String? ?? type);
                           return Container(
                             width: 95,
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 6),
                             decoration: BoxDecoration(
                               color: increased
                                   ? AppTheme.mint.withAlpha(40)
@@ -204,13 +226,16 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                                   width: 32,
                                   height: 32,
                                   filterQuality: FilterQuality.medium,
-                                  errorBuilder: (_, __, ___) =>
-                                      Icon(Icons.home, size: 32, color: AppTheme.mint),
+                                  errorBuilder: (_, __, ___) => Icon(Icons.home,
+                                      size: 32, color: AppTheme.mint),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   name,
-                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.darkText),
+                                  style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.darkText),
                                   textAlign: TextAlign.center,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -219,19 +244,30 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                                     ? Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text('$prevMax ', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkMint)),
-                                          Icon(Icons.arrow_forward_rounded, size: 12, color: AppTheme.darkMint),
-                                          Text(' $max', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.darkMint)),
+                                          Text('$prevMax ',
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppTheme.darkMint)),
+                                          Icon(Icons.arrow_forward_rounded,
+                                              size: 12,
+                                              color: AppTheme.darkMint),
+                                          Text(' $max',
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppTheme.darkMint)),
                                         ],
                                       )
                                     : Text(
-                                  'max $max',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.darkText.withAlpha(140),
-                                  ),
-                                ),
+                                        '${context.t('max_label')} $max',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              AppTheme.darkText.withAlpha(140),
+                                        ),
+                                      ),
                               ],
                             ),
                           );
@@ -239,7 +275,7 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Tap anywhere to continue',
+                        context.t('tap_anywhere'),
                         style: TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                     ],

@@ -7,6 +7,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/infrastructure/ui/config/ui_constants.dart';
 import 'package:reading_village/infrastructure/ui/game/village_game.dart';
@@ -46,7 +48,8 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, _GameTapHandlers {
+class _GameScreenState extends State<GameScreen>
+    with TickerProviderStateMixin, _GameTapHandlers {
   late VillageGame _game;
   VillageProvider? _villageProviderRef;
   @override
@@ -115,6 +118,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       _villageProviderRef?.removeListener(_onVillageProviderChanged);
       _villageProviderRef = newProvider;
       _villageProvider.addListener(_onVillageProviderChanged);
+      // Set the VillagerService on the game so it can calculate missing needs per villager
+      _game.setVillagerService(_villageProvider.villagerService);
     }
     _bookProvider = context.read<BookProvider>();
     _constructionTimer ??= Timer.periodic(
@@ -168,17 +173,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         context: context,
         barrierColor: Colors.transparent,
         barrierDismissible: true,
-        builder: (ctx) =>
-            LevelUpPopup(newLevel: newLevel, onDismiss: () => Navigator.pop(ctx)),
+        builder: (ctx) => LevelUpPopup(
+            newLevel: newLevel, onDismiss: () => Navigator.pop(ctx)),
       );
     }
   }
 
-  void _onConstructionComplete(PlacedBuilding building) => _checkConstructions();
+  void _onConstructionComplete(PlacedBuilding building) =>
+      _checkConstructions();
 
   Future<void> _captureVillagePhoto() async {
     if (_isCapturing) return;
-    setState(() { _isCapturing = true; _menuOpen = false; });
+    setState(() {
+      _isCapturing = true;
+      _menuOpen = false;
+    });
 
     try {
       final boundary = _gameRepaintKey.currentContext?.findRenderObject()
@@ -191,23 +200,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       if (tileBounds == null) {
         await Future.delayed(const Duration(milliseconds: 50));
         final fullImage = await boundary.toImage(pixelRatio: pixelRatio);
-        final byteData = await fullImage.toByteData(format: ui.ImageByteFormat.png);
+        final byteData =
+            await fullImage.toByteData(format: ui.ImageByteFormat.png);
         if (!mounted) return;
-        showDialog(context: context, builder: (_) => VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()));
+        showDialog(
+            context: context,
+            builder: (_) =>
+                VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()));
         return;
       }
 
       const padTiles = 1;
       final minTileX = max(0, tileBounds.minX - padTiles);
       final minTileY = max(0, tileBounds.minY - padTiles);
-      final maxTileX = min(VillageRules.mapSize - 1, tileBounds.maxX + padTiles);
-      final maxTileY = min(VillageRules.mapSize - 1, tileBounds.maxY + padTiles);
+      final maxTileX =
+          min(VillageRules.mapSize - 1, tileBounds.maxX + padTiles);
+      final maxTileY =
+          min(VillageRules.mapSize - 1, tileBounds.maxY + padTiles);
 
       final tileSize = UiConstants.tilePixelSize;
       final contentWorldW = (maxTileX - minTileX + 1) * tileSize;
       final contentWorldH = (maxTileY - minTileY + 1) * tileSize;
-      final worldCenterX = (minTileX * tileSize + (maxTileX + 1) * tileSize) / 2.0;
-      final worldCenterY = (minTileY * tileSize + (maxTileY + 1) * tileSize) / 2.0;
+      final worldCenterX =
+          (minTileX * tileSize + (maxTileX + 1) * tileSize) / 2.0;
+      final worldCenterY =
+          (minTileY * tileSize + (maxTileY + 1) * tileSize) / 2.0;
 
       final screenW = boundary.size.width;
       final screenH = boundary.size.height;
@@ -227,8 +244,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       final imgW = fullImage.width.toDouble();
       final imgH = fullImage.height.toDouble();
 
-      final cropX = ((screenW - visibleContentW) / 2.0 * pixelRatio).clamp(0.0, imgW);
-      final cropY = ((screenH - visibleContentH) / 2.0 * pixelRatio).clamp(0.0, imgH);
+      final cropX =
+          ((screenW - visibleContentW) / 2.0 * pixelRatio).clamp(0.0, imgW);
+      final cropY =
+          ((screenH - visibleContentH) / 2.0 * pixelRatio).clamp(0.0, imgH);
       final cropW = (visibleContentW * pixelRatio).clamp(1.0, imgW - cropX);
       final cropH = (visibleContentH * pixelRatio).clamp(1.0, imgH - cropY);
 
@@ -242,12 +261,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       );
       final picture = recorder.endRecording();
       final croppedImage = await picture.toImage(cropW.round(), cropH.round());
-      final byteData = await croppedImage.toByteData(format: ui.ImageByteFormat.png);
+      final byteData =
+          await croppedImage.toByteData(format: ui.ImageByteFormat.png);
 
       if (!mounted) return;
       showDialog(
         context: context,
-        builder: (_) => VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()),
+        builder: (_) =>
+            VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()),
       );
     } finally {
       if (mounted) setState(() => _isCapturing = false);
@@ -291,28 +312,27 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             child: RepaintBoundary(
               key: _gameRepaintKey,
               child: GameWidget(
-              game: _game,
-              loadingBuilder: (context) => Container(
-                color: const Color(0xFF709070),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.house, size: 64, color: AppTheme.pink),
-                      SizedBox(height: 16),
-                      Text('Loading village...',
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.white)),
-                      SizedBox(height: 16),
-                      CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation(AppTheme.pink)),
-                    ],
+                game: _game,
+                loadingBuilder: (context) => Container(
+                  color: const Color(0xFF709070),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.house, size: 64, color: AppTheme.pink),
+                        SizedBox(height: 16),
+                        Text(context.t('loading_village'),
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
+                        SizedBox(height: 16),
+                        CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation(AppTheme.pink)),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           ),
           Positioned.fill(
             child: TapThroughInteractiveViewer(
@@ -332,8 +352,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   village: village,
                   landscape: landscape,
                   expanded: _resourceHudExpanded,
-                  onToggle: () =>
-                      setState(() => _resourceHudExpanded = !_resourceHudExpanded),
+                  onToggle: () => setState(
+                      () => _resourceHudExpanded = !_resourceHudExpanded),
                 ),
                 SizedBox(height: 6),
                 LeftActionGrid(
@@ -352,13 +372,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     _syncGameState();
                   },
                   onMissionsTap: () => showMissionsModal(context),
-                  onBackpackTap: () => showBackpackDialog(context, _villageProvider),
+                  onBackpackTap: () =>
+                      showBackpackDialog(context, _villageProvider),
                   onMinigamesTap: () => showMinigamesDialog(context,
-                      village: _villageProvider,
-                      onReturn: () {
-                        _villageProvider.loadData();
-                        _syncGameState();
-                      }),
+                      village: _villageProvider, onReturn: () {
+                    _villageProvider.loadData();
+                    _syncGameState();
+                  }),
                 ),
               ],
             ),
@@ -370,20 +390,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 HappinessIndicator(
-                    happiness: village.villageHappiness,
-                    landscape: landscape),
+                    happiness: village.villageHappiness, landscape: landscape),
                 SizedBox(height: landscape ? 4 : 6),
-                ConstructorCounter(
-                    village: village, landscape: landscape),
+                ConstructorCounter(village: village, landscape: landscape),
                 SizedBox(height: landscape ? 6 : 10),
                 SideMenu(
                   menuOpen: _menuOpen,
-                  onToggleMenu: () =>
-                      setState(() => _menuOpen = !_menuOpen),
+                  onToggleMenu: () => setState(() => _menuOpen = !_menuOpen),
                   onReadingTap: () => showReadingModal(context),
                   onPhotoTap: _captureVillagePhoto,
-                  onStatsTap: () => showStatsDialog(
-                      context, _villageProvider, _bookProvider),
+                  onStatsTap: () =>
+                      showStatsDialog(context, _villageProvider, _bookProvider),
                   onSettingsTap: () =>
                       showSettingsDialog(context, _villageProvider),
                 ),
@@ -398,8 +415,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_movingBuildingId != null)
-                    _buildMovingBanner(landscape),
+                  if (_movingBuildingId != null) _buildMovingBanner(landscape),
                   if (landscape &&
                       _selectedBuildingType != null &&
                       _movingBuildingId == null)
@@ -415,8 +431,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                       _selectedBuildingType = type;
                       _movingBuildingId = null;
                     }),
-                    onToggleFlip: () => setState(
-                        () => _flipNextBuilding = !_flipNextBuilding),
+                    onToggleFlip: () =>
+                        setState(() => _flipNextBuilding = !_flipNextBuilding),
                   ),
                 ],
               ),
@@ -429,8 +445,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   Widget _buildMovingBanner(bool landscape) {
     return Container(
       margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.symmetric(
-          horizontal: 16, vertical: landscape ? 4 : 8),
+      padding:
+          EdgeInsets.symmetric(horizontal: 16, vertical: landscape ? 4 : 8),
       decoration: BoxDecoration(
         color: AppTheme.mint.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
@@ -440,7 +456,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         children: [
           Icon(Icons.open_with, size: 20, color: AppTheme.darkText),
           SizedBox(width: 8),
-          Text('Tap a tile to move building',
+          Text(context.t('tap_tile_to_move'),
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: AppTheme.darkText)),
           SizedBox(width: 8),
@@ -486,10 +502,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             children: [
               Icon(Icons.flip,
                   size: 18,
-                  color:
-                      _flipNextBuilding ? Colors.white : AppTheme.darkText),
+                  color: _flipNextBuilding ? Colors.white : AppTheme.darkText),
               SizedBox(width: 4),
-              Text('Flip',
+              Text(context.t('flip'),
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,

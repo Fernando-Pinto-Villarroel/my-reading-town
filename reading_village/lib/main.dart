@@ -7,11 +7,14 @@ import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/tag_provider.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 import 'package:reading_village/infrastructure/ui/screens/game_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initServiceLocator();
+  await sl<LanguageProvider>().load(LanguageProvider.defaultLocale);
   runApp(const ReadingVillageApp());
 }
 
@@ -25,6 +28,7 @@ class ReadingVillageApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: sl<BookProvider>()),
         ChangeNotifierProvider.value(value: sl<TagProvider>()),
         ChangeNotifierProvider.value(value: sl<VillageProvider>()),
+        ChangeNotifierProvider.value(value: sl<LanguageProvider>()),
       ],
       child: MaterialApp(
         title: 'Reading Village',
@@ -56,11 +60,13 @@ class _AppInitializerState extends State<AppInitializer> {
     final bookProvider = context.read<BookProvider>();
     final tagProvider = context.read<TagProvider>();
     final villageProvider = context.read<VillageProvider>();
+    final languageProvider = context.read<LanguageProvider>();
 
     await VillagerFavorites.load();
     await tagProvider.loadTags();
     await bookProvider.loadData();
     await villageProvider.loadData();
+    await languageProvider.load(villageProvider.language);
 
     if (mounted) {
       setState(() {
@@ -90,7 +96,7 @@ class _AppInitializerState extends State<AppInitializer> {
               ),
               SizedBox(height: 8),
               Text(
-                'Building your village...',
+                context.t('building_your_village'),
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.darkText.withValues(alpha: 0.6),

@@ -7,6 +7,8 @@ import 'package:reading_village/adapters/providers/tag_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/cover_image_picker.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/tag_selector.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/tag_manager_dialog.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 class BookFormDialog extends StatefulWidget {
   final Book? existingBook;
@@ -92,7 +94,7 @@ class _BookFormDialogState extends State<BookFormDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       insetPadding: EdgeInsets.symmetric(horizontal: isLandscape ? 80 : 24, vertical: 24),
-      title: Text(_isEditing ? 'Edit Book' : 'Add a New Book', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      title: Text(_isEditing ? context.t('edit_book') : context.t('add_new_book'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       content: SizedBox(
         width: isLandscape ? 420 : double.maxFinite,
         child: SingleChildScrollView(
@@ -102,11 +104,11 @@ class _BookFormDialogState extends State<BookFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
+          child: Text(context.t('cancel')),
         ),
         ElevatedButton(
           onPressed: _submit,
-          child: Text(_isEditing ? 'Save' : 'Add'),
+          child: Text(_isEditing ? context.t('save') : context.t('add')),
         ),
       ],
     );
@@ -175,8 +177,8 @@ class _BookFormDialogState extends State<BookFormDialog> {
     return TextField(
       controller: _titleController,
       decoration: InputDecoration(
-        labelText: 'Book Title',
-        hintText: 'e.g. The Little Prince',
+        labelText: context.t('book_title'),
+        hintText: context.t('book_title_hint'),
         errorText: _titleError,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -189,8 +191,8 @@ class _BookFormDialogState extends State<BookFormDialog> {
     return TextField(
       controller: _authorController,
       decoration: InputDecoration(
-        labelText: 'Author (optional)',
-        hintText: 'e.g. Antoine de Saint-Exupéry',
+        labelText: context.t('author_optional'),
+        hintText: context.t('author_hint'),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
       textCapitalization: TextCapitalization.words,
@@ -202,8 +204,8 @@ class _BookFormDialogState extends State<BookFormDialog> {
     return TextField(
       controller: _pagesController,
       decoration: InputDecoration(
-        labelText: 'Total Pages (2–9999)',
-        hintText: 'e.g. 96',
+        labelText: context.t('total_pages_label'),
+        hintText: context.t('total_pages_hint'),
         errorText: _pagesError,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -227,6 +229,7 @@ class _BookFormDialogState extends State<BookFormDialog> {
   }
 
   void _submit() {
+    final langProvider = context.read<LanguageProvider>();
     final title = _titleController.text.trim();
     final author = _authorController.text.trim();
     final pages = int.tryParse(_pagesController.text.trim());
@@ -234,16 +237,16 @@ class _BookFormDialogState extends State<BookFormDialog> {
     String? pErr;
 
     if (title.isEmpty) {
-      tErr = 'Title is required';
+      tErr = langProvider.translate('title_is_required');
     } else if (title.length < 2) {
-      tErr = 'Title must be at least 2 characters';
+      tErr = langProvider.translate('title_min_chars');
     }
     if (pages == null) {
-      pErr = 'Enter a valid number';
+      pErr = langProvider.translate('enter_valid_number');
     } else if (pages < 2) {
-      pErr = 'Minimum 2 pages';
+      pErr = langProvider.translate('minimum_2_pages');
     } else if (pages > 9999) {
-      pErr = 'Maximum 9999 pages';
+      pErr = langProvider.translate('maximum_9999_pages');
     }
 
     if (tErr != null || pErr != null) {

@@ -6,6 +6,7 @@ import 'package:reading_village/domain/entities/book.dart';
 import 'package:reading_village/domain/entities/book_filter.dart';
 import 'package:reading_village/domain/entities/reading_session.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class ReadingCalendarTab extends StatefulWidget {
   final ScrollController scrollController;
@@ -18,12 +19,6 @@ class ReadingCalendarTab extends StatefulWidget {
 
 class _ReadingCalendarTabState extends State<ReadingCalendarTab> {
   int _year = DateTime.now().year;
-
-  static const List<String> _monthNames = [
-    'January', 'February', 'March', 'April',
-    'May', 'June', 'July', 'August',
-    'September', 'October', 'November', 'December',
-  ];
 
   Map<int, List<Book>> _buildMonthBookMap(
       List<ReadingSession> sessions, List<Book> books) {
@@ -84,9 +79,14 @@ class _ReadingCalendarTabState extends State<ReadingCalendarTab> {
                           itemBuilder: (ctx, i) {
                             final month = i + 1;
                             final booksThisMonth = monthBookMap[month] ?? [];
+                            final monthKeys = [
+                              'january', 'february', 'march', 'april',
+                              'may', 'june', 'july', 'august',
+                              'september', 'october', 'november', 'december',
+                            ];
                             return _MonthCell(
                               month: month,
-                              monthName: _monthNames[i],
+                              monthName: context.t(monthKeys[i]),
                               books: booksThisMonth,
                               onBookTap: (book) => _onBookTapped(context, book),
                             );
@@ -137,7 +137,7 @@ class _ReadingCalendarTabState extends State<ReadingCalendarTab> {
           Icon(Icons.calendar_month, size: 60, color: AppTheme.lavender),
           SizedBox(height: 16),
           Text(
-            'No reading sessions yet!\nStart logging pages to see your calendar.',
+            context.t('no_reading_sessions'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,

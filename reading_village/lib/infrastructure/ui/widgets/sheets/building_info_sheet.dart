@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 void showBuildingInfoSheet(
   BuildContext context, {
@@ -12,6 +15,7 @@ void showBuildingInfoSheet(
   required VillageProvider village,
   required VoidCallback onSyncGameState,
 }) {
+  final langProvider = context.read<LanguageProvider>();
   final isDecoration = building.isDecoration;
   final atMaxLevel =
       isDecoration || building.level >= VillageRules.maxBuildingLevel;
@@ -71,30 +75,35 @@ void showBuildingInfoSheet(
                     Icon(Icons.park, size: 88, color: AppTheme.mint),
               ),
               SizedBox(height: 8),
-              Text(building.name,
+              Text(
+                  context.t('building_name_${building.type}',
+                      fallback: building.name),
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.darkText)),
               if (!isDecoration)
-                Text('Level ${building.level}',
+                Text(
+                    '${langProvider.translate('level_label')} ${building.level}',
                     style: TextStyle(
                         fontSize: 14,
                         color: AppTheme.lavender,
                         fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               Text(
-                _buildingDescription(building),
+                _buildingDescription(building, langProvider),
                 style: TextStyle(
                     fontSize: 13,
                     color: AppTheme.darkText.withValues(alpha: 0.6)),
               ),
               if (building.type == 'house' && building.id != null)
-                _buildResidentsList(village, building),
+                _buildResidentsList(village, building, langProvider),
               SizedBox(height: 16),
               if (atMaxLevel)
                 Text(
-                  isDecoration ? 'Decoration' : 'Max Level Reached!',
+                  isDecoration
+                      ? langProvider.translate('decoration_label')
+                      : langProvider.translate('max_level_reached'),
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -102,10 +111,11 @@ void showBuildingInfoSheet(
                           isDecoration ? AppTheme.lavender : AppTheme.coinGold),
                 )
               else ...[
-                Text('Upgrade to Lv${building.level + 1}:',
+                Text(
+                    '${langProvider.translate('upgrade_to_level')}${building.level + 1}:',
                     style: TextStyle(fontSize: 14, color: AppTheme.darkText)),
                 SizedBox(height: 4),
-                _upgradeCapacityPreview(building),
+                _upgradeCapacityPreview(building, langProvider),
                 SizedBox(height: 8),
                 Wrap(
                   spacing: 12,
@@ -159,10 +169,10 @@ void showBuildingInfoSheet(
                     ),
                     child: Text(
                       canAfford
-                          ? 'Upgrade ${building.name}!'
+                          ? '${langProvider.translate('upgrade_button')} ${context.t('building_name_${building.type}', fallback: building.name)}!'
                           : !village.canStartConstruction
-                              ? 'All constructors busy!'
-                              : 'Not enough resources',
+                              ? langProvider.translate('all_constructors_busy')
+                              : langProvider.translate('not_enough_resources'),
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
@@ -177,23 +187,25 @@ void showBuildingInfoSheet(
   );
 }
 
-String _buildingDescription(PlacedBuilding building) {
+String _buildingDescription(
+    PlacedBuilding building, LanguageProvider langProvider) {
   if (building.isDecoration) {
-    return 'Decorative — makes your village look cute!';
+    return langProvider.translate('decorative_desc');
   }
   if (building.type == 'house') {
-    return 'Houses ${VillageRules.villagersPerHouse(building.level)} villager(s)';
+    return '${langProvider.translate('houses_label')} ${VillageRules.villagersPerHouse(building.level)} ${langProvider.translate('villager_singular')}(s)';
   }
-  return 'Covers ${VillageRules.buildingCapacity(building.type, building.level)} villager needs';
+  return '${langProvider.translate('covers_label')} ${VillageRules.buildingCapacity(building.type, building.level)} ${langProvider.translate('villager_needs_label')}';
 }
 
-Widget _buildResidentsList(VillageProvider village, PlacedBuilding building) {
+Widget _buildResidentsList(VillageProvider village, PlacedBuilding building,
+    LanguageProvider langProvider) {
   final residents = village.villagersInHouse(building.id!);
   if (residents.isEmpty) return SizedBox.shrink();
   return Column(
     children: [
       SizedBox(height: 12),
-      Text('Residents:',
+      Text(langProvider.translate('resident_list'),
           style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
@@ -221,7 +233,8 @@ Widget _buildResidentsList(VillageProvider village, PlacedBuilding building) {
   );
 }
 
-Widget _upgradeCapacityPreview(PlacedBuilding building) {
+Widget _upgradeCapacityPreview(
+    PlacedBuilding building, LanguageProvider langProvider) {
   final currentCap = building.type == 'house'
       ? VillageRules.villagersPerHouse(building.level)
       : VillageRules.buildingCapacity(building.type, building.level);
@@ -229,8 +242,9 @@ Widget _upgradeCapacityPreview(PlacedBuilding building) {
       ? VillageRules.villagersPerHouse(building.level + 1)
       : VillageRules.buildingCapacity(building.type, building.level + 1);
   final diff = nextCap - currentCap;
-  final label =
-      building.type == 'house' ? 'villager capacity' : 'villager needs covered';
+  final label = building.type == 'house'
+      ? langProvider.translate('villager_capacity')
+      : langProvider.translate('villager_needs_covered');
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [

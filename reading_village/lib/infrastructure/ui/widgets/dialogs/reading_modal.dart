@@ -12,6 +12,8 @@ import 'package:reading_village/infrastructure/ui/widgets/dialogs/log_pages_dial
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/reading_calendar_tab.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/tag_manager_dialog.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 
 void showReadingModal(BuildContext context) {
   final landscape = isLandscape(context);
@@ -63,7 +65,7 @@ class _ReadingModalContent extends StatelessWidget {
                   children: [
                     Icon(Icons.menu_book, size: 24, color: AppTheme.darkText),
                     SizedBox(width: 8),
-                    Text('Reading Tracker',
+                    Text(context.t('reading_tracker'),
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -71,7 +73,7 @@ class _ReadingModalContent extends StatelessWidget {
                     Spacer(),
                     IconButton(
                       icon: Icon(Icons.label, size: 22, color: AppTheme.lavender),
-                      tooltip: 'Manage Tags',
+                      tooltip: context.t('manage_tags'),
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
@@ -95,8 +97,8 @@ class _ReadingModalContent extends StatelessWidget {
                 indicatorWeight: 3,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 tabs: [
-                  Tab(text: 'Books'),
-                  Tab(text: 'Calendar'),
+                  Tab(text: context.t('books_tab')),
+                  Tab(text: context.t('calendar_tab')),
                 ],
               ),
               Expanded(
@@ -147,7 +149,7 @@ class _BooksTab extends StatelessWidget {
                           size: 60, color: AppTheme.lavender),
                       SizedBox(height: 16),
                       Text(
-                        'No books yet!\nTap + to add your first book.',
+                        context.t('no_books_yet'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 16,
@@ -159,7 +161,7 @@ class _BooksTab extends StatelessWidget {
               }
               if (books.isEmpty) {
                 return Center(
-                  child: Text('No books match your filters.',
+                  child: Text(context.t('no_books_match_filters'),
                       style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.darkText.withValues(alpha: 0.5))),
@@ -193,6 +195,7 @@ class _BooksTab extends StatelessWidget {
 }
 
 void _showAddBookDialog(BuildContext context) {
+  final langProvider = context.read<LanguageProvider>();
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -201,14 +204,14 @@ void _showAddBookDialog(BuildContext context) {
         children: [
           Icon(Icons.add_circle, size: 22, color: AppTheme.pink),
           SizedBox(width: 8),
-          Text('Add a Book',
+          Text(langProvider.translate('add_a_book'),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('How would you like to add your book?',
+          Text(langProvider.translate('how_to_add_book'),
               style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.darkText.withValues(alpha: 0.7))),
@@ -223,7 +226,7 @@ void _showAddBookDialog(BuildContext context) {
                     builder: (_) => BookSearchDialog());
               },
               icon: Icon(Icons.search, size: 18),
-              label: Text('Search Online'),
+              label: Text(langProvider.translate('search_online')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.lavender,
                 padding: EdgeInsets.symmetric(vertical: 12),
@@ -240,7 +243,7 @@ void _showAddBookDialog(BuildContext context) {
                     context: context, builder: (_) => BookFormDialog());
               },
               icon: Icon(Icons.edit, size: 18),
-              label: Text('Add Manually'),
+              label: Text(langProvider.translate('add_manually')),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 side: BorderSide(color: AppTheme.lavender),

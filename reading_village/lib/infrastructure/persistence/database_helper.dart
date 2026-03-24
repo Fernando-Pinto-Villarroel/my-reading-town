@@ -144,7 +144,8 @@ class DatabaseHelper {
         exp INTEGER NOT NULL DEFAULT 0,
         player_level INTEGER NOT NULL DEFAULT 1,
         username TEXT NOT NULL DEFAULT '',
-        town_name TEXT NOT NULL DEFAULT 'My Village'
+        town_name TEXT NOT NULL DEFAULT 'My Village',
+        language TEXT NOT NULL DEFAULT 'en'
       )
     ''');
 
@@ -201,6 +202,7 @@ class DatabaseHelper {
       'player_level': 1,
       'username': '',
       'town_name': 'My Village',
+      'language': 'en',
     });
 
     final defaultStart = VillageRules.defaultChunkStart;

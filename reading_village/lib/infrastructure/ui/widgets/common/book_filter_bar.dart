@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/book_filter.dart';
 import 'package:reading_village/domain/entities/tag.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class BookFilterBar extends StatefulWidget {
   final BookFilter filter;
@@ -67,7 +68,7 @@ class _BookFilterBarState extends State<BookFilterBar> {
                     onChanged: (v) => onFilterChanged(filter.copyWith(searchQuery: () => v.isEmpty ? null : v)),
                     style: TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: 'Search by title or author...',
+                      hintText: context.t('search_by_title_author'),
                       hintStyle: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.4)),
                       prefixIcon: Icon(Icons.search, size: 18),
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -100,10 +101,10 @@ class _BookFilterBarState extends State<BookFilterBar> {
                   }
                 },
                 itemBuilder: (_) => [
-                  _sortItem(BookSortField.dateAdded, 'Date Added', Icons.calendar_today),
-                  _sortItem(BookSortField.title, 'Title', Icons.sort_by_alpha),
-                  _sortItem(BookSortField.pagesLeft, 'Pages Left', Icons.auto_stories),
-                  _sortItem(BookSortField.author, 'Author', Icons.person),
+                  _sortItem(BookSortField.dateAdded, context.t('date_added'), Icons.calendar_today),
+                  _sortItem(BookSortField.title, context.t('title_sort'), Icons.sort_by_alpha),
+                  _sortItem(BookSortField.pagesLeft, context.t('pages_left'), Icons.auto_stories),
+                  _sortItem(BookSortField.author, context.t('author_sort'), Icons.person),
                 ],
               ),
             ],
@@ -192,7 +193,6 @@ class _CompletionToggle extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // Cycle: null -> false -> true -> null
         if (value == null) {
           onChanged(false);
         } else if (value == false) {

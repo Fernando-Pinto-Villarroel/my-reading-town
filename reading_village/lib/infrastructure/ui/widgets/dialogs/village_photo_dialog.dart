@@ -5,6 +5,7 @@ import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class VillagePhotoDialog extends StatefulWidget {
   final Uint8List imageBytes;
@@ -32,7 +33,11 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
         album: 'My Reading Town',
         name: 'village_${DateTime.now().millisecondsSinceEpoch}.png',
       );
-      if (mounted) setState(() { _saving = false; _saved = true; });
+      if (mounted)
+        setState(() {
+          _saving = false;
+          _saved = true;
+        });
     } catch (_) {
       if (mounted) setState(() => _saving = false);
     }
@@ -57,7 +62,9 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final maxImageHeight = screenSize.height * 0.45;
+    final isLandscape = screenSize.width > screenSize.height;
+    final maxImageHeight =
+        isLandscape ? screenSize.height * 0.35 : screenSize.height * 0.45;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -74,21 +81,58 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(),
-            _buildImage(maxImageHeight),
-            _buildCongrats(),
-            _buildButtons(),
-            _buildCloseButton(),
-          ],
-        ),
+        child: isLandscape
+            ? _buildLandscapeLayout(context, maxImageHeight)
+            : _buildPortraitLayout(context, maxImageHeight),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildPortraitLayout(BuildContext context, double maxImageHeight) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeader(context),
+        _buildImage(maxImageHeight),
+        _buildCongrats(context),
+        _buildButtons(context),
+        _buildCloseButton(context),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout(BuildContext context, double maxImageHeight) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeader(context),
+        Flexible(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 1,
+                child: _buildImage(maxImageHeight),
+              ),
+              Expanded(
+                flex: 1,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildCongrats(context),
+                    _buildButtons(context),
+                    _buildCloseButton(context),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -105,7 +149,7 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
           const Text('✨', style: TextStyle(fontSize: 22)),
           const SizedBox(width: 8),
           Text(
-            'Your Village!',
+            context.t('your_village_title'),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -135,11 +179,11 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
     );
   }
 
-  Widget _buildCongrats() {
+  Widget _buildCongrats(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       child: Text(
-        'Amazing work! Keep reading to grow your village! 📚',
+        context.t('village_photo_message'),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 14,
@@ -150,20 +194,23 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
     );
   }
 
-  Widget _buildButtons() {
+  Widget _buildButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       child: Row(
         children: [
-          Expanded(child: _buildSaveButton()),
+          Expanded(child: _buildSaveButton(context)),
           const SizedBox(width: 10),
-          Expanded(child: _buildShareButton()),
+          Expanded(child: _buildShareButton(context)),
         ],
       ),
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(BuildContext context) {
+    final label = _saving
+        ? context.t('saving')
+        : (_saved ? context.t('saved') : context.t('save'));
     return GestureDetector(
       onTap: _saveToGallery,
       child: AnimatedContainer(
@@ -197,12 +244,15 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
                 color: AppTheme.darkText,
               ),
             const SizedBox(width: 6),
-            Text(
-              _saving ? 'Saving...' : (_saved ? 'Saved!' : 'Save'),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: AppTheme.darkText,
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: AppTheme.darkText,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -211,7 +261,8 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
     );
   }
 
-  Widget _buildShareButton() {
+  Widget _buildShareButton(BuildContext context) {
+    final label = _sharing ? context.t('sharing') : context.t('share');
     return GestureDetector(
       onTap: _share,
       child: Container(
@@ -239,12 +290,15 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
             else
               Icon(Icons.share_rounded, size: 20, color: AppTheme.darkText),
             const SizedBox(width: 6),
-            Text(
-              _sharing ? 'Sharing...' : 'Share',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: AppTheme.darkText,
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: AppTheme.darkText,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -253,13 +307,13 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
     );
   }
 
-  Widget _buildCloseButton() {
+  Widget _buildCloseButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
       child: TextButton(
         onPressed: () => Navigator.pop(context),
         child: Text(
-          'Close',
+          context.t('close'),
           style: TextStyle(
             color: AppTheme.darkText.withValues(alpha: 0.5),
             fontSize: 14,

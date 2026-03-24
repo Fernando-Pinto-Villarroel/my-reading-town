@@ -8,6 +8,7 @@ import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/match_character_role_body.dart';
 import 'package:reading_village/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
+import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
 
 class GuessAuthorScreen extends StatefulWidget {
   const GuessAuthorScreen({super.key});
@@ -176,7 +177,7 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
               return Column(
                 children: [
                   MinigameTopBar(
-                    title: 'Guess the Author',
+                    title: context.t('guess_the_author'),
                     isLandscape: isLandscape,
                     consecutiveWins: _consecutiveWins,
                     winsNeeded: _config.winsNeeded,
@@ -206,7 +207,7 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
           const SizedBox(height: 12),
           QuestionBubble(
             villagerSprite: _villagerSprite,
-            subtitle: 'Who wrote this book?',
+            subtitle: context.t('who_wrote_this'),
             questionText: _currentQuestion!['book'] as String,
           ),
           const SizedBox(height: 20),
@@ -244,7 +245,7 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
             padding: const EdgeInsets.all(8),
             child: QuestionBubble(
               villagerSprite: _villagerSprite,
-              subtitle: 'Who wrote this book?',
+              subtitle: context.t('who_wrote_this'),
               questionText: _currentQuestion!['book'] as String,
             ),
           ),

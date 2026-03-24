@@ -48,7 +48,7 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     final result = await db.query('game_state', where: 'id = 1');
     if (result.isEmpty) {
-      return {'expansion_count': 0, 'exp': 0, 'player_level': 1, 'username': '', 'town_name': 'My Village'};
+      return {'expansion_count': 0, 'exp': 0, 'player_level': 1, 'username': '', 'town_name': 'My Village', 'language': 'en'};
     }
     return result.first;
   }
@@ -83,5 +83,10 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
   Future<void> updateTownName(String townName) async {
     final db = await database;
     await db.update('game_state', {'town_name': townName}, where: 'id = 1');
+  }
+
+  Future<void> updateLanguage(String language) async {
+    final db = await database;
+    await db.update('game_state', {'language': language}, where: 'id = 1');
   }
 }
