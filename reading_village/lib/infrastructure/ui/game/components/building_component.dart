@@ -15,6 +15,7 @@ class BuildingComponent extends PositionComponent {
   double _pulseTimer = 0;
   double _pulseScale = 1.0;
   bool _justUpgraded = false;
+  Duration effectiveRemaining = Duration.zero;
 
   BuildingComponent({
     required this.building,
@@ -40,6 +41,7 @@ class BuildingComponent extends PositionComponent {
       _justUpgraded = true;
       _pulseTimer = 0;
     }
+    if (updated.isConstructed) effectiveRemaining = Duration.zero;
     building = updated;
     priority = 10 + building.tileY;
     if (building.level != _loadedLevel && building.isConstructed) {
@@ -105,7 +107,7 @@ class BuildingComponent extends PositionComponent {
       final zoom = (findGame() as VillageGame?)?.currentZoom ?? 1.0;
       final uiScale = 1.0 / zoom.clamp(0.3, 2.0);
 
-      final remaining = building.remainingConstructionTime;
+      final remaining = effectiveRemaining;
       final hours = remaining.inHours;
       final mins = remaining.inMinutes % 60;
       final secs = remaining.inSeconds % 60;

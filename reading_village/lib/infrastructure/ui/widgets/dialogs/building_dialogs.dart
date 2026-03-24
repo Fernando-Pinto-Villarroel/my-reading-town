@@ -4,6 +4,7 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/application/services/building_service.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 
@@ -158,9 +159,26 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    final interval = widget.village.isSpeedBoostActive
+        ? const Duration(milliseconds: 500)
+        : const Duration(seconds: 1);
+    _timer = Timer.periodic(interval, (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void didUpdateWidget(ConstructionSheetContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.village.isSpeedBoostActive !=
+        widget.village.isSpeedBoostActive) {
+      _startTimer();
+    }
   }
 
   @override
@@ -171,7 +189,8 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
 
   @override
   Widget build(BuildContext context) {
-    final remaining = widget.building.remainingConstructionTime;
+    final remaining = BuildingService.effectiveRemainingTime(
+        widget.building, widget.village.activePowerups);
     final gemCost = VillageRules.gemCostToSpeedUp(remaining);
     final hours = remaining.inHours;
     final mins = remaining.inMinutes % 60;

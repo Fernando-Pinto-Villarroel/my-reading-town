@@ -94,6 +94,7 @@ class MinigameWinScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
                       color: rewardColor.withValues(alpha: 0.15),
@@ -101,16 +102,20 @@ class MinigameWinScreen extends StatelessWidget {
                       border: Border.all(color: rewardColor.withValues(alpha: 0.3)),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(rewardAsset, width: 36, height: 36),
                         const SizedBox(width: 10),
-                        Text(
-                          rewardText,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: rewardColor,
+                        Flexible(
+                          child: Text(
+                            rewardText,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.mediumOrange,
+                            ),
                           ),
                         ),
                       ],

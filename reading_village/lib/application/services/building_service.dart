@@ -1,3 +1,4 @@
+import 'package:reading_village/domain/entities/inventory_item.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/domain/ports/village_repository.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
@@ -7,6 +8,44 @@ class BuildingService {
   BuildingService(this._repo);
 
   static String tileKey(int x, int y) => '$x,$y';
+
+  static Duration effectiveRemainingTime(PlacedBuilding b, List<ActivePowerup> powerups) {
+    if (b.isConstructed || b.constructionStart == null) return Duration.zero;
+    final start = DateTime.parse(b.constructionStart!);
+    final total = Duration(minutes: b.constructionDurationMinutes);
+    final now = DateTime.now();
+    if (!now.isAfter(start)) return total;
+
+    double effectiveElapsedMs = 0.0;
+    DateTime cursor = start;
+
+    final boosts = powerups
+        .where((p) => p.type == 'sandwich_speed')
+        .toList()
+        ..sort((a, b) => DateTime.parse(a.activatedAt).compareTo(DateTime.parse(b.activatedAt)));
+
+    for (final boost in boosts) {
+      if (!cursor.isBefore(now)) break;
+      final boostStart = DateTime.parse(boost.activatedAt);
+      final boostEnd = boostStart.add(Duration(hours: boost.durationHours));
+
+      if (cursor.isBefore(boostStart)) {
+        final segEnd = boostStart.isBefore(now) ? boostStart : now;
+        effectiveElapsedMs += segEnd.difference(cursor).inMilliseconds.toDouble();
+        cursor = segEnd;
+      }
+      if (cursor.isBefore(boostEnd) && cursor.isBefore(now)) {
+        final segEnd = boostEnd.isBefore(now) ? boostEnd : now;
+        effectiveElapsedMs += segEnd.difference(cursor).inMilliseconds.toDouble() * 2.0;
+        cursor = segEnd;
+      }
+    }
+
+    if (cursor.isBefore(now)) effectiveElapsedMs += now.difference(cursor).inMilliseconds.toDouble();
+
+    final remainingMs = total.inMilliseconds - effectiveElapsedMs;
+    return remainingMs <= 0 ? Duration.zero : Duration(milliseconds: remainingMs.round());
+  }
 
   bool isBuildingRoadConnected(PlacedBuilding b, Set<String> roadTiles) {
     for (int dx = 0; dx < b.tileWidth; dx++) {
@@ -142,15 +181,12 @@ class BuildingService {
     required int metalCost,
     required int happinessBonus,
     required int constructionMinutes,
-    required double speedMultiplier,
     bool isFlipped = false,
     int tileWidth = 1,
     int tileHeight = 1,
     bool isDecoration = false,
   }) async {
     await _repo.subtractResources(coins: coinCost, gems: gemCost, wood: woodCost, metal: metalCost);
-
-    final adjustedMinutes = (constructionMinutes / speedMultiplier).round();
 
     final building = PlacedBuilding(
       type: type,
@@ -165,7 +201,7 @@ class BuildingService {
       metalCost: metalCost,
       happinessBonus: happinessBonus,
       constructionStart: DateTime.now().toIso8601String(),
-      constructionDurationMinutes: adjustedMinutes,
+      constructionDurationMinutes: constructionMinutes,
       isConstructed: false,
       isFlipped: isFlipped,
       isDecoration: isDecoration,
@@ -175,11 +211,12 @@ class BuildingService {
     return building.copyWith(id: id);
   }
 
-  Future<List<PlacedBuilding>> checkAndCompleteConstructions(List<PlacedBuilding> buildings) async {
+  Future<List<PlacedBuilding>> checkAndCompleteConstructions(
+      List<PlacedBuilding> buildings, List<ActivePowerup> powerups) async {
     List<PlacedBuilding> completed = [];
     for (int i = 0; i < buildings.length; i++) {
       final b = buildings[i];
-      if (!b.isConstructed && b.isConstructionComplete) {
+      if (!b.isConstructed && effectiveRemainingTime(b, powerups) == Duration.zero) {
         b.isConstructed = true;
         await _repo.markBuildingConstructed(b.id!);
         completed.add(b);
@@ -197,7 +234,7 @@ class BuildingService {
   }
 
   Future<bool> upgradeBuilding(int buildingId, List<PlacedBuilding> buildings,
-      {required int coins, required int wood, required int metal, required double speedMultiplier}) async {
+      {required int coins, required int wood, required int metal}) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
 
@@ -218,11 +255,10 @@ class BuildingService {
     await _repo.subtractResources(coins: coinCost, wood: woodCost, metal: metalCost);
 
     final newLevel = building.level + 1;
-    final baseConstructionMinutes = VillageRules.upgradeConstructionMinutes(
+    final constructionMinutes = VillageRules.upgradeConstructionMinutes(
       template['constructionMinutes'] as int,
       building.level,
     );
-    final constructionMinutes = (baseConstructionMinutes / speedMultiplier).round();
     final constructionStart = DateTime.now().toIso8601String();
 
     await _repo.upgradePlacedBuilding(buildingId, newLevel, constructionStart, constructionMinutes);
@@ -239,14 +275,15 @@ class BuildingService {
     );
   }
 
-  Future<bool> speedUpConstruction(int buildingId, List<PlacedBuilding> buildings, int currentGems) async {
+  Future<bool> speedUpConstruction(int buildingId, List<PlacedBuilding> buildings,
+      int currentGems, List<ActivePowerup> powerups) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
 
     final building = buildings[idx];
     if (building.isConstructed) return false;
 
-    final remaining = building.remainingConstructionTime;
+    final remaining = effectiveRemainingTime(building, powerups);
     final gemCost = VillageRules.gemCostToSpeedUp(remaining);
     if (gemCost <= 0) return false;
     if (currentGems < gemCost) return false;
@@ -256,8 +293,8 @@ class BuildingService {
     return true;
   }
 
-  int gemCostToSpeedUp(PlacedBuilding building) {
-    return VillageRules.gemCostToSpeedUp(building.remainingConstructionTime);
+  int gemCostToSpeedUp(PlacedBuilding building, List<ActivePowerup> powerups) {
+    return VillageRules.gemCostToSpeedUp(effectiveRemainingTime(building, powerups));
   }
 
   Future<bool> cancelConstruction(int buildingId, List<PlacedBuilding> buildings) async {

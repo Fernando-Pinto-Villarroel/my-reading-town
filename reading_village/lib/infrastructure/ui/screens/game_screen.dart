@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flame/game.dart' hide Matrix4;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
@@ -29,6 +32,7 @@ import 'package:reading_village/infrastructure/ui/widgets/dialogs/settings_dialo
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/stats_dialog.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/tap_through_interactive_viewer.dart';
+import 'package:reading_village/infrastructure/ui/widgets/dialogs/village_photo_dialog.dart';
 import 'package:reading_village/infrastructure/ui/widgets/sheets/villager_sheets.dart';
 
 part 'game_screen_tap_handlers.dart';
@@ -59,6 +63,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   final Set<int> _notifiedCompletions = {};
   bool _menuOpen = false;
   bool _resourceHudExpanded = false;
+  bool _isCapturing = false;
+  final GlobalKey _gameRepaintKey = GlobalKey();
   @override
   bool _flipNextBuilding = false;
   late final TransformationController _transformController;
@@ -130,6 +136,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _game.updateVillagers(village.villagers,
         missingBuildingTypes: village.missingBuildingTypes,
         houseRoadTiles: village.houseAdjacentRoadTiles);
+    _game.updateActivePowerups(village.activePowerups);
     _game.isConstructionMode = _mode == GameMode.construction;
     _game.isRoadMode = _mode == GameMode.road ||
         (_mode == GameMode.construction &&
@@ -169,6 +176,84 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   void _onConstructionComplete(PlacedBuilding building) => _checkConstructions();
 
+  Future<void> _captureVillagePhoto() async {
+    if (_isCapturing) return;
+    setState(() { _isCapturing = true; _menuOpen = false; });
+
+    try {
+      final boundary = _gameRepaintKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null || !mounted) return;
+
+      final pixelRatio = MediaQuery.of(context).devicePixelRatio;
+      final tileBounds = _game.getOccupiedBounds();
+
+      if (tileBounds == null) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        final fullImage = await boundary.toImage(pixelRatio: pixelRatio);
+        final byteData = await fullImage.toByteData(format: ui.ImageByteFormat.png);
+        if (!mounted) return;
+        showDialog(context: context, builder: (_) => VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()));
+        return;
+      }
+
+      const padTiles = 1;
+      final minTileX = max(0, tileBounds.minX - padTiles);
+      final minTileY = max(0, tileBounds.minY - padTiles);
+      final maxTileX = min(VillageRules.mapSize - 1, tileBounds.maxX + padTiles);
+      final maxTileY = min(VillageRules.mapSize - 1, tileBounds.maxY + padTiles);
+
+      final tileSize = UiConstants.tilePixelSize;
+      final contentWorldW = (maxTileX - minTileX + 1) * tileSize;
+      final contentWorldH = (maxTileY - minTileY + 1) * tileSize;
+      final worldCenterX = (minTileX * tileSize + (maxTileX + 1) * tileSize) / 2.0;
+      final worldCenterY = (minTileY * tileSize + (maxTileY + 1) * tileSize) / 2.0;
+
+      final screenW = boundary.size.width;
+      final screenH = boundary.size.height;
+
+      final fitZoom = min(screenW / contentWorldW, screenH / contentWorldH)
+          .clamp(UiConstants.minZoom, UiConstants.maxZoom);
+
+      _game.setCameraForCapture(Vector2(worldCenterX, worldCenterY), fitZoom);
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final fullImage = await boundary.toImage(pixelRatio: pixelRatio);
+
+      _onTransformChanged();
+
+      final visibleContentW = contentWorldW * fitZoom;
+      final visibleContentH = contentWorldH * fitZoom;
+      final imgW = fullImage.width.toDouble();
+      final imgH = fullImage.height.toDouble();
+
+      final cropX = ((screenW - visibleContentW) / 2.0 * pixelRatio).clamp(0.0, imgW);
+      final cropY = ((screenH - visibleContentH) / 2.0 * pixelRatio).clamp(0.0, imgH);
+      final cropW = (visibleContentW * pixelRatio).clamp(1.0, imgW - cropX);
+      final cropH = (visibleContentH * pixelRatio).clamp(1.0, imgH - cropY);
+
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      canvas.drawImageRect(
+        fullImage,
+        Rect.fromLTWH(cropX, cropY, cropW, cropH),
+        Rect.fromLTWH(0, 0, cropW, cropH),
+        Paint(),
+      );
+      final picture = recorder.endRecording();
+      final croppedImage = await picture.toImage(cropW.round(), cropH.round());
+      final byteData = await croppedImage.toByteData(format: ui.ImageByteFormat.png);
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => VillagePhotoDialog(imageBytes: byteData!.buffer.asUint8List()),
+      );
+    } finally {
+      if (mounted) setState(() => _isCapturing = false);
+    }
+  }
+
   void _onVillagerTapped(Villager villager) {
     if (!mounted) return;
     showVillagerInfoSheet(context,
@@ -203,7 +288,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       body: Stack(
         children: [
           Positioned.fill(
-            child: GameWidget(
+            child: RepaintBoundary(
+              key: _gameRepaintKey,
+              child: GameWidget(
               game: _game,
               loadingBuilder: (context) => Container(
                 color: const Color(0xFF709070),
@@ -225,6 +312,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                 ),
               ),
             ),
+          ),
           ),
           Positioned.fill(
             child: TapThroughInteractiveViewer(
@@ -292,6 +380,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   menuOpen: _menuOpen,
                   onToggleMenu: () =>
                       setState(() => _menuOpen = !_menuOpen),
+                  onPhotoTap: _captureVillagePhoto,
                   onBackpackTap: () =>
                       showBackpackDialog(context, _villageProvider),
                   onStatsTap: () => showStatsDialog(

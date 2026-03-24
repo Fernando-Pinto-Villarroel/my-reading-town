@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flame/events.dart';
 import 'package:flame/components.dart';
@@ -6,6 +7,8 @@ import 'components/grid_component.dart';
 import 'components/building_component.dart';
 import 'components/villager_component.dart';
 import 'components/expansion_sign_component.dart';
+import 'package:reading_village/application/services/building_service.dart';
+import 'package:reading_village/domain/entities/inventory_item.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/domain/entities/villager.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
@@ -31,6 +34,7 @@ class VillageGame extends FlameGame {
 
   double _constructionCheckTimer = 0;
   final Map<int, PlacedBuilding> _buildingsById = {};
+  List<ActivePowerup> _activePowerups = [];
 
   VillageGame({
     this.onTileTapped,
@@ -62,6 +66,10 @@ class VillageGame extends FlameGame {
     updateGridState();
   }
 
+  void updateActivePowerups(List<ActivePowerup> powerups) {
+    _activePowerups = powerups;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -69,6 +77,13 @@ class VillageGame extends FlameGame {
     if (_constructionCheckTimer >= 1.0) {
       _constructionCheckTimer = 0;
       _checkConstructionCompletion();
+    }
+    for (final entry in _buildingComponents.entries) {
+      final b = _buildingsById[entry.key];
+      if (b != null && !b.isConstructed) {
+        entry.value.effectiveRemaining =
+            BuildingService.effectiveRemainingTime(b, _activePowerups);
+      }
     }
   }
 
@@ -264,6 +279,42 @@ class VillageGame extends FlameGame {
         world.add(comp);
       }
     }
+  }
+
+  Vector2 get cameraPosition => camera.viewfinder.position;
+  double get cameraZoom => camera.viewfinder.zoom;
+
+  void setCameraForCapture(Vector2 position, double zoom) {
+    camera.viewfinder.position = position;
+    camera.viewfinder.zoom = zoom.clamp(UiConstants.minZoom, UiConstants.maxZoom);
+  }
+
+  ({int minX, int minY, int maxX, int maxY})? getOccupiedBounds() {
+    int? minX, minY, maxX, maxY;
+
+    for (final key in _roadTiles) {
+      final parts = key.split(',');
+      final tx = int.parse(parts[0]);
+      final ty = int.parse(parts[1]);
+      minX = minX == null ? tx : min(minX, tx);
+      minY = minY == null ? ty : min(minY, ty);
+      maxX = maxX == null ? tx : max(maxX, tx);
+      maxY = maxY == null ? ty : max(maxY, ty);
+    }
+
+    for (final b in _buildingsById.values) {
+      final bMinX = b.tileX;
+      final bMinY = b.tileY;
+      final bMaxX = b.tileX + b.tileWidth - 1;
+      final bMaxY = b.tileY + b.tileHeight - 1;
+      minX = minX == null ? bMinX : min(minX, bMinX);
+      minY = minY == null ? bMinY : min(minY, bMinY);
+      maxX = maxX == null ? bMaxX : max(maxX, bMaxX);
+      maxY = maxY == null ? bMaxY : max(maxY, bMaxY);
+    }
+
+    if (minX == null) return null;
+    return (minX: minX, minY: minY!, maxX: maxX!, maxY: maxY!);
   }
 
   void applyCameraTransform(double scale, double tx, double ty) {

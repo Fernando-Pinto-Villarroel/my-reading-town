@@ -91,19 +91,17 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                             ? 'Already active!'
                             : '2x construction speed for 1 hour',
                         quantity: village.itemQuantity('sandwich'),
-                        color: AppTheme.peach,
+                        color: AppTheme.darkOrange,
                         alreadyActive: village.isSpeedBoostActive,
                         onUse: () async {
                           Navigator.pop(ctx);
-                          final success =
-                              await village.useSandwichItem();
+                          final success = await village.useSandwichItem();
                           if (success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
                                     'Construction speed doubled for 1 hour!',
-                                    style:
-                                        TextStyle(color: AppTheme.darkText)),
+                                    style: TextStyle(color: AppTheme.darkText)),
                                 backgroundColor: AppTheme.mint,
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -123,15 +121,13 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                         alreadyActive: village.isHammerActive,
                         onUse: () async {
                           Navigator.pop(ctx);
-                          final success =
-                              await village.useHammerItem();
+                          final success = await village.useHammerItem();
                           if (success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
                                     'Extra constructor slot for 24 hours!',
-                                    style:
-                                        TextStyle(color: AppTheme.darkText)),
+                                    style: TextStyle(color: AppTheme.darkText)),
                                 backgroundColor: AppTheme.mint,
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -239,14 +235,10 @@ class _ItemTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: canUse
-            ? color.withValues(alpha: 0.08)
-            : Colors.grey.shade100,
+        color: canUse ? color.withValues(alpha: 0.08) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: canUse
-              ? color.withValues(alpha: 0.3)
-              : Colors.grey.shade300,
+          color: canUse ? color.withValues(alpha: 0.3) : Colors.grey.shade300,
         ),
       ),
       child: Row(
@@ -255,9 +247,8 @@ class _ItemTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: canUse
-                  ? color.withValues(alpha: 0.2)
-                  : Colors.grey.shade200,
+              color:
+                  canUse ? color.withValues(alpha: 0.2) : Colors.grey.shade200,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Padding(
@@ -282,7 +273,7 @@ class _ItemTile extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 11,
                         color: alreadyActive
-                            ? AppTheme.mint
+                            ? AppTheme.darkMint
                             : AppTheme.darkText.withValues(alpha: 0.5))),
               ],
             ),
@@ -294,13 +285,13 @@ class _ItemTile extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.darkText)),
+                      color: AppTheme.darkOrange)),
               if (canUse)
                 GestureDetector(
                   onTap: onUse,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(8),
@@ -314,17 +305,17 @@ class _ItemTile extends StatelessWidget {
                 )
               else if (alreadyActive)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.mint.withValues(alpha: 0.2),
+                    color: AppTheme.darkMint.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text('Active',
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.mint)),
+                          color: AppTheme.darkMint)),
                 ),
             ],
           ),

@@ -7,6 +7,7 @@ class SideMenu extends StatelessWidget {
   final VoidCallback onBackpackTap;
   final VoidCallback onStatsTap;
   final VoidCallback onSettingsTap;
+  final VoidCallback onPhotoTap;
 
   const SideMenu({
     super.key,
@@ -15,6 +16,7 @@ class SideMenu extends StatelessWidget {
     required this.onBackpackTap,
     required this.onStatsTap,
     required this.onSettingsTap,
+    required this.onPhotoTap,
   });
 
   @override
@@ -24,6 +26,12 @@ class SideMenu extends StatelessWidget {
       children: [
         DropdownToggleButton(isOpen: menuOpen, onTap: onToggleMenu),
         if (menuOpen) ...[
+          SizedBox(height: 6),
+          SideMenuButton(
+            icon: Icons.camera_alt,
+            isActive: false,
+            onTap: onPhotoTap,
+          ),
           SizedBox(height: 6),
           SideMenuButton(
             icon: Icons.backpack,

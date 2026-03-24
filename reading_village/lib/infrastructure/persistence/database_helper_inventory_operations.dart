@@ -51,6 +51,16 @@ extension DatabaseHelperInventoryOperations on DatabaseHelper {
     await db.delete('active_powerups', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<List<Map<String, dynamic>>> getExpiredSpeedupPowerups() async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    return db.rawQuery('''
+      SELECT * FROM active_powerups
+      WHERE type = 'sandwich_speed'
+      AND datetime(activated_at, '+' || duration_hours || ' hours') <= datetime(?)
+    ''', [now]);
+  }
+
   Future<void> deleteExpiredPowerups() async {
     final db = await database;
     final now = DateTime.now().toIso8601String();

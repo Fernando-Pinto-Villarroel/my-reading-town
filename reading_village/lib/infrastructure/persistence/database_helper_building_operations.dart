@@ -11,6 +11,12 @@ extension DatabaseHelperBuildingOperations on DatabaseHelper {
     return db.query('placed_buildings');
   }
 
+  Future<void> updateConstructionStart(int buildingId, String constructionStart) async {
+    final db = await database;
+    await db.update('placed_buildings', {'construction_start': constructionStart},
+        where: 'id = ?', whereArgs: [buildingId]);
+  }
+
   Future<void> markBuildingConstructed(int buildingId) async {
     final db = await database;
     await db.update('placed_buildings', {'is_constructed': 1},

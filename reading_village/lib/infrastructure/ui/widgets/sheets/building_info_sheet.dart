@@ -50,6 +50,7 @@ void showBuildingInfoSheet(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewPadding.bottom),
       child: Container(
+        width: double.infinity,
         padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.cream,
@@ -127,15 +128,13 @@ void showBuildingInfoSheet(
                     Text(formatMinutes(upgradeMinutes),
                         style: TextStyle(
                             fontSize: 13,
-                            color:
-                                AppTheme.darkText.withValues(alpha: 0.6))),
+                            color: AppTheme.darkText.withValues(alpha: 0.6))),
                   ],
                 ),
                 SizedBox(height: 6),
-                _expBadge(
-                    ((template['exp'] as int? ?? 20) *
-                            VillageRules.upgradeExpMultiplier)
-                        .round()),
+                _expBadge(((template['exp'] as int? ?? 20) *
+                        VillageRules.upgradeExpMultiplier)
+                    .round()),
               ],
               SizedBox(height: 16),
               if (!atMaxLevel)

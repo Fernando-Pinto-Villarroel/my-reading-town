@@ -1,6 +1,7 @@
 abstract class VillageRepository {
   Future<List<Map<String, dynamic>>> getPlacedBuildings();
   Future<int> insertPlacedBuilding(Map<String, dynamic> building);
+  Future<void> updateConstructionStart(int buildingId, String constructionStart);
   Future<void> markBuildingConstructed(int buildingId);
   Future<void> upgradePlacedBuilding(int id, int newLevel, String constructionStart, int constructionMinutes);
   Future<void> deletePlacedBuilding(int buildingId);

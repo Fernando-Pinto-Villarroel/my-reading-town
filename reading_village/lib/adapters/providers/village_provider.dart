@@ -153,6 +153,26 @@ class VillageProvider extends ChangeNotifier {
     );
   }
 
+  Future<void> _crystallizeExpiredSpeedups() async {
+    final expiredMaps = await _inventorySvc.getExpiredSpeedupPowerups();
+    if (expiredMaps.isEmpty) return;
+    for (final row in expiredMaps) {
+      final boostStart = DateTime.parse(row['activated_at'] as String);
+      final boostDurationHours = row['duration_hours'] as int;
+      final boostEnd = boostStart.add(Duration(hours: boostDurationHours));
+      for (final b in _placedBuildings) {
+        if (b.isConstructed || b.constructionStart == null || b.id == null) continue;
+        final constructStart = DateTime.parse(b.constructionStart!);
+        final overlapStart = constructStart.isAfter(boostStart) ? constructStart : boostStart;
+        if (!boostEnd.isAfter(overlapStart)) continue;
+        final bonus = boostEnd.difference(overlapStart);
+        final newStart = constructStart.subtract(bonus);
+        b.constructionStart = newStart.toIso8601String();
+        await _repo.updateConstructionStart(b.id!, b.constructionStart!);
+      }
+    }
+  }
+
   // --- Data loading ---
 
   Future<void> loadData() async {
@@ -183,6 +203,7 @@ class VillageProvider extends ChangeNotifier {
     _townName = gameState['town_name'] as String;
 
     _inventoryItems = await _inventorySvc.loadInventoryItems();
+    await _crystallizeExpiredSpeedups();
     _activePowerups = await _inventorySvc.loadActivePowerups();
     _minigameCooldowns = await _inventorySvc.loadMinigameCooldowns();
     _missionProgress = await _missionSvc.loadMissionProgress();
@@ -236,7 +257,6 @@ class VillageProvider extends ChangeNotifier {
       type: type, name: name, tileX: tileX, tileY: tileY,
       coinCost: coinCost, gemCost: gemCost, woodCost: woodCost, metalCost: metalCost,
       happinessBonus: happinessBonus, constructionMinutes: constructionMinutes,
-      speedMultiplier: constructionSpeedMultiplier,
       isFlipped: isFlipped, tileWidth: tileWidth, tileHeight: tileHeight,
       isDecoration: isDecoration,
     );
@@ -252,7 +272,7 @@ class VillageProvider extends ChangeNotifier {
   }
 
   Future<List<PlacedBuilding>> checkAndCompleteConstructions() async {
-    final completed = await _buildingSvc.checkAndCompleteConstructions(_placedBuildings);
+    final completed = await _buildingSvc.checkAndCompleteConstructions(_placedBuildings, _activePowerups);
     if (completed.isNotEmpty) {
       for (final b in completed) {
         await addExp(_buildingSvc.getExpForConstruction(b));
@@ -269,7 +289,6 @@ class VillageProvider extends ChangeNotifier {
     final result = await _buildingSvc.upgradeBuilding(
       buildingId, _placedBuildings,
       coins: _coins, wood: _wood, metal: _metal,
-      speedMultiplier: constructionSpeedMultiplier,
     );
     if (result) {
       await refreshResources();
@@ -285,7 +304,7 @@ class VillageProvider extends ChangeNotifier {
     if (idx == -1) return false;
     final building = _placedBuildings[idx];
 
-    final result = await _buildingSvc.speedUpConstruction(buildingId, _placedBuildings, _gems);
+    final result = await _buildingSvc.speedUpConstruction(buildingId, _placedBuildings, _gems, _activePowerups);
     if (!result) return false;
 
     final expAmount = _buildingSvc.getExpForConstruction(building);

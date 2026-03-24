@@ -13,6 +13,9 @@ class InventoryService {
     return maps.map((m) => InventoryItem.fromMap(m)).toList();
   }
 
+  Future<List<Map<String, dynamic>>> getExpiredSpeedupPowerups() =>
+      _invRepo.getExpiredSpeedupPowerups();
+
   Future<List<ActivePowerup>> loadActivePowerups() async {
     await _invRepo.deleteExpiredPowerups();
     final maps = await _invRepo.getActivePowerups();

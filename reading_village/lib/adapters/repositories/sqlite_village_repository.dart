@@ -12,6 +12,10 @@ class SqliteVillageRepository implements VillageRepository {
   Future<int> insertPlacedBuilding(Map<String, dynamic> building) => _db.insertPlacedBuilding(building);
 
   @override
+  Future<void> updateConstructionStart(int buildingId, String constructionStart) =>
+      _db.updateConstructionStart(buildingId, constructionStart);
+
+  @override
   Future<void> markBuildingConstructed(int buildingId) => _db.markBuildingConstructed(buildingId);
 
   @override

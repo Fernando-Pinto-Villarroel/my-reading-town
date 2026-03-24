@@ -25,6 +25,9 @@ class SqliteInventoryRepository implements InventoryRepository {
   Future<List<Map<String, dynamic>>> getActivePowerups() => _db.getActivePowerups();
 
   @override
+  Future<List<Map<String, dynamic>>> getExpiredSpeedupPowerups() => _db.getExpiredSpeedupPowerups();
+
+  @override
   Future<int> insertPowerup(Map<String, dynamic> powerup) => _db.insertPowerup(powerup);
 
   @override
