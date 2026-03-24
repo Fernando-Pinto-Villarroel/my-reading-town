@@ -5,7 +5,6 @@ import 'package:reading_village/domain/entities/inventory_item.dart';
 import 'package:reading_village/domain/entities/mission.dart';
 import 'package:reading_village/domain/entities/mission_data.dart';
 import 'package:reading_village/domain/ports/village_repository.dart';
-import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/application/services/building_service.dart';
 import 'package:reading_village/application/services/villager_service.dart';
 import 'package:reading_village/application/services/inventory_service.dart';
@@ -32,7 +31,6 @@ class VillageProvider extends ChangeNotifier {
   Set<String> _roadTiles = {};
   Set<String> _unlockedChunks = {};
   int _expansionCount = 0;
-  int _villageLevel = 1;
   int _exp = 0;
   int _playerLevel = 1;
   String _username = '';
@@ -55,7 +53,6 @@ class VillageProvider extends ChangeNotifier {
   Set<String> get roadTiles => _roadTiles;
   Set<String> get unlockedChunks => _unlockedChunks;
   int get expansionCount => _expansionCount;
-  int get villageLevel => _villageLevel;
   int get exp => _exp;
   int get playerLevel => _playerLevel;
   int? get pendingLevelUp => _pendingLevelUp;
@@ -196,7 +193,6 @@ class VillageProvider extends ChangeNotifier {
 
     final gameState = await _repo.getGameState();
     _expansionCount = gameState['expansion_count'] as int;
-    _villageLevel = gameState['village_level'] as int;
     _exp = gameState['exp'] as int;
     _playerLevel = gameState['player_level'] as int;
     _username = gameState['username'] as String;
@@ -210,7 +206,6 @@ class VillageProvider extends ChangeNotifier {
 
     _villagers = await _villagerSvc.reconcileVillagers(_villagers, _placedBuildings, _roadTiles);
     _villagerSvc.updateVillagerHappiness(_villagers, _placedBuildings, _roadTiles, _activePowerups);
-    _villageLevel = VillageRules.levelForVillagers(_villagers.length);
     notifyListeners();
   }
 

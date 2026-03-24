@@ -351,8 +351,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     });
                     _syncGameState();
                   },
-                  onReadingTap: () => showReadingModal(context),
                   onMissionsTap: () => showMissionsModal(context),
+                  onBackpackTap: () => showBackpackDialog(context, _villageProvider),
                   onMinigamesTap: () => showMinigamesDialog(context,
                       village: _villageProvider,
                       onReturn: () {
@@ -380,9 +380,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   menuOpen: _menuOpen,
                   onToggleMenu: () =>
                       setState(() => _menuOpen = !_menuOpen),
+                  onReadingTap: () => showReadingModal(context),
                   onPhotoTap: _captureVillagePhoto,
-                  onBackpackTap: () =>
-                      showBackpackDialog(context, _villageProvider),
                   onStatsTap: () => showStatsDialog(
                       context, _villageProvider, _bookProvider),
                   onSettingsTap: () =>

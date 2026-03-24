@@ -10,6 +10,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
   final bookProvider = context.read<BookProvider>();
   final villageProvider = context.read<VillageProvider>();
   final pagesController = TextEditingController();
+  final timeController = TextEditingController();
   final book = bookProvider.books.firstWhere((b) => b.id == bookId);
   final remainingPages = book.totalPages - book.pagesRead;
 
@@ -17,12 +18,14 @@ void showLogPagesDialog(BuildContext context, int bookId) {
     context: context,
     builder: (dialogCtx) {
       String? pagesError;
+      String? timeError;
       return StatefulBuilder(
         builder: (dialogCtx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Log Pages Read'),
-          content: Column(
+          title: Text('Log Reading Session'),
+          content: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('How many pages did you read?',
@@ -46,8 +49,21 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 keyboardType: TextInputType.number,
                 autofocus: true,
               ),
+              SizedBox(height: 12),
+              TextField(
+                controller: timeController,
+                decoration: InputDecoration(
+                  labelText: 'Time taken in minutes (optional)',
+                  hintText: 'e.g. 30',
+                  errorText: timeError,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  suffixText: 'min',
+                ),
+                keyboardType: TextInputType.number,
+              ),
             ],
-          ),
+          )),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx),
@@ -67,10 +83,21 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                   return;
                 }
 
+                int? timeMins;
+                final timeText = timeController.text.trim();
+                if (timeText.isNotEmpty) {
+                  timeMins = int.tryParse(timeText);
+                  if (timeMins == null || timeMins <= 0) {
+                    setDialogState(() => timeError = 'Enter a valid number of minutes');
+                    return;
+                  }
+                }
+                setDialogState(() => timeError = null);
+
                 Navigator.pop(dialogCtx);
 
                 final rewards =
-                    await bookProvider.logPages(bookId, pages);
+                    await bookProvider.logPages(bookId, pages, timeTakenMinutes: timeMins);
                 final coinsEarned = rewards['coins'] as int;
                 final gemsEarned = rewards['gems'] as int;
                 final woodEarned = rewards['wood'] as int;

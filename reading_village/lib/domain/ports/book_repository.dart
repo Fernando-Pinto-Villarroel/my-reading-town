@@ -7,8 +7,13 @@ abstract class BookRepository {
   Future<int> getCompletedBooksCount();
   Future<int> insertReadingSession(Map<String, dynamic> session);
   Future<List<Map<String, dynamic>>> getReadingSessions();
+  Future<List<Map<String, dynamic>>> getSessionsForBook(int bookId);
+  Future<void> updateReadingSession(int sessionId, Map<String, dynamic> values);
+  Future<void> deleteReadingSession(int sessionId);
+  Future<int> sumSessionPagesForBook(int bookId);
   Future<int> getTotalPagesRead();
   Future<int> getTotalSessionsCount();
+  Future<int> getTotalTimeMinutes();
   Future<List<Map<String, dynamic>>> getTags();
   Future<int> insertTag(Map<String, dynamic> tag);
   Future<void> updateTag(int tagId, Map<String, dynamic> values);

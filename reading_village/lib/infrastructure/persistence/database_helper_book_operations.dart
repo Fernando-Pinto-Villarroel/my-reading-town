@@ -61,6 +61,37 @@ extension DatabaseHelperBookOperations on DatabaseHelper {
     return result.first['count'] as int;
   }
 
+  Future<List<Map<String, dynamic>>> getSessionsForBook(int bookId) async {
+    final db = await database;
+    return db.query('reading_sessions',
+        where: 'book_id = ?', whereArgs: [bookId], orderBy: 'date DESC');
+  }
+
+  Future<void> updateReadingSession(int sessionId, Map<String, dynamic> values) async {
+    final db = await database;
+    await db.update('reading_sessions', values, where: 'id = ?', whereArgs: [sessionId]);
+  }
+
+  Future<void> deleteReadingSession(int sessionId) async {
+    final db = await database;
+    await db.delete('reading_sessions', where: 'id = ?', whereArgs: [sessionId]);
+  }
+
+  Future<int> sumSessionPagesForBook(int bookId) async {
+    final db = await database;
+    final result = await db.rawQuery(
+        'SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE book_id = ?',
+        [bookId]);
+    return result.first['total'] as int;
+  }
+
+  Future<int> getTotalTimeMinutes() async {
+    final db = await database;
+    final result = await db.rawQuery(
+        'SELECT COALESCE(SUM(time_taken_minutes), 0) as total FROM reading_sessions WHERE time_taken_minutes IS NOT NULL');
+    return result.first['total'] as int;
+  }
+
   Future<List<Map<String, dynamic>>> getTags() async {
     final db = await database;
     return db.query('tags', orderBy: 'title ASC');

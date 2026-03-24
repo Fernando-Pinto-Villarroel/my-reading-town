@@ -21,6 +21,12 @@ class BookProvider extends ChangeNotifier {
   List<ReadingSession> get sessions => _sessions;
   BookFilter get filter => _filter;
 
+  List<ReadingSession> sessionsForBook(int bookId) {
+    final list = _sessions.where((s) => s.bookId == bookId).toList();
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
+  }
+
   List<Book> get filteredBooks {
     var result = List<Book>.from(_books);
 
@@ -135,8 +141,10 @@ class BookProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, dynamic>> logPages(int bookId, int pages) async {
-    final result = await _readingSvc.logPages(bookId, pages, _books);
+  Future<Map<String, dynamic>> logPages(int bookId, int pages,
+      {int? timeTakenMinutes}) async {
+    final result = await _readingSvc.logPages(bookId, pages, _books,
+        timeTakenMinutes: timeTakenMinutes);
 
     final bookIndex = _books.indexWhere((b) => b.id == bookId);
     if (bookIndex != -1) {
@@ -146,21 +154,35 @@ class BookProvider extends ChangeNotifier {
       );
     }
 
-    final session = ReadingSession(
-      bookId: bookId,
-      pagesRead: pages,
-      coinsEarned: result['coins'] as int,
-      gemsEarned: result['gems'] as int,
-      woodEarned: result['wood'] as int,
-      metalEarned: result['metal'] as int,
-    );
-    _sessions.insert(0, session);
-    notifyListeners();
+    await _reloadSessionsForBook(bookId);
 
     return result;
+  }
+
+  Future<void> editSession(int sessionId, int bookId, int newPages, int? newTimeMins) async {
+    final updatedBook = await _readingSvc.editSession(sessionId, bookId, newPages, newTimeMins, _books);
+    final bookIdx = _books.indexWhere((b) => b.id == bookId);
+    if (bookIdx != -1) _books[bookIdx] = updatedBook;
+    await _reloadSessionsForBook(bookId);
+  }
+
+  Future<void> deleteSession(int sessionId, int bookId) async {
+    final updatedBook = await _readingSvc.deleteSession(sessionId, bookId, _books);
+    final bookIdx = _books.indexWhere((b) => b.id == bookId);
+    if (bookIdx != -1) _books[bookIdx] = updatedBook;
+    _sessions.removeWhere((s) => s.id == sessionId);
+    await _reloadSessionsForBook(bookId);
+  }
+
+  Future<void> _reloadSessionsForBook(int bookId) async {
+    final bookSessions = await _readingSvc.getSessionsForBook(bookId);
+    _sessions.removeWhere((s) => s.bookId == bookId);
+    _sessions.insertAll(0, bookSessions);
+    notifyListeners();
   }
 
   Future<int> getTotalPagesRead() => _readingSvc.getTotalPagesRead();
   Future<int> getCompletedBooksCount() => _readingSvc.getCompletedBooksCount();
   Future<int> getTotalSessionsCount() => _readingSvc.getTotalSessionsCount();
+  Future<int> getTotalTimeMinutes() => _readingSvc.getTotalTimeMinutes();
 }

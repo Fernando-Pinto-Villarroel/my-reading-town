@@ -48,7 +48,7 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     final result = await db.query('game_state', where: 'id = 1');
     if (result.isEmpty) {
-      return {'expansion_count': 0, 'village_level': 1, 'exp': 0, 'player_level': 1, 'username': '', 'town_name': 'My Village'};
+      return {'expansion_count': 0, 'exp': 0, 'player_level': 1, 'username': '', 'town_name': 'My Village'};
     }
     return result.first;
   }
@@ -62,16 +62,6 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     await db.rawUpdate(
         'UPDATE game_state SET expansion_count = expansion_count + 1 WHERE id = 1');
-  }
-
-  Future<int> getVillageLevel() async {
-    final state = await getGameState();
-    return state['village_level'] as int;
-  }
-
-  Future<void> updateVillageLevel(int level) async {
-    final db = await database;
-    await db.update('game_state', {'village_level': level}, where: 'id = 1');
   }
 
   Future<void> addExp(int amount) async {

@@ -4,7 +4,7 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 class SideMenu extends StatelessWidget {
   final bool menuOpen;
   final VoidCallback onToggleMenu;
-  final VoidCallback onBackpackTap;
+  final VoidCallback onReadingTap;
   final VoidCallback onStatsTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onPhotoTap;
@@ -13,7 +13,7 @@ class SideMenu extends StatelessWidget {
     super.key,
     required this.menuOpen,
     required this.onToggleMenu,
-    required this.onBackpackTap,
+    required this.onReadingTap,
     required this.onStatsTap,
     required this.onSettingsTap,
     required this.onPhotoTap,
@@ -24,19 +24,20 @@ class SideMenu extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        DropdownToggleButton(isOpen: menuOpen, onTap: onToggleMenu),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ReadingButton(onTap: onReadingTap),
+            SizedBox(width: 6),
+            DropdownToggleButton(isOpen: menuOpen, onTap: onToggleMenu),
+          ],
+        ),
         if (menuOpen) ...[
           SizedBox(height: 6),
           SideMenuButton(
             icon: Icons.camera_alt,
             isActive: false,
             onTap: onPhotoTap,
-          ),
-          SizedBox(height: 6),
-          SideMenuButton(
-            icon: Icons.backpack,
-            isActive: false,
-            onTap: onBackpackTap,
           ),
           SizedBox(height: 6),
           SideMenuButton(
@@ -89,6 +90,34 @@ class SideMenuButton extends StatelessWidget {
   }
 }
 
+class _ReadingButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ReadingButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.red.shade400,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(Icons.menu_book, size: 26, color: Colors.white),
+      ),
+    );
+  }
+}
+
 class DropdownToggleButton extends StatelessWidget {
   final bool isOpen;
   final VoidCallback onTap;
@@ -114,8 +143,8 @@ class DropdownToggleButton extends StatelessWidget {
             ),
           ],
         ),
-        child:
-            Icon(isOpen ? Icons.close : Icons.apps, size: 26, color: Colors.white),
+        child: Icon(isOpen ? Icons.close : Icons.apps,
+            size: 26, color: Colors.white),
       ),
     );
   }

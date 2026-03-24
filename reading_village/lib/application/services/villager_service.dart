@@ -120,10 +120,7 @@ class VillagerService {
       newVillagers.add(Villager(id: id, name: name, species: species, happiness: 50, houseId: targetHouse.id!));
     }
 
-    final allVillagers = [...villagers, ...newVillagers];
-    final villageLevel = VillageRules.levelForVillagers(allVillagers.length);
-    await _repo.updateVillageLevel(villageLevel);
-    return allVillagers;
+    return [...villagers, ...newVillagers];
   }
 
   Future<void> renameVillager(int villagerId, String newName, List<Villager> villagers) async {

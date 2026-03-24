@@ -82,9 +82,6 @@ class SqliteVillageRepository implements VillageRepository {
   Future<void> incrementExpansionCount() => _db.incrementExpansionCount();
 
   @override
-  Future<void> updateVillageLevel(int level) => _db.updateVillageLevel(level);
-
-  @override
   Future<void> addExp(int amount) => _db.addExp(amount);
 
   @override

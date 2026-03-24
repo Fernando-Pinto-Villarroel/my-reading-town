@@ -31,10 +31,26 @@ class SqliteBookRepository implements BookRepository {
   Future<List<Map<String, dynamic>>> getReadingSessions() => _db.getReadingSessions();
 
   @override
+  Future<List<Map<String, dynamic>>> getSessionsForBook(int bookId) => _db.getSessionsForBook(bookId);
+
+  @override
+  Future<void> updateReadingSession(int sessionId, Map<String, dynamic> values) =>
+      _db.updateReadingSession(sessionId, values);
+
+  @override
+  Future<void> deleteReadingSession(int sessionId) => _db.deleteReadingSession(sessionId);
+
+  @override
+  Future<int> sumSessionPagesForBook(int bookId) => _db.sumSessionPagesForBook(bookId);
+
+  @override
   Future<int> getTotalPagesRead() => _db.getTotalPagesRead();
 
   @override
   Future<int> getTotalSessionsCount() => _db.getTotalSessionsCount();
+
+  @override
+  Future<int> getTotalTimeMinutes() => _db.getTotalTimeMinutes();
 
   @override
   Future<List<Map<String, dynamic>>> getTags() => _db.getTags();

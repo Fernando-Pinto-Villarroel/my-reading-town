@@ -27,6 +27,11 @@ class ReadingService {
     return sessionMaps.map((m) => ReadingSession.fromMap(m)).toList();
   }
 
+  Future<List<ReadingSession>> getSessionsForBook(int bookId) async {
+    final maps = await _repo.getSessionsForBook(bookId);
+    return maps.map((m) => ReadingSession.fromMap(m)).toList();
+  }
+
   Future<Book> addBook({
     required String title,
     required int totalPages,
@@ -116,7 +121,8 @@ class ReadingService {
     }
   }
 
-  Future<Map<String, dynamic>> logPages(int bookId, int pages, List<Book> books) async {
+  Future<Map<String, dynamic>> logPages(int bookId, int pages, List<Book> books,
+      {int? timeTakenMinutes}) async {
     final bookIndex = books.indexWhere((b) => b.id == bookId);
     if (bookIndex == -1) throw Exception('Book not found');
 
@@ -160,6 +166,7 @@ class ReadingService {
       gemsEarned: gemsEarned,
       woodEarned: woodEarned,
       metalEarned: metalEarned,
+      timeTakenMinutes: timeTakenMinutes,
     ).toMap());
 
     return {
@@ -173,7 +180,48 @@ class ReadingService {
     };
   }
 
+  Future<Book> editSession(
+      int sessionId, int bookId, int newPages, int? newTimeMins, List<Book> books) async {
+    final bookIdx = books.indexWhere((b) => b.id == bookId);
+    if (bookIdx == -1) throw Exception('Book not found');
+    final book = books[bookIdx];
+
+    final allSessions = await _repo.getSessionsForBook(bookId);
+    final otherPagesSum =
+        allSessions.where((s) => s['id'] != sessionId).fold<int>(0, (sum, s) => sum + (s['pages_read'] as int));
+
+    if (otherPagesSum + newPages > book.totalPages) {
+      throw Exception('Total pages would exceed book total (${book.totalPages})');
+    }
+
+    await _repo.updateReadingSession(sessionId, {
+      'pages_read': newPages,
+      'time_taken_minutes': newTimeMins,
+    });
+
+    final newPagesRead = otherPagesSum + newPages;
+    final isCompleted = newPagesRead >= book.totalPages;
+    await _repo.updateBookPages(bookId, newPagesRead, isCompleted);
+
+    return book.copyWith(pagesRead: newPagesRead, isCompleted: isCompleted);
+  }
+
+  Future<Book> deleteSession(int sessionId, int bookId, List<Book> books) async {
+    final bookIdx = books.indexWhere((b) => b.id == bookId);
+    if (bookIdx == -1) throw Exception('Book not found');
+    final book = books[bookIdx];
+
+    await _repo.deleteReadingSession(sessionId);
+
+    final newPagesRead = await _repo.sumSessionPagesForBook(bookId);
+    final isCompleted = newPagesRead >= book.totalPages;
+    await _repo.updateBookPages(bookId, newPagesRead, isCompleted);
+
+    return book.copyWith(pagesRead: newPagesRead, isCompleted: isCompleted);
+  }
+
   Future<int> getTotalPagesRead() => _repo.getTotalPagesRead();
   Future<int> getCompletedBooksCount() => _repo.getCompletedBooksCount();
   Future<int> getTotalSessionsCount() => _repo.getTotalSessionsCount();
+  Future<int> getTotalTimeMinutes() => _repo.getTotalTimeMinutes();
 }

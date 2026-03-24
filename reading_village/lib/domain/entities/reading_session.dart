@@ -7,6 +7,7 @@ class ReadingSession {
   final int woodEarned;
   final int metalEarned;
   final String date;
+  final int? timeTakenMinutes;
 
   ReadingSession({
     this.id,
@@ -17,6 +18,7 @@ class ReadingSession {
     this.woodEarned = 0,
     this.metalEarned = 0,
     String? date,
+    this.timeTakenMinutes,
   }) : date = date ?? DateTime.now().toIso8601String();
 
   Map<String, dynamic> toMap() {
@@ -29,6 +31,7 @@ class ReadingSession {
       'wood_earned': woodEarned,
       'metal_earned': metalEarned,
       'date': date,
+      'time_taken_minutes': timeTakenMinutes,
     };
   }
 
@@ -42,6 +45,24 @@ class ReadingSession {
       woodEarned: map['wood_earned'] as int? ?? 0,
       metalEarned: map['metal_earned'] as int? ?? 0,
       date: map['date'] as String,
+      timeTakenMinutes: map['time_taken_minutes'] as int?,
+    );
+  }
+
+  ReadingSession copyWith({
+    int? pagesRead,
+    int? Function()? timeTakenMinutes,
+  }) {
+    return ReadingSession(
+      id: id,
+      bookId: bookId,
+      pagesRead: pagesRead ?? this.pagesRead,
+      coinsEarned: coinsEarned,
+      gemsEarned: gemsEarned,
+      woodEarned: woodEarned,
+      metalEarned: metalEarned,
+      date: date,
+      timeTakenMinutes: timeTakenMinutes != null ? timeTakenMinutes() : this.timeTakenMinutes,
     );
   }
 }

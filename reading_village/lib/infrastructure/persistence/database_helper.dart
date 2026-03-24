@@ -73,6 +73,7 @@ class DatabaseHelper {
         wood_earned INTEGER NOT NULL DEFAULT 0,
         metal_earned INTEGER NOT NULL DEFAULT 0,
         date TEXT NOT NULL,
+        time_taken_minutes INTEGER,
         FOREIGN KEY (book_id) REFERENCES books(id)
       )
     ''');
@@ -140,7 +141,6 @@ class DatabaseHelper {
       CREATE TABLE game_state (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         expansion_count INTEGER NOT NULL DEFAULT 0,
-        village_level INTEGER NOT NULL DEFAULT 1,
         exp INTEGER NOT NULL DEFAULT 0,
         player_level INTEGER NOT NULL DEFAULT 1,
         username TEXT NOT NULL DEFAULT '',
@@ -197,7 +197,6 @@ class DatabaseHelper {
     await db.insert('game_state', {
       'id': 1,
       'expansion_count': 0,
-      'village_level': 1,
       'exp': 0,
       'player_level': 1,
       'username': '',

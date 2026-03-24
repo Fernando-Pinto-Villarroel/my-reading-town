@@ -18,7 +18,7 @@ void showStatsDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           padding: EdgeInsets.all(20),
-          constraints: BoxConstraints(maxHeight: 600),
+          constraints: BoxConstraints(maxHeight: 680),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.circular(24),
@@ -45,11 +45,6 @@ void showStatsDialog(
                 ),
                 SizedBox(height: 8),
                 StatRow(
-                    icon: Icon(Icons.stars,
-                        size: 28, color: AppTheme.coinGold),
-                    label: 'Village Level',
-                    value: '${village.villageLevel}'),
-                StatRow(
                     icon: ResourceIcon.coin(size: 28),
                     label: 'Coins',
                     value: '${village.coins}'),
@@ -73,7 +68,8 @@ void showStatsDialog(
                         {
                           'totalPages': 0,
                           'completedBooks': 0,
-                          'totalSessions': 0
+                          'totalSessions': 0,
+                          'totalTimeMinutes': 0,
                         };
                     return Column(
                       children: [
@@ -92,6 +88,17 @@ void showStatsDialog(
                                 size: 28, color: AppTheme.coinGold),
                             label: 'Completed',
                             value: '${stats['completedBooks']}'),
+                        StatRow(
+                            icon: Icon(Icons.history,
+                                size: 28, color: AppTheme.skyBlue),
+                            label: 'Sessions',
+                            value: '${stats['totalSessions']}'),
+                        if ((stats['totalTimeMinutes'] ?? 0) > 0)
+                          StatRow(
+                              icon: Icon(Icons.timer,
+                                  size: 28, color: AppTheme.mint),
+                              label: 'Reading Time',
+                              value: _formatTotalTime(stats['totalTimeMinutes']!)),
                       ],
                     );
                   },
@@ -122,12 +129,20 @@ void showStatsDialog(
   );
 }
 
+String _formatTotalTime(int minutes) {
+  if (minutes < 60) return '${minutes}m';
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  return m > 0 ? '${h}h ${m}m' : '${h}h';
+}
+
 Future<Map<String, int>> _loadStats() async {
   final db = DatabaseHelper();
   return {
     'totalPages': await db.getTotalPagesRead(),
     'completedBooks': await db.getCompletedBooksCount(),
     'totalSessions': await db.getTotalSessionsCount(),
+    'totalTimeMinutes': await db.getTotalTimeMinutes(),
   };
 }
 

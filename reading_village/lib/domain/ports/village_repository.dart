@@ -22,7 +22,6 @@ abstract class VillageRepository {
   Future<void> renameVillager(int villagerId, String newName);
   Future<Map<String, dynamic>> getGameState();
   Future<void> incrementExpansionCount();
-  Future<void> updateVillageLevel(int level);
   Future<void> addExp(int amount);
   Future<void> updatePlayerLevel(int level);
   Future<void> updateUsername(String username);

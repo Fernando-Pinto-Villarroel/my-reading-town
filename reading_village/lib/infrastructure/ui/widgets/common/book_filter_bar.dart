@@ -3,7 +3,7 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/entities/book_filter.dart';
 import 'package:reading_village/domain/entities/tag.dart';
 
-class BookFilterBar extends StatelessWidget {
+class BookFilterBar extends StatefulWidget {
   final BookFilter filter;
   final List<Tag> availableTags;
   final ValueChanged<BookFilter> onFilterChanged;
@@ -16,7 +16,42 @@ class BookFilterBar extends StatelessWidget {
   });
 
   @override
+  State<BookFilterBar> createState() => _BookFilterBarState();
+}
+
+class _BookFilterBarState extends State<BookFilterBar> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.filter.searchQuery ?? '');
+  }
+
+  @override
+  void didUpdateWidget(BookFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filter.searchQuery != widget.filter.searchQuery) {
+      final newText = widget.filter.searchQuery ?? '';
+      if (_searchController.text != newText) {
+        _searchController.text = newText;
+        _searchController.selection = TextSelection.collapsed(offset: newText.length);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final filter = widget.filter;
+    final onFilterChanged = widget.onFilterChanged;
+    final availableTags = widget.availableTags;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Column(
@@ -28,6 +63,7 @@ class BookFilterBar extends StatelessWidget {
                 child: SizedBox(
                   height: 36,
                   child: TextField(
+                    controller: _searchController,
                     onChanged: (v) => onFilterChanged(filter.copyWith(searchQuery: () => v.isEmpty ? null : v)),
                     style: TextStyle(fontSize: 13),
                     decoration: InputDecoration(
@@ -111,7 +147,7 @@ class BookFilterBar extends StatelessWidget {
   }
 
   PopupMenuItem<BookSortField> _sortItem(BookSortField field, String label, IconData icon) {
-    final isActive = filter.sortField == field;
+    final isActive = widget.filter.sortField == field;
     return PopupMenuItem(
       value: field,
       child: Row(
@@ -122,7 +158,7 @@ class BookFilterBar extends StatelessWidget {
           if (isActive) ...[
             Spacer(),
             Icon(
-              filter.sortDirection == BookSortDirection.ascending ? Icons.arrow_upward : Icons.arrow_downward,
+              widget.filter.sortDirection == BookSortDirection.ascending ? Icons.arrow_upward : Icons.arrow_downward,
               size: 14,
               color: AppTheme.lavender,
             ),

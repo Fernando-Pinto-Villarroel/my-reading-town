@@ -11,10 +11,11 @@ class AppTheme {
   static const Color gemPurple = Color(0xFFBB86FC);
   static const Color softWhite = Color(0xFFFFFEFC);
   static const Color darkText = Color(0xFF4A4A4A);
-  static const Color mediumOrange = Color(0xFFE8943A);
+  static const Color mediumOrange = Color.fromARGB(255, 246, 162, 73);
   static const Color darkOrange = Color(0xFFCC7722);
+  static const Color mediumMint = Color.fromARGB(255, 88, 206, 153);
   static const Color darkMint = Color(0xFF2E9E6B);
-  static const Color darkSkyBlue = Color(0xFF3A7FBF);
+  static const Color darkSkyBlue = Color.fromARGB(255, 80, 155, 225);
 
   static const List<Color> tagColors = [
     Color(0xFFFFB3BA), // pink
