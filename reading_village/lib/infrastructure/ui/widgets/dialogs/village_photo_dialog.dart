@@ -33,11 +33,12 @@ class _VillagePhotoDialogState extends State<VillagePhotoDialog> {
         album: 'My Reading Town',
         name: 'village_${DateTime.now().millisecondsSinceEpoch}.png',
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _saving = false;
           _saved = true;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _saving = false);
     }

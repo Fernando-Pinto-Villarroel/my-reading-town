@@ -57,8 +57,6 @@ class VillageRules {
     }
   }
 
-  static const int expPerPage = 2;
-
   static const double upgradeExpMultiplier = 1.5;
 
   static int expForLevel(int level) {

@@ -456,9 +456,13 @@ class _GameScreenState extends State<GameScreen>
         children: [
           Icon(Icons.open_with, size: 20, color: AppTheme.darkText),
           SizedBox(width: 8),
-          Text(context.t('tap_tile_to_move'),
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+          Expanded(
+            child: Text(context.t('tap_tile_to_move'),
+                softWrap: true,
+                overflow: TextOverflow.visible,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+          ),
           SizedBox(width: 8),
           GestureDetector(
             onTap: () async {

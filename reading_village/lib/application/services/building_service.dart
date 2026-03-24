@@ -9,7 +9,8 @@ class BuildingService {
 
   static String tileKey(int x, int y) => '$x,$y';
 
-  static Duration effectiveRemainingTime(PlacedBuilding b, List<ActivePowerup> powerups) {
+  static Duration effectiveRemainingTime(
+      PlacedBuilding b, List<ActivePowerup> powerups) {
     if (b.isConstructed || b.constructionStart == null) return Duration.zero;
     final start = DateTime.parse(b.constructionStart!);
     final total = Duration(minutes: b.constructionDurationMinutes);
@@ -19,10 +20,9 @@ class BuildingService {
     double effectiveElapsedMs = 0.0;
     DateTime cursor = start;
 
-    final boosts = powerups
-        .where((p) => p.type == 'sandwich_speed')
-        .toList()
-        ..sort((a, b) => DateTime.parse(a.activatedAt).compareTo(DateTime.parse(b.activatedAt)));
+    final boosts = powerups.where((p) => p.type == 'sandwich_speed').toList()
+      ..sort((a, b) => DateTime.parse(a.activatedAt)
+          .compareTo(DateTime.parse(b.activatedAt)));
 
     for (final boost in boosts) {
       if (!cursor.isBefore(now)) break;
@@ -31,20 +31,25 @@ class BuildingService {
 
       if (cursor.isBefore(boostStart)) {
         final segEnd = boostStart.isBefore(now) ? boostStart : now;
-        effectiveElapsedMs += segEnd.difference(cursor).inMilliseconds.toDouble();
+        effectiveElapsedMs +=
+            segEnd.difference(cursor).inMilliseconds.toDouble();
         cursor = segEnd;
       }
       if (cursor.isBefore(boostEnd) && cursor.isBefore(now)) {
         final segEnd = boostEnd.isBefore(now) ? boostEnd : now;
-        effectiveElapsedMs += segEnd.difference(cursor).inMilliseconds.toDouble() * 2.0;
+        effectiveElapsedMs +=
+            segEnd.difference(cursor).inMilliseconds.toDouble() * 2.0;
         cursor = segEnd;
       }
     }
 
-    if (cursor.isBefore(now)) effectiveElapsedMs += now.difference(cursor).inMilliseconds.toDouble();
+    if (cursor.isBefore(now))
+      effectiveElapsedMs += now.difference(cursor).inMilliseconds.toDouble();
 
     final remainingMs = total.inMilliseconds - effectiveElapsedMs;
-    return remainingMs <= 0 ? Duration.zero : Duration(milliseconds: remainingMs.round());
+    return remainingMs <= 0
+        ? Duration.zero
+        : Duration(milliseconds: remainingMs.round());
   }
 
   bool isBuildingRoadConnected(PlacedBuilding b, Set<String> roadTiles) {
@@ -55,8 +60,10 @@ class BuildingService {
         for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
           final nx = tx + d.$1;
           final ny = ty + d.$2;
-          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
-              ny >= b.tileY && ny < b.tileY + b.tileHeight) {
+          if (nx >= b.tileX &&
+              nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY &&
+              ny < b.tileY + b.tileHeight) {
             continue;
           }
           if (roadTiles.contains(tileKey(nx, ny))) return true;
@@ -74,8 +81,10 @@ class BuildingService {
         for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
           final nx = tx + d.$1;
           final ny = ty + d.$2;
-          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
-              ny >= b.tileY && ny < b.tileY + b.tileHeight) {
+          if (nx >= b.tileX &&
+              nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY &&
+              ny < b.tileY + b.tileHeight) {
             continue;
           }
           final key = tileKey(nx, ny);
@@ -86,7 +95,8 @@ class BuildingService {
     return null;
   }
 
-  Map<int, String> houseAdjacentRoadTiles(List<PlacedBuilding> buildings, Set<String> roadTiles) {
+  Map<int, String> houseAdjacentRoadTiles(
+      List<PlacedBuilding> buildings, Set<String> roadTiles) {
     final result = <int, String>{};
     for (var b in buildings) {
       if (b.type == 'house' && b.isConstructed && b.id != null) {
@@ -106,7 +116,8 @@ class BuildingService {
   bool hasBuildingAt(int x, int y, List<PlacedBuilding> buildings) =>
       buildings.any((b) => b.occupiesTile(x, y));
 
-  bool isRoadTile(int x, int y, Set<String> roadTiles) => roadTiles.contains(tileKey(x, y));
+  bool isRoadTile(int x, int y, Set<String> roadTiles) =>
+      roadTiles.contains(tileKey(x, y));
 
   PlacedBuilding? getBuildingAt(int x, int y, List<PlacedBuilding> buildings) {
     try {
@@ -116,8 +127,14 @@ class BuildingService {
     }
   }
 
-  bool canPlaceBuildingAtArea(int x, int y, int width, int height,
-      List<PlacedBuilding> buildings, Set<String> roadTiles, Set<String> unlockedChunks) {
+  bool canPlaceBuildingAtArea(
+      int x,
+      int y,
+      int width,
+      int height,
+      List<PlacedBuilding> buildings,
+      Set<String> roadTiles,
+      Set<String> unlockedChunks) {
     for (int dx = 0; dx < width; dx++) {
       for (int dy = 0; dy < height; dy++) {
         if (hasBuildingAt(x + dx, y + dy, buildings)) return false;
@@ -128,13 +145,20 @@ class BuildingService {
     return true;
   }
 
-  ({int x, int y})? findValidPlacement(int tapX, int tapY, int width, int height,
-      List<PlacedBuilding> buildings, Set<String> roadTiles, Set<String> unlockedChunks) {
+  ({int x, int y})? findValidPlacement(
+      int tapX,
+      int tapY,
+      int width,
+      int height,
+      List<PlacedBuilding> buildings,
+      Set<String> roadTiles,
+      Set<String> unlockedChunks) {
     for (int dy = 0; dy < height; dy++) {
       for (int dx = 0; dx < width; dx++) {
         final originX = tapX - dx;
         final originY = tapY - dy;
-        if (canPlaceBuildingAtArea(originX, originY, width, height, buildings, roadTiles, unlockedChunks)) {
+        if (canPlaceBuildingAtArea(originX, originY, width, height, buildings,
+            roadTiles, unlockedChunks)) {
           return (x: originX, y: originY);
         }
       }
@@ -142,7 +166,8 @@ class BuildingService {
     return null;
   }
 
-  bool isChunkAdjacentToUnlocked(int chunkX, int chunkY, Set<String> unlockedChunks) {
+  bool isChunkAdjacentToUnlocked(
+      int chunkX, int chunkY, Set<String> unlockedChunks) {
     if (unlockedChunks.contains(tileKey(chunkX, chunkY))) return false;
     if (chunkX < 0 || chunkX >= VillageRules.chunksPerSide) return false;
     if (chunkY < 0 || chunkY >= VillageRules.chunksPerSide) return false;
@@ -152,21 +177,40 @@ class BuildingService {
         unlockedChunks.contains(tileKey(chunkX, chunkY + 1));
   }
 
-  int totalHouseCapacity(List<PlacedBuilding> buildings, Set<String> roadTiles) {
+  int totalHouseCapacity(
+      List<PlacedBuilding> buildings, Set<String> roadTiles) {
     int total = 0;
     for (var b in buildings) {
-      if (b.type == 'house' && b.isConstructed && isBuildingRoadConnected(b, roadTiles)) {
+      if (b.type == 'house' &&
+          b.isConstructed &&
+          isBuildingRoadConnected(b, roadTiles)) {
         total += VillageRules.villagersPerHouse(b.level);
       }
     }
     return total;
   }
 
+  int effectiveBuildingLevel(PlacedBuilding b) {
+    // If not constructed at all, effective level is 0
+    if (!b.isConstructed) return 0;
+
+    // If constructed but has active construction (upgrade in progress),
+    // use the previous level that was actually working
+    if (b.constructionStart != null && !b.isConstructionComplete) {
+      return b.level - 1;
+    }
+
+    // Otherwise use the actual level
+    return b.level;
+  }
+
   int buildingCountOfType(String type, List<PlacedBuilding> buildings) =>
       buildings.where((b) => b.type == type).length;
 
-  bool canPlaceBuildingType(String type, int playerLevel, List<PlacedBuilding> buildings) {
-    final maxAllowed = VillageRules.maxBuildingsOfTypeForPlayerLevel(type, playerLevel);
+  bool canPlaceBuildingType(
+      String type, int playerLevel, List<PlacedBuilding> buildings) {
+    final maxAllowed =
+        VillageRules.maxBuildingsOfTypeForPlayerLevel(type, playerLevel);
     return buildingCountOfType(type, buildings) < maxAllowed;
   }
 
@@ -186,7 +230,8 @@ class BuildingService {
     int tileHeight = 1,
     bool isDecoration = false,
   }) async {
-    await _repo.subtractResources(coins: coinCost, gems: gemCost, wood: woodCost, metal: metalCost);
+    await _repo.subtractResources(
+        coins: coinCost, gems: gemCost, wood: woodCost, metal: metalCost);
 
     final building = PlacedBuilding(
       type: type,
@@ -216,7 +261,8 @@ class BuildingService {
     List<PlacedBuilding> completed = [];
     for (int i = 0; i < buildings.length; i++) {
       final b = buildings[i];
-      if (!b.isConstructed && effectiveRemainingTime(b, powerups) == Duration.zero) {
+      if (!b.isConstructed &&
+          effectiveRemainingTime(b, powerups) == Duration.zero) {
         b.isConstructed = true;
         await _repo.markBuildingConstructed(b.id!);
         completed.add(b);
@@ -246,13 +292,17 @@ class BuildingService {
     final template = VillageRules.findTemplate(building.type);
     if (template == null) return false;
 
-    final coinCost = VillageRules.upgradeCoinCost(template['coinCost'] as int, building.level);
-    final woodCost = VillageRules.upgradeWoodCost(template['woodCost'] as int, building.level);
-    final metalCost = VillageRules.upgradeMetalCost(template['metalCost'] as int, building.level);
+    final coinCost = VillageRules.upgradeCoinCost(
+        template['coinCost'] as int, building.level);
+    final woodCost = VillageRules.upgradeWoodCost(
+        template['woodCost'] as int, building.level);
+    final metalCost = VillageRules.upgradeMetalCost(
+        template['metalCost'] as int, building.level);
 
     if (coins < coinCost || wood < woodCost || metal < metalCost) return false;
 
-    await _repo.subtractResources(coins: coinCost, wood: woodCost, metal: metalCost);
+    await _repo.subtractResources(
+        coins: coinCost, wood: woodCost, metal: metalCost);
 
     final newLevel = building.level + 1;
     final constructionMinutes = VillageRules.upgradeConstructionMinutes(
@@ -261,22 +311,30 @@ class BuildingService {
     );
     final constructionStart = DateTime.now().toIso8601String();
 
-    await _repo.upgradePlacedBuilding(buildingId, newLevel, constructionStart, constructionMinutes);
+    await _repo.upgradePlacedBuilding(
+        buildingId, newLevel, constructionStart, constructionMinutes);
     return true;
   }
 
-  ({int coinCost, int woodCost, int metalCost})? getUpgradeCost(PlacedBuilding building) {
+  ({int coinCost, int woodCost, int metalCost})? getUpgradeCost(
+      PlacedBuilding building) {
     final template = VillageRules.findTemplate(building.type);
     if (template == null) return null;
     return (
-      coinCost: VillageRules.upgradeCoinCost(template['coinCost'] as int, building.level),
-      woodCost: VillageRules.upgradeWoodCost(template['woodCost'] as int, building.level),
-      metalCost: VillageRules.upgradeMetalCost(template['metalCost'] as int, building.level),
+      coinCost: VillageRules.upgradeCoinCost(
+          template['coinCost'] as int, building.level),
+      woodCost: VillageRules.upgradeWoodCost(
+          template['woodCost'] as int, building.level),
+      metalCost: VillageRules.upgradeMetalCost(
+          template['metalCost'] as int, building.level),
     );
   }
 
-  Future<bool> speedUpConstruction(int buildingId, List<PlacedBuilding> buildings,
-      int currentGems, List<ActivePowerup> powerups) async {
+  Future<bool> speedUpConstruction(
+      int buildingId,
+      List<PlacedBuilding> buildings,
+      int currentGems,
+      List<ActivePowerup> powerups) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
 
@@ -294,10 +352,12 @@ class BuildingService {
   }
 
   int gemCostToSpeedUp(PlacedBuilding building, List<ActivePowerup> powerups) {
-    return VillageRules.gemCostToSpeedUp(effectiveRemainingTime(building, powerups));
+    return VillageRules.gemCostToSpeedUp(
+        effectiveRemainingTime(building, powerups));
   }
 
-  Future<bool> cancelConstruction(int buildingId, List<PlacedBuilding> buildings) async {
+  Future<bool> cancelConstruction(
+      int buildingId, List<PlacedBuilding> buildings) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
 
@@ -310,11 +370,15 @@ class BuildingService {
       final previousLevel = building.level - 1;
       final template = VillageRules.findTemplate(building.type);
       if (template == null) return false;
-      final refundCoins = VillageRules.upgradeCoinCost(template['coinCost'] as int, previousLevel);
-      final refundWood = VillageRules.upgradeWoodCost(template['woodCost'] as int, previousLevel);
-      final refundMetal = VillageRules.upgradeMetalCost(template['metalCost'] as int, previousLevel);
+      final refundCoins = VillageRules.upgradeCoinCost(
+          template['coinCost'] as int, previousLevel);
+      final refundWood = VillageRules.upgradeWoodCost(
+          template['woodCost'] as int, previousLevel);
+      final refundMetal = VillageRules.upgradeMetalCost(
+          template['metalCost'] as int, previousLevel);
 
-      await _repo.addResources(coins: refundCoins, wood: refundWood, metal: refundMetal);
+      await _repo.addResources(
+          coins: refundCoins, wood: refundWood, metal: refundMetal);
       final baseMinutes = template['constructionMinutes'] as int;
       await _repo.revertBuildingUpgrade(buildingId, previousLevel, baseMinutes);
     } else {
@@ -329,8 +393,13 @@ class BuildingService {
     return true;
   }
 
-  Future<bool> moveBuilding(int buildingId, int newTileX, int newTileY,
-      List<PlacedBuilding> buildings, Set<String> roadTiles, Set<String> unlockedChunks) async {
+  Future<bool> moveBuilding(
+      int buildingId,
+      int newTileX,
+      int newTileY,
+      List<PlacedBuilding> buildings,
+      Set<String> roadTiles,
+      Set<String> unlockedChunks) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
     final building = buildings[idx];
@@ -340,8 +409,8 @@ class BuildingService {
     building.tileX = -999;
     building.tileY = -999;
 
-    final placement = findValidPlacement(newTileX, newTileY, building.tileWidth, building.tileHeight,
-        buildings, roadTiles, unlockedChunks);
+    final placement = findValidPlacement(newTileX, newTileY, building.tileWidth,
+        building.tileHeight, buildings, roadTiles, unlockedChunks);
 
     if (placement == null) {
       building.tileX = oldX;
@@ -355,7 +424,8 @@ class BuildingService {
     return true;
   }
 
-  Future<void> flipBuilding(int buildingId, List<PlacedBuilding> buildings) async {
+  Future<void> flipBuilding(
+      int buildingId, List<PlacedBuilding> buildings) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return;
     buildings[idx].isFlipped = !buildings[idx].isFlipped;
@@ -375,7 +445,8 @@ class BuildingService {
 
   Future<bool> expandTerritoryWithGems(int chunkX, int chunkY, int currentGems,
       int expansionCount, Set<String> unlockedChunks) async {
-    if (!isChunkAdjacentToUnlocked(chunkX, chunkY, unlockedChunks)) return false;
+    if (!isChunkAdjacentToUnlocked(chunkX, chunkY, unlockedChunks))
+      return false;
     final cost = VillageRules.expansionGemCost(expansionCount);
     if (currentGems < cost) return false;
     await _repo.subtractResources(gems: cost);
@@ -384,9 +455,10 @@ class BuildingService {
     return true;
   }
 
-  Future<bool> expandTerritoryWithCoins(int chunkX, int chunkY, int currentCoins,
-      int expansionCount, Set<String> unlockedChunks) async {
-    if (!isChunkAdjacentToUnlocked(chunkX, chunkY, unlockedChunks)) return false;
+  Future<bool> expandTerritoryWithCoins(int chunkX, int chunkY,
+      int currentCoins, int expansionCount, Set<String> unlockedChunks) async {
+    if (!isChunkAdjacentToUnlocked(chunkX, chunkY, unlockedChunks))
+      return false;
     final cost = VillageRules.expansionCoinCost(expansionCount);
     if (currentCoins < cost) return false;
     await _repo.subtractResources(coins: cost);

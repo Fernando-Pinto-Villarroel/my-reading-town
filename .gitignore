@@ -47,6 +47,4 @@ app.*.map.json
 out/
 .venv/
 build/
-android/
-
 CLAUDE.md

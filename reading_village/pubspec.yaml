@@ -35,7 +35,11 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/data/
+    - assets/data/en/
+    - assets/data/es/
+    - assets/data/fr/
+    - assets/data/it/
+    - assets/data/pt/
     - assets/messages/
 
 flutter_launcher_icons:

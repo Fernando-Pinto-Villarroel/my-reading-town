@@ -182,8 +182,9 @@ class VillageProvider extends ChangeNotifier {
       final boostDurationHours = row['duration_hours'] as int;
       final boostEnd = boostStart.add(Duration(hours: boostDurationHours));
       for (final b in _placedBuildings) {
-        if (b.isConstructed || b.constructionStart == null || b.id == null)
+        if (b.isConstructed || b.constructionStart == null || b.id == null) {
           continue;
+        }
         final constructStart = DateTime.parse(b.constructionStart!);
         final overlapStart =
             constructStart.isAfter(boostStart) ? constructStart : boostStart;
@@ -284,7 +285,9 @@ class VillageProvider extends ChangeNotifier {
     if (_coins < coinCost ||
         _gems < gemCost ||
         _wood < woodCost ||
-        _metal < metalCost) return null;
+        _metal < metalCost) {
+      return null;
+    }
     if (!canStartConstruction) return null;
 
     final saved = await _buildingSvc.placeBuilding(

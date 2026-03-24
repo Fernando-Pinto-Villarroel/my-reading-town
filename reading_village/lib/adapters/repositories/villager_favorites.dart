@@ -4,10 +4,17 @@ import 'package:flutter/services.dart';
 class VillagerFavorites {
   static List<Map<String, String>> _favorites = [];
   static bool _loaded = false;
+  static String _locale = 'en';
+
+  static void setLocale(String locale) {
+    _locale = locale;
+    _loaded = false;
+  }
 
   static Future<void> load() async {
     if (_loaded) return;
-    final jsonStr = await rootBundle.loadString('assets/data/villager_favorites.json');
+    final jsonStr = await rootBundle
+        .loadString('assets/data/$_locale/villager_favorites.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     _favorites = (data['favorites'] as List)
         .map((e) => {

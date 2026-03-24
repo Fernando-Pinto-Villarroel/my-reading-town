@@ -1,0 +1,294 @@
+{
+  "questions": [
+    {
+      "book": "Harry Potter and the Sorcerer's Stone",
+      "correct_author": "J.K. Rowling",
+      "wrong_authors": ["Stephen King", "J.R.R. Tolkien", "George R.R. Martin"]
+    },
+    {
+      "book": "The Lord of the Rings",
+      "correct_author": "J.R.R. Tolkien",
+      "wrong_authors": ["C.S. Lewis", "J.K. Rowling", "Terry Pratchett"]
+    },
+    {
+      "book": "Pride and Prejudice",
+      "correct_author": "Jane Austen",
+      "wrong_authors": ["Charlotte Bronte", "Emily Bronte", "Mary Shelley"]
+    },
+    {
+      "book": "1984",
+      "correct_author": "George Orwell",
+      "wrong_authors": ["Aldous Huxley", "Ray Bradbury", "H.G. Wells"]
+    },
+    {
+      "book": "To Kill a Mockingbird",
+      "correct_author": "Harper Lee",
+      "wrong_authors": ["Mark Twain", "F. Scott Fitzgerald", "John Steinbeck"]
+    },
+    {
+      "book": "The Great Gatsby",
+      "correct_author": "F. Scott Fitzgerald",
+      "wrong_authors": [
+        "Ernest Hemingway",
+        "William Faulkner",
+        "John Steinbeck"
+      ]
+    },
+    {
+      "book": "Romeo and Juliet",
+      "correct_author": "William Shakespeare",
+      "wrong_authors": ["Charles Dickens", "Oscar Wilde", "Jane Austen"]
+    },
+    {
+      "book": "The Hobbit",
+      "correct_author": "J.R.R. Tolkien",
+      "wrong_authors": ["C.S. Lewis", "Terry Brooks", "Robert Jordan"]
+    },
+    {
+      "book": "Don Quixote",
+      "correct_author": "Miguel de Cervantes",
+      "wrong_authors": [
+        "Gabriel Garcia Marquez",
+        "Jorge Luis Borges",
+        "Pablo Neruda"
+      ]
+    },
+    {
+      "book": "A Tale of Two Cities",
+      "correct_author": "Charles Dickens",
+      "wrong_authors": ["Victor Hugo", "Leo Tolstoy", "Jane Austen"]
+    },
+    {
+      "book": "The Catcher in the Rye",
+      "correct_author": "J.D. Salinger",
+      "wrong_authors": ["Jack Kerouac", "F. Scott Fitzgerald", "Kurt Vonnegut"]
+    },
+    {
+      "book": "Brave New World",
+      "correct_author": "Aldous Huxley",
+      "wrong_authors": ["George Orwell", "Ray Bradbury", "Isaac Asimov"]
+    },
+    {
+      "book": "Moby-Dick",
+      "correct_author": "Herman Melville",
+      "wrong_authors": ["Mark Twain", "Nathaniel Hawthorne", "Edgar Allan Poe"]
+    },
+    {
+      "book": "War and Peace",
+      "correct_author": "Leo Tolstoy",
+      "wrong_authors": [
+        "Fyodor Dostoevsky",
+        "Anton Chekhov",
+        "Alexander Pushkin"
+      ]
+    },
+    {
+      "book": "The Adventures of Tom Sawyer",
+      "correct_author": "Mark Twain",
+      "wrong_authors": [
+        "Louisa May Alcott",
+        "Herman Melville",
+        "Washington Irving"
+      ]
+    },
+    {
+      "book": "Alice's Adventures in Wonderland",
+      "correct_author": "Lewis Carroll",
+      "wrong_authors": [
+        "Roald Dahl",
+        "Hans Christian Andersen",
+        "Brothers Grimm"
+      ]
+    },
+    {
+      "book": "Frankenstein",
+      "correct_author": "Mary Shelley",
+      "wrong_authors": ["Bram Stoker", "Edgar Allan Poe", "H.G. Wells"]
+    },
+    {
+      "book": "Dracula",
+      "correct_author": "Bram Stoker",
+      "wrong_authors": ["Mary Shelley", "Edgar Allan Poe", "H.P. Lovecraft"]
+    },
+    {
+      "book": "The Chronicles of Narnia",
+      "correct_author": "C.S. Lewis",
+      "wrong_authors": ["J.R.R. Tolkien", "Philip Pullman", "Lloyd Alexander"]
+    },
+    {
+      "book": "Charlie and the Chocolate Factory",
+      "correct_author": "Roald Dahl",
+      "wrong_authors": ["Dr. Seuss", "Shel Silverstein", "Lewis Carroll"]
+    },
+    {
+      "book": "The Little Prince",
+      "correct_author": "Antoine de Saint-Exupery",
+      "wrong_authors": ["Victor Hugo", "Jules Verne", "Alexandre Dumas"]
+    },
+    {
+      "book": "Crime and Punishment",
+      "correct_author": "Fyodor Dostoevsky",
+      "wrong_authors": ["Leo Tolstoy", "Anton Chekhov", "Nikolai Gogol"]
+    },
+    {
+      "book": "Jane Eyre",
+      "correct_author": "Charlotte Bronte",
+      "wrong_authors": ["Emily Bronte", "Jane Austen", "George Eliot"]
+    },
+    {
+      "book": "Wuthering Heights",
+      "correct_author": "Emily Bronte",
+      "wrong_authors": ["Charlotte Bronte", "Jane Austen", "Thomas Hardy"]
+    },
+    {
+      "book": "The Odyssey",
+      "correct_author": "Homer",
+      "wrong_authors": ["Virgil", "Sophocles", "Aristotle"]
+    },
+    {
+      "book": "Les Miserables",
+      "correct_author": "Victor Hugo",
+      "wrong_authors": ["Alexandre Dumas", "Gustave Flaubert", "Emile Zola"]
+    },
+    {
+      "book": "One Hundred Years of Solitude",
+      "correct_author": "Gabriel Garcia Marquez",
+      "wrong_authors": [
+        "Jorge Luis Borges",
+        "Isabel Allende",
+        "Mario Vargas Llosa"
+      ]
+    },
+    {
+      "book": "The Picture of Dorian Gray",
+      "correct_author": "Oscar Wilde",
+      "wrong_authors": [
+        "Charles Dickens",
+        "Arthur Conan Doyle",
+        "Robert Louis Stevenson"
+      ]
+    },
+    {
+      "book": "Treasure Island",
+      "correct_author": "Robert Louis Stevenson",
+      "wrong_authors": ["Daniel Defoe", "Jules Verne", "Herman Melville"]
+    },
+    {
+      "book": "Twenty Thousand Leagues Under the Sea",
+      "correct_author": "Jules Verne",
+      "wrong_authors": [
+        "H.G. Wells",
+        "Arthur C. Clarke",
+        "Robert Louis Stevenson"
+      ]
+    },
+    {
+      "book": "The War of the Worlds",
+      "correct_author": "H.G. Wells",
+      "wrong_authors": ["Jules Verne", "Isaac Asimov", "Ray Bradbury"]
+    },
+    {
+      "book": "Fahrenheit 451",
+      "correct_author": "Ray Bradbury",
+      "wrong_authors": ["George Orwell", "Aldous Huxley", "Philip K. Dick"]
+    },
+    {
+      "book": "The Hunger Games",
+      "correct_author": "Suzanne Collins",
+      "wrong_authors": ["Veronica Roth", "James Dashner", "Lois Lowry"]
+    },
+    {
+      "book": "Percy Jackson and the Lightning Thief",
+      "correct_author": "Rick Riordan",
+      "wrong_authors": ["J.K. Rowling", "Christopher Paolini", "Eoin Colfer"]
+    },
+    {
+      "book": "Matilda",
+      "correct_author": "Roald Dahl",
+      "wrong_authors": ["Judy Blume", "Beverly Cleary", "E.B. White"]
+    },
+    {
+      "book": "Charlotte's Web",
+      "correct_author": "E.B. White",
+      "wrong_authors": ["Roald Dahl", "Dr. Seuss", "Beatrix Potter"]
+    },
+    {
+      "book": "The Cat in the Hat",
+      "correct_author": "Dr. Seuss",
+      "wrong_authors": ["Shel Silverstein", "Eric Carle", "Maurice Sendak"]
+    },
+    {
+      "book": "Diary of a Wimpy Kid",
+      "correct_author": "Jeff Kinney",
+      "wrong_authors": ["Dav Pilkey", "James Patterson", "R.L. Stine"]
+    },
+    {
+      "book": "The Fault in Our Stars",
+      "correct_author": "John Green",
+      "wrong_authors": ["Nicholas Sparks", "Jojo Moyes", "Rainbow Rowell"]
+    },
+    {
+      "book": "The Alchemist",
+      "correct_author": "Paulo Coelho",
+      "wrong_authors": [
+        "Gabriel Garcia Marquez",
+        "Jorge Luis Borges",
+        "Haruki Murakami"
+      ]
+    },
+    {
+      "book": "Animal Farm",
+      "correct_author": "George Orwell",
+      "wrong_authors": ["Aldous Huxley", "H.G. Wells", "Jonathan Swift"]
+    },
+    {
+      "book": "The Shining",
+      "correct_author": "Stephen King",
+      "wrong_authors": ["Dean Koontz", "Peter Straub", "Clive Barker"]
+    },
+    {
+      "book": "It",
+      "correct_author": "Stephen King",
+      "wrong_authors": ["R.L. Stine", "H.P. Lovecraft", "Dean Koontz"]
+    },
+    {
+      "book": "Jurassic Park",
+      "correct_author": "Michael Crichton",
+      "wrong_authors": ["Arthur C. Clarke", "Isaac Asimov", "H.G. Wells"]
+    },
+    {
+      "book": "The Da Vinci Code",
+      "correct_author": "Dan Brown",
+      "wrong_authors": ["John Grisham", "Tom Clancy", "James Patterson"]
+    },
+    {
+      "book": "A Game of Thrones",
+      "correct_author": "George R.R. Martin",
+      "wrong_authors": ["J.R.R. Tolkien", "Robert Jordan", "Patrick Rothfuss"]
+    },
+    {
+      "book": "The Giver",
+      "correct_author": "Lois Lowry",
+      "wrong_authors": ["Suzanne Collins", "Veronica Roth", "Madeleine L'Engle"]
+    },
+    {
+      "book": "A Wrinkle in Time",
+      "correct_author": "Madeleine L'Engle",
+      "wrong_authors": ["C.S. Lewis", "Ursula K. Le Guin", "Lois Lowry"]
+    },
+    {
+      "book": "The Outsiders",
+      "correct_author": "S.E. Hinton",
+      "wrong_authors": ["J.D. Salinger", "Harper Lee", "John Steinbeck"]
+    },
+    {
+      "book": "Of Mice and Men",
+      "correct_author": "John Steinbeck",
+      "wrong_authors": [
+        "Ernest Hemingway",
+        "F. Scott Fitzgerald",
+        "William Faulkner"
+      ]
+    }
+  ]
+}

@@ -26,7 +26,8 @@ class _BookFilterBarState extends State<BookFilterBar> {
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(text: widget.filter.searchQuery ?? '');
+    _searchController =
+        TextEditingController(text: widget.filter.searchQuery ?? '');
   }
 
   @override
@@ -36,7 +37,8 @@ class _BookFilterBarState extends State<BookFilterBar> {
       final newText = widget.filter.searchQuery ?? '';
       if (_searchController.text != newText) {
         _searchController.text = newText;
-        _searchController.selection = TextSelection.collapsed(offset: newText.length);
+        _searchController.selection =
+            TextSelection.collapsed(offset: newText.length);
       }
     }
   }
@@ -53,6 +55,12 @@ class _BookFilterBarState extends State<BookFilterBar> {
     final onFilterChanged = widget.onFilterChanged;
     final availableTags = widget.availableTags;
 
+    // Pre-compute translated strings to avoid Provider.of in itemBuilder
+    final dateAddedLabel = context.t('date_added');
+    final titleLabel = context.t('title_sort');
+    final pagesLeftLabel = context.t('pages_left');
+    final authorLabel = context.t('author_sort');
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Column(
@@ -65,14 +73,20 @@ class _BookFilterBarState extends State<BookFilterBar> {
                   height: 36,
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (v) => onFilterChanged(filter.copyWith(searchQuery: () => v.isEmpty ? null : v)),
+                    onChanged: (v) => onFilterChanged(filter.copyWith(
+                        searchQuery: () => v.isEmpty ? null : v)),
                     style: TextStyle(fontSize: 13),
                     decoration: InputDecoration(
                       hintText: context.t('search_by_title_author'),
-                      hintStyle: TextStyle(fontSize: 13, color: AppTheme.darkText.withValues(alpha: 0.4)),
+                      hintStyle: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.darkText.withValues(alpha: 0.4)),
                       prefixIcon: Icon(Icons.search, size: 18),
-                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none),
                       filled: true,
                       fillColor: AppTheme.darkText.withValues(alpha: 0.06),
                     ),
@@ -82,7 +96,8 @@ class _BookFilterBarState extends State<BookFilterBar> {
               SizedBox(width: 6),
               _CompletionToggle(
                 value: filter.showCompleted,
-                onChanged: (v) => onFilterChanged(filter.copyWith(showCompleted: () => v)),
+                onChanged: (v) =>
+                    onFilterChanged(filter.copyWith(showCompleted: () => v)),
               ),
               SizedBox(width: 4),
               PopupMenuButton<BookSortField>(
@@ -92,19 +107,25 @@ class _BookFilterBarState extends State<BookFilterBar> {
                 onSelected: (field) {
                   if (field == filter.sortField) {
                     onFilterChanged(filter.copyWith(
-                      sortDirection: filter.sortDirection == BookSortDirection.ascending
-                          ? BookSortDirection.descending
-                          : BookSortDirection.ascending,
+                      sortDirection:
+                          filter.sortDirection == BookSortDirection.ascending
+                              ? BookSortDirection.descending
+                              : BookSortDirection.ascending,
                     ));
                   } else {
-                    onFilterChanged(filter.copyWith(sortField: field, sortDirection: BookSortDirection.ascending));
+                    onFilterChanged(filter.copyWith(
+                        sortField: field,
+                        sortDirection: BookSortDirection.ascending));
                   }
                 },
                 itemBuilder: (_) => [
-                  _sortItem(BookSortField.dateAdded, context.t('date_added'), Icons.calendar_today),
-                  _sortItem(BookSortField.title, context.t('title_sort'), Icons.sort_by_alpha),
-                  _sortItem(BookSortField.pagesLeft, context.t('pages_left'), Icons.auto_stories),
-                  _sortItem(BookSortField.author, context.t('author_sort'), Icons.person),
+                  _sortItem(BookSortField.dateAdded, dateAddedLabel,
+                      Icons.calendar_today),
+                  _sortItem(
+                      BookSortField.title, titleLabel, Icons.sort_by_alpha),
+                  _sortItem(BookSortField.pagesLeft, pagesLeftLabel,
+                      Icons.auto_stories),
+                  _sortItem(BookSortField.author, authorLabel, Icons.person),
                 ],
               ),
             ],
@@ -127,14 +148,20 @@ class _BookFilterBarState extends State<BookFilterBar> {
                       onFilterChanged(filter.copyWith(selectedTagIds: newIds));
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: selected ? Color(tag.colorValue) : Color(tag.colorValue).withValues(alpha: 0.25),
+                        color: selected
+                            ? Color(tag.colorValue)
+                            : Color(tag.colorValue).withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         tag.title,
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.darkText),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.darkText),
                       ),
                     ),
                   );
@@ -147,19 +174,27 @@ class _BookFilterBarState extends State<BookFilterBar> {
     );
   }
 
-  PopupMenuItem<BookSortField> _sortItem(BookSortField field, String label, IconData icon) {
+  PopupMenuItem<BookSortField> _sortItem(
+      BookSortField field, String label, IconData icon) {
     final isActive = widget.filter.sortField == field;
     return PopupMenuItem(
       value: field,
       child: Row(
         children: [
-          Icon(icon, size: 16, color: isActive ? AppTheme.lavender : AppTheme.darkText),
+          Icon(icon,
+              size: 16,
+              color: isActive ? AppTheme.lavender : AppTheme.darkText),
           SizedBox(width: 8),
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
           if (isActive) ...[
             Spacer(),
             Icon(
-              widget.filter.sortDirection == BookSortDirection.ascending ? Icons.arrow_upward : Icons.arrow_downward,
+              widget.filter.sortDirection == BookSortDirection.ascending
+                  ? Icons.arrow_upward
+                  : Icons.arrow_downward,
               size: 14,
               color: AppTheme.lavender,
             ),

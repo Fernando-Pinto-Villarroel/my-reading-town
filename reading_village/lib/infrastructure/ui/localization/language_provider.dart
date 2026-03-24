@@ -10,6 +10,8 @@ class LanguageProvider extends ChangeNotifier {
     'en': {'name': 'English', 'countryCode': 'US'},
     'es': {'name': 'Español', 'countryCode': 'ES'},
     'fr': {'name': 'Français', 'countryCode': 'FR'},
+    'it': {'name': 'Italiano', 'countryCode': 'IT'},
+    'pt': {'name': 'Português', 'countryCode': 'PT'},
   };
 
   String _currentLocale = defaultLocale;
@@ -21,7 +23,8 @@ class LanguageProvider extends ChangeNotifier {
       _translations[key] ?? fallback ?? key;
 
   Future<void> load(String locale) async {
-    final validLocale = supportedLanguages.containsKey(locale) ? locale : defaultLocale;
+    final validLocale =
+        supportedLanguages.containsKey(locale) ? locale : defaultLocale;
     if (_currentLocale == validLocale && _translations.isNotEmpty) return;
     _currentLocale = validLocale;
     await _loadTranslations(validLocale);
@@ -29,9 +32,11 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   Future<void> _loadTranslations(String locale) async {
-    final jsonString = await rootBundle.loadString('assets/messages/$locale.json');
+    final jsonString =
+        await rootBundle.loadString('assets/messages/$locale.json');
     final Map<String, dynamic> jsonMap = json.decode(jsonString);
-    _translations = jsonMap.map((key, value) => MapEntry(key, value.toString()));
+    _translations =
+        jsonMap.map((key, value) => MapEntry(key, value.toString()));
   }
 
   Future<void> changeLanguage(String locale) async {

@@ -11,7 +11,13 @@ class VillagerService {
   final BuildingService _buildingService;
   VillagerService(this._repo, this._buildingService);
 
-  static const _needTypes = ['water_plant', 'power_plant', 'hospital', 'school', 'park'];
+  static const _needTypes = [
+    'water_plant',
+    'power_plant',
+    'hospital',
+    'school',
+    'park'
+  ];
 
   int villageHappiness(List<Villager> villagers) {
     if (villagers.isEmpty) return 0;
@@ -19,7 +25,8 @@ class VillagerService {
     return (total / villagers.length).round();
   }
 
-  List<String> missingBuildingTypes(List<Villager> villagers, List<PlacedBuilding> buildings, Set<String> roadTiles) {
+  List<String> missingBuildingTypes(List<Villager> villagers,
+      List<PlacedBuilding> buildings, Set<String> roadTiles) {
     if (villagers.isEmpty) return [];
     final totalNeeds = villagers.length;
     final capacityByType = <String, int>{
@@ -28,7 +35,10 @@ class VillagerService {
     for (var b in buildings) {
       if (!b.isConstructed || b.type == 'house') continue;
       if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-      capacityByType[b.type] = (capacityByType[b.type] ?? 0) + VillageRules.buildingCapacity(b.type, b.level);
+      // Use effective level: if upgrade in progress, use previous level
+      final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+      capacityByType[b.type] = (capacityByType[b.type] ?? 0) +
+          VillageRules.buildingCapacity(b.type, effectiveLevel);
     }
     return capacityByType.entries
         .where((e) => e.value < totalNeeds)
@@ -36,8 +46,11 @@ class VillagerService {
         .toList();
   }
 
-  List<String> missingNeedsForVillager(Villager villager, List<Villager> allVillagers,
-      List<PlacedBuilding> buildings, Set<String> roadTiles) {
+  List<String> missingNeedsForVillager(
+      Villager villager,
+      List<Villager> allVillagers,
+      List<PlacedBuilding> buildings,
+      Set<String> roadTiles) {
     final idx = allVillagers.indexOf(villager);
     if (idx == -1) return [];
 
@@ -47,16 +60,23 @@ class VillagerService {
       for (var b in buildings) {
         if (!b.isConstructed || b.type != type) continue;
         if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        cap += VillageRules.buildingCapacity(b.type, b.level);
+        // Use effective level: if upgrade in progress, use previous level
+        final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+        cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
       }
       capacityByType[type] = cap;
     }
 
-    return _needTypes.where((type) => idx >= (capacityByType[type] ?? 0)).toList();
+    return _needTypes
+        .where((type) => idx >= (capacityByType[type] ?? 0))
+        .toList();
   }
 
-  void updateVillagerHappiness(List<Villager> villagers, List<PlacedBuilding> buildings,
-      Set<String> roadTiles, List<ActivePowerup> activePowerups) {
+  void updateVillagerHappiness(
+      List<Villager> villagers,
+      List<PlacedBuilding> buildings,
+      Set<String> roadTiles,
+      List<ActivePowerup> activePowerups) {
     if (villagers.isEmpty) return;
 
     final capacityByType = <String, int>{};
@@ -65,7 +85,9 @@ class VillagerService {
       for (var b in buildings) {
         if (!b.isConstructed || b.type != type) continue;
         if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        cap += VillageRules.buildingCapacity(b.type, b.level);
+        // Use effective level: if upgrade in progress, use previous level
+        final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+        cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
       }
       capacityByType[type] = cap;
     }
@@ -97,7 +119,10 @@ class VillagerService {
     final capacity = _buildingService.totalHouseCapacity(buildings, roadTiles);
     final random = Random();
     final houses = buildings
-        .where((b) => b.type == 'house' && b.isConstructed && _buildingService.isBuildingRoadConnected(b, roadTiles))
+        .where((b) =>
+            b.type == 'house' &&
+            b.isConstructed &&
+            _buildingService.isBuildingRoadConnected(b, roadTiles))
         .toList();
 
     final newVillagers = <Villager>[];
@@ -105,7 +130,9 @@ class VillagerService {
       PlacedBuilding? targetHouse;
       for (var house in houses) {
         final cap = VillageRules.villagersPerHouse(house.level);
-        final current = (villagers + newVillagers).where((v) => v.houseId == house.id).length;
+        final current = (villagers + newVillagers)
+            .where((v) => v.houseId == house.id)
+            .length;
         if (current < cap) {
           targetHouse = house;
           break;
@@ -117,13 +144,19 @@ class VillagerService {
       final name = VillageRules.randomVillagerName(seed);
       final species = VillageRules.randomVillagerSpecies(seed ~/ 3);
       final id = await _repo.insertVillager(name, species, targetHouse.id!);
-      newVillagers.add(Villager(id: id, name: name, species: species, happiness: 50, houseId: targetHouse.id!));
+      newVillagers.add(Villager(
+          id: id,
+          name: name,
+          species: species,
+          happiness: 50,
+          houseId: targetHouse.id!));
     }
 
     return [...villagers, ...newVillagers];
   }
 
-  Future<void> renameVillager(int villagerId, String newName, List<Villager> villagers) async {
+  Future<void> renameVillager(
+      int villagerId, String newName, List<Villager> villagers) async {
     final idx = villagers.indexWhere((v) => v.id == villagerId);
     if (idx == -1) return;
     villagers[idx].name = newName;

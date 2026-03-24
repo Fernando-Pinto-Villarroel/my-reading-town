@@ -4,6 +4,7 @@ import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/domain/entities/placed_building.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/application/services/building_service.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/resource_icon.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
@@ -192,10 +193,22 @@ String _buildingDescription(
   if (building.isDecoration) {
     return langProvider.translate('decorative_desc');
   }
-  if (building.type == 'house') {
-    return '${langProvider.translate('houses_label')} ${VillageRules.villagersPerHouse(building.level)} ${langProvider.translate('villager_singular')}(s)';
+
+  // Calculate effective level (what level is actually providing capacity)
+  // This accounts for buildings under construction or upgrade
+  int effectiveLevel = building.level;
+  if (!building.isConstructed) {
+    effectiveLevel = 0;
+  } else if (building.constructionStart != null &&
+      !building.isConstructionComplete) {
+    // Building is under upgrade, use previous level
+    effectiveLevel = building.level - 1;
   }
-  return '${langProvider.translate('covers_label')} ${VillageRules.buildingCapacity(building.type, building.level)} ${langProvider.translate('villager_needs_label')}';
+
+  if (building.type == 'house') {
+    return '${langProvider.translate('houses_label')} ${VillageRules.villagersPerHouse(effectiveLevel)} ${langProvider.translate('villager_singular')}(s)';
+  }
+  return '${langProvider.translate('covers_label')} ${VillageRules.buildingCapacity(building.type, effectiveLevel)} ${langProvider.translate('villager_needs_label')}';
 }
 
 Widget _buildResidentsList(VillageProvider village, PlacedBuilding building,

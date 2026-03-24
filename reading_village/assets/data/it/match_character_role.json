@@ -1,0 +1,204 @@
+{
+  "questions": [
+    {
+      "character": "Sherlock Holmes",
+      "correct_role": "Detective",
+      "wrong_roles": ["Pirata", "Mago", "Re"]
+    },
+    {
+      "character": "Harry Potter",
+      "correct_role": "Mago",
+      "wrong_roles": ["Detective", "Cavaliere", "Pirata"]
+    },
+    {
+      "character": "Gandalf",
+      "correct_role": "Mago",
+      "wrong_roles": ["Re", "Cavaliere", "Ladro"]
+    },
+    {
+      "character": "Robin Hood",
+      "correct_role": "Arciere Fuorilegge",
+      "wrong_roles": ["Re", "Mago", "Marinaio"]
+    },
+    {
+      "character": "Capitano Ahab",
+      "correct_role": "Capitano di Nave",
+      "wrong_roles": ["Pirata", "Re", "Detective"]
+    },
+    {
+      "character": "Elizabeth Bennet",
+      "correct_role": "Figlia di Gentiluomo",
+      "wrong_roles": ["Regina", "Serva", "Strega"]
+    },
+    {
+      "character": "Katniss Everdeen",
+      "correct_role": "Cacciatrice di Tributo",
+      "wrong_roles": ["Principessa", "Spia", "Maga"]
+    },
+    {
+      "character": "Aragorn",
+      "correct_role": "Re Ranger",
+      "wrong_roles": ["Mago", "Ladro", "Fabbro"]
+    },
+    {
+      "character": "Hermione Granger",
+      "correct_role": "Studentessa Strega",
+      "wrong_roles": ["Principessa", "Fata", "Detective"]
+    },
+    {
+      "character": "Capitano Uncino",
+      "correct_role": "Capitano Pirata",
+      "wrong_roles": ["Ammiraglio", "Re", "Esploratore"]
+    },
+    {
+      "character": "Dracula",
+      "correct_role": "Conta Vampiro",
+      "wrong_roles": ["Lupo Mannaro", "Fantasma", "Mago"]
+    },
+    {
+      "character": "Il Mostro di Frankenstein",
+      "correct_role": "Creatura Creata",
+      "wrong_roles": ["Scienziato", "Fantasma", "Vampiro"]
+    },
+    {
+      "character": "Huckleberry Finn",
+      "correct_role": "Ragazzo Avventuriero",
+      "wrong_roles": ["Principe", "Soldato", "Mago"]
+    },
+    {
+      "character": "Long John Silver",
+      "correct_role": "Pirata",
+      "wrong_roles": ["Ammiraglio", "Mercante", "Re"]
+    },
+    {
+      "character": "Aslan",
+      "correct_role": "Re Leone",
+      "wrong_roles": ["Mago", "Drago", "Cavaliere"]
+    },
+    {
+      "character": "Frodo Baggins",
+      "correct_role": "Portatore dell'Anello Hobbit",
+      "wrong_roles": ["Mago", "Cavaliere", "Principe"]
+    },
+    {
+      "character": "Don Chisciotte",
+      "correct_role": "Cavaliere Errante",
+      "wrong_roles": ["Re", "Mago", "Prete"]
+    },
+    {
+      "character": "Alice",
+      "correct_role": "Ragazza Curiosa",
+      "wrong_roles": ["Principessa", "Fata", "Strega"]
+    },
+    {
+      "character": "Jay Gatsby",
+      "correct_role": "Socialite Ricco",
+      "wrong_roles": ["Detective", "Professore", "Soldato"]
+    },
+    {
+      "character": "Atticus Finch",
+      "correct_role": "Avvocato",
+      "wrong_roles": ["Medico", "Insegnante", "Giudice"]
+    },
+    {
+      "character": "Odisseo",
+      "correct_role": "Re Eroe Greco",
+      "wrong_roles": ["Dio", "Filosofo", "Gladiatore"]
+    },
+    {
+      "character": "Romeo",
+      "correct_role": "Nobile Giovane",
+      "wrong_roles": ["Principe", "Cavaliere", "Mercante"]
+    },
+    {
+      "character": "Peter Pan",
+      "correct_role": "Ragazzo che Non Cresce Mai",
+      "wrong_roles": ["Principe", "Fata", "Mago"]
+    },
+    {
+      "character": "Willy Wonka",
+      "correct_role": "Proprietario della Fabbrica di Cioccolato",
+      "wrong_roles": ["Mago", "Chef", "Re"]
+    },
+    {
+      "character": "Matilda",
+      "correct_role": "Bambina Dotata",
+      "wrong_roles": ["Principessa", "Fata", "Robot"]
+    },
+    {
+      "character": "Tom Sawyer",
+      "correct_role": "Ragazzo Birbante",
+      "wrong_roles": ["Pirata", "Soldato", "Principe"]
+    },
+    {
+      "character": "Jean Valjean",
+      "correct_role": "Ex Detenuto",
+      "wrong_roles": ["Ispettore", "Re", "Prete"]
+    },
+    {
+      "character": "Percy Jackson",
+      "correct_role": "Semidio",
+      "wrong_roles": ["Mago", "Cavaliere", "Principe"]
+    },
+    {
+      "character": "Bilbo Baggins",
+      "correct_role": "Avventuriero Hobbit",
+      "wrong_roles": ["Mago", "Nano", "Elfo"]
+    },
+    {
+      "character": "Pinocchio",
+      "correct_role": "Pupazzo di Legno",
+      "wrong_roles": ["Principe", "Elfo", "Fata"]
+    },
+    {
+      "character": "Dorothy Gale",
+      "correct_role": "Ragazza della Fattoria del Kansas",
+      "wrong_roles": ["Principessa", "Strega", "Fata"]
+    },
+    {
+      "character": "Ebenezer Scrooge",
+      "correct_role": "Uomo d'Affari Avaro",
+      "wrong_roles": ["Fantasma", "Giudice", "Re"]
+    },
+    {
+      "character": "Heidi",
+      "correct_role": "Ragazza di Montagna",
+      "wrong_roles": ["Principessa", "Pastore", "Fata"]
+    },
+    {
+      "character": "Mowgli",
+      "correct_role": "Ragazzo della Giungla",
+      "wrong_roles": ["Principe", "Cacciatore", "Mago"]
+    },
+    {
+      "character": "James Bond",
+      "correct_role": "Agente Segreto",
+      "wrong_roles": ["Detective", "Soldato", "Pilota"]
+    },
+    {
+      "character": "Winnie the Pooh",
+      "correct_role": "Orso Amichevole",
+      "wrong_roles": ["Re", "Cavaliere", "Mago"]
+    },
+    {
+      "character": "Pippi Calzelunghe",
+      "correct_role": "Ragazza Super Forte",
+      "wrong_roles": ["Principessa", "Pirata", "Fata"]
+    },
+    {
+      "character": "Tarzan",
+      "correct_role": "Uomo Cresciuto dalle Scimmie",
+      "wrong_roles": ["Cacciatore", "Soldato", "Re"]
+    },
+    {
+      "character": "Il Piccolo Principe",
+      "correct_role": "Principe dell'Asteroide",
+      "wrong_roles": ["Mago", "Fata", "Astronauta"]
+    },
+    {
+      "character": "Legolas",
+      "correct_role": "Arciere Elfo",
+      "wrong_roles": ["Mago", "Re", "Hobbit"]
+    }
+  ]
+}

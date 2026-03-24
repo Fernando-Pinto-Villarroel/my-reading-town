@@ -5,7 +5,8 @@ class HappinessIndicator extends StatelessWidget {
   final int happiness;
   final bool landscape;
 
-  const HappinessIndicator({super.key, required this.happiness, this.landscape = false});
+  const HappinessIndicator(
+      {super.key, required this.happiness, this.landscape = false});
 
   IconData get _moodIcon {
     if (happiness >= 80) return Icons.sentiment_very_satisfied;
@@ -55,7 +56,7 @@ class HappinessIndicator extends StatelessWidget {
                 '$happiness%',
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/adapters/repositories/villager_favorites.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
@@ -33,8 +34,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.settings,
-                        size: 24, color: AppTheme.lavender),
+                    Icon(Icons.settings, size: 24, color: AppTheme.lavender),
                     SizedBox(width: 8),
                     Text(ctx.t('settings'),
                         style: TextStyle(
@@ -66,8 +66,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                              color:
-                                  AppTheme.darkText.withValues(alpha: 0.3),
+                              color: AppTheme.darkText.withValues(alpha: 0.3),
                               width: 1),
                         ),
                         child: ClipRRect(
@@ -86,12 +85,11 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                           '${village.exp} EXP ($expToNext ${ctx.t('exp_to_next_level')})',
                           style: TextStyle(
                               fontSize: 12,
-                              color: AppTheme.darkText
-                                  .withValues(alpha: 0.6))),
+                              color: AppTheme.darkText.withValues(alpha: 0.6))),
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 18),
                 TextField(
                   controller: usernameController,
                   decoration: InputDecoration(
@@ -101,7 +99,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                   ),
                   textCapitalization: TextCapitalization.words,
                 ),
-                SizedBox(height: 12),
+                SizedBox(height: 24),
                 TextField(
                   controller: townNameController,
                   decoration: InputDecoration(
@@ -149,7 +147,7 @@ class _LanguageSelector extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(Icons.language, size: 20, color: AppTheme.lavender),
+        Icon(Icons.language, size: 24, color: AppTheme.lavender),
         SizedBox(width: 8),
         Text(context.t('language'),
             style: TextStyle(
@@ -158,7 +156,7 @@ class _LanguageSelector extends StatelessWidget {
                 color: AppTheme.darkText)),
         Spacer(),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: AppTheme.lavender.withValues(alpha: 0.1),
             border: Border.all(color: AppTheme.lavender.withValues(alpha: 0.4)),
@@ -194,6 +192,8 @@ class _LanguageSelector extends StatelessWidget {
               }).toList(),
               onChanged: (locale) {
                 if (locale != null) {
+                  VillagerFavorites.setLocale(locale);
+                  VillagerFavorites.load();
                   context.read<LanguageProvider>().changeLanguage(locale);
                 }
               },

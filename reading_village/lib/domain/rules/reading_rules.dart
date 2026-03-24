@@ -6,7 +6,6 @@ class ReadingRules {
   static const int metalPerPage = 1;
   static const int bookCompletionGemBonus = 20;
   static const int bookCompletionCoinBonus = 50;
-  static const int expPerPage = 2;
 
   static Map<String, int> calculatePageRewards({
     required int actualPagesLogged,

@@ -232,11 +232,21 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
                     color: AppTheme.darkText),
               ),
               SizedBox(height: 4),
-              Text(context.t('under_construction'),
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.darkOrange,
-                      fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/images/cat_constructor.png',
+                      width: 40,
+                      height: 40,
+                      filterQuality: FilterQuality.medium),
+                  SizedBox(width: 6),
+                  Text(context.t('under_construction'),
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.darkOrange,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
               SizedBox(height: 8),
               Text(timeText,
                   style: TextStyle(

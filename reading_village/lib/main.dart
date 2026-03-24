@@ -62,11 +62,16 @@ class _AppInitializerState extends State<AppInitializer> {
     final villageProvider = context.read<VillageProvider>();
     final languageProvider = context.read<LanguageProvider>();
 
-    await VillagerFavorites.load();
-    await tagProvider.loadTags();
-    await bookProvider.loadData();
+    // Load village data first to get the saved language
     await villageProvider.loadData();
     await languageProvider.load(villageProvider.language);
+
+    // Set locale and load villager favorites with the correct language
+    VillagerFavorites.setLocale(villageProvider.language);
+    await VillagerFavorites.load();
+
+    await tagProvider.loadTags();
+    await bookProvider.loadData();
 
     if (mounted) {
       setState(() {

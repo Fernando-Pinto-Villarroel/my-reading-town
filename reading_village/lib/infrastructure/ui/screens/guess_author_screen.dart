@@ -9,6 +9,8 @@ import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/match_character_role_body.dart';
 import 'package:reading_village/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
 import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/di/service_locator.dart';
 
 class GuessAuthorScreen extends StatefulWidget {
   const GuessAuthorScreen({super.key});
@@ -42,8 +44,16 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
   }
 
   Future<void> _loadQuestions() async {
+    // Get locale from LanguageProvider
+    final languageProvider = sl<LanguageProvider>();
+    String locale = languageProvider.currentLocale;
+
+    // Fallback to English if locale not supported
+    if (!['en', 'es', 'fr', 'it', 'pt'].contains(locale)) {
+      locale = 'en';
+    }
     final jsonStr =
-        await rootBundle.loadString('assets/data/guess_author.json');
+        await rootBundle.loadString('assets/data/$locale/guess_author.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     setState(() {
       _questions = List<Map<String, dynamic>>.from(data['questions']);
@@ -172,8 +182,7 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isLandscape =
-                  constraints.maxWidth > constraints.maxHeight;
+              final isLandscape = constraints.maxWidth > constraints.maxHeight;
               return Column(
                 children: [
                   MinigameTopBar(
@@ -212,14 +221,16 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
           ),
           const SizedBox(height: 20),
           ..._shuffledOptions.map((option) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: OptionButton(
-              option: option,
-              backgroundColor: _optionColor(option),
-              borderColor: _optionBorderColor(option),
-              onTap: _selectedAnswer == null ? () => _selectAnswer(option) : null,
-            ),
-          )),
+                padding: const EdgeInsets.only(bottom: 10),
+                child: OptionButton(
+                  option: option,
+                  backgroundColor: _optionColor(option),
+                  borderColor: _optionBorderColor(option),
+                  onTap: _selectedAnswer == null
+                      ? () => _selectAnswer(option)
+                      : null,
+                ),
+              )),
           if (_showResult) ...[
             const SizedBox(height: 8),
             ResultFeedback(
@@ -257,20 +268,23 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
             child: Column(
               children: [
                 ..._shuffledOptions.map((option) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: OptionButton(
-                    option: option,
-                    backgroundColor: _optionColor(option),
-                    borderColor: _optionBorderColor(option),
-                    onTap: _selectedAnswer == null ? () => _selectAnswer(option) : null,
-                  ),
-                )),
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: OptionButton(
+                        option: option,
+                        backgroundColor: _optionColor(option),
+                        borderColor: _optionBorderColor(option),
+                        onTap: _selectedAnswer == null
+                            ? () => _selectAnswer(option)
+                            : null,
+                      ),
+                    )),
                 if (_showResult)
                   ResultFeedback(
                     isCorrect: _isCorrect!,
                     consecutiveWins: _consecutiveWins,
                     winsNeeded: _config.winsNeeded,
-                    correctAnswer: _currentQuestion!['correct_author'] as String,
+                    correctAnswer:
+                        _currentQuestion!['correct_author'] as String,
                   ),
               ],
             ),

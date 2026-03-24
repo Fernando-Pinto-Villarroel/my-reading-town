@@ -9,12 +9,15 @@ import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/match_character_role_body.dart';
 import 'package:reading_village/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
 import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
+import 'package:reading_village/infrastructure/di/service_locator.dart';
 
 class MatchCharacterRoleScreen extends StatefulWidget {
   const MatchCharacterRoleScreen({super.key});
 
   @override
-  State<MatchCharacterRoleScreen> createState() => _MatchCharacterRoleScreenState();
+  State<MatchCharacterRoleScreen> createState() =>
+      _MatchCharacterRoleScreenState();
 }
 
 class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
@@ -42,7 +45,16 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
   }
 
   Future<void> _loadQuestions() async {
-    final jsonStr = await rootBundle.loadString('assets/data/match_character_role.json');
+    // Get locale from LanguageProvider
+    final languageProvider = sl<LanguageProvider>();
+    String locale = languageProvider.currentLocale;
+
+    // Fallback to English if locale not supported
+    if (!['en', 'es', 'fr', 'it', 'pt'].contains(locale)) {
+      locale = 'en';
+    }
+    final jsonStr = await rootBundle
+        .loadString('assets/data/$locale/match_character_role.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     setState(() {
       _questions = List<Map<String, dynamic>>.from(data['questions']);
@@ -127,7 +139,8 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
   }
 
   Color _optionBorderColor(String option) {
-    if (_selectedAnswer == null) return AppTheme.lavender.withValues(alpha: 0.5);
+    if (_selectedAnswer == null)
+      return AppTheme.lavender.withValues(alpha: 0.5);
     if (option == _currentQuestion!['correct_role']) {
       return const Color(0xFF2E7D32);
     }
@@ -201,18 +214,21 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
           QuestionBubble(
             villagerSprite: _villagerSprite,
             subtitle: context.t('what_is_their_role'),
-            questionText: '${context.t('who_is')} ${_currentQuestion!['character']}?',
+            questionText:
+                '${context.t('who_is')} ${_currentQuestion!['character']}?',
           ),
           const SizedBox(height: 20),
           ..._shuffledOptions.map((option) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: OptionButton(
-              option: option,
-              backgroundColor: _optionColor(option),
-              borderColor: _optionBorderColor(option),
-              onTap: _selectedAnswer == null ? () => _selectAnswer(option) : null,
-            ),
-          )),
+                padding: const EdgeInsets.only(bottom: 10),
+                child: OptionButton(
+                  option: option,
+                  backgroundColor: _optionColor(option),
+                  borderColor: _optionBorderColor(option),
+                  onTap: _selectedAnswer == null
+                      ? () => _selectAnswer(option)
+                      : null,
+                ),
+              )),
           if (_showResult) ...[
             const SizedBox(height: 8),
             ResultFeedback(
@@ -239,7 +255,8 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
             child: QuestionBubble(
               villagerSprite: _villagerSprite,
               subtitle: context.t('what_is_their_role'),
-              questionText: '${context.t('who_is')} ${_currentQuestion!['character']}?',
+              questionText:
+                  '${context.t('who_is')} ${_currentQuestion!['character']}?',
             ),
           ),
         ),
@@ -250,14 +267,16 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
             child: Column(
               children: [
                 ..._shuffledOptions.map((option) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: OptionButton(
-                    option: option,
-                    backgroundColor: _optionColor(option),
-                    borderColor: _optionBorderColor(option),
-                    onTap: _selectedAnswer == null ? () => _selectAnswer(option) : null,
-                  ),
-                )),
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: OptionButton(
+                        option: option,
+                        backgroundColor: _optionColor(option),
+                        borderColor: _optionBorderColor(option),
+                        onTap: _selectedAnswer == null
+                            ? () => _selectAnswer(option)
+                            : null,
+                      ),
+                    )),
                 if (_showResult)
                   ResultFeedback(
                     isCorrect: _isCorrect!,

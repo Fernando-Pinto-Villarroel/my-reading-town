@@ -23,12 +23,17 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'reading_village.db');
-    await deleteDatabase(path);
+    // await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
     return await openDatabase(
       path,
       version: 1,
       onCreate: _createTables,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Handle future schema migrations here
   }
 
   Future<void> _createTables(Database db, int version) async {
@@ -240,14 +245,21 @@ class DatabaseHelper {
       'wood_cost': 0,
       'metal_cost': 0,
       'happiness_bonus': 10,
-      'construction_start': DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
+      'construction_start':
+          DateTime.now().subtract(Duration(hours: 1)).toIso8601String(),
       'construction_duration_minutes': 1,
       'is_constructed': 1,
     });
 
     final random = Random();
     final species = VillageRules.villagerSpecies[random.nextInt(3)];
-    final name = VillageRules.villagerNames[random.nextInt(VillageRules.villagerNames.length)];
-    await db.insert('villagers', {'name': name, 'species': species, 'happiness': 50, 'house_id': houseId});
+    final name = VillageRules
+        .villagerNames[random.nextInt(VillageRules.villagerNames.length)];
+    await db.insert('villagers', {
+      'name': name,
+      'species': species,
+      'happiness': 50,
+      'house_id': houseId
+    });
   }
 }

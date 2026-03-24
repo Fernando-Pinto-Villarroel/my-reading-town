@@ -69,14 +69,16 @@ void showVillagerInfoSheet(
               ),
               SizedBox(height: 4),
               Text(
-                '${villager.species.substring(0, 1).toUpperCase()}${villager.species.substring(1)} ${langProvider.translate('villager_label')}',
+                '${langProvider.translate('species_${villager.species}')} ${langProvider.translate('villager_label')}',
                 style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.lavender,
                     fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4),
-              Text(villager.moodText,
+              Text(
+                  langProvider
+                      .translate('mood_${villager.moodText.toLowerCase()}'),
                   style: TextStyle(
                       fontSize: 13,
                       color: AppTheme.darkText.withValues(alpha: 0.6))),
@@ -92,10 +94,14 @@ void showVillagerInfoSheet(
                 _missingNeedsBadges(village, villager, langProvider),
               ],
               SizedBox(height: 16),
-              _infoRow(Icons.auto_stories, langProvider.translate('favorite_author_label'),
+              _infoRow(
+                  Icons.auto_stories,
+                  langProvider.translate('favorite_author_label'),
                   VillagerFavorites.author(villagerIdx)),
               SizedBox(height: 10),
-              _infoRow(Icons.format_quote, langProvider.translate('favorite_quote_label'),
+              _infoRow(
+                  Icons.format_quote,
+                  langProvider.translate('favorite_quote_label'),
                   '"${VillagerFavorites.quote(villagerIdx)}"'),
             ],
           ),
@@ -138,7 +144,8 @@ void showRenameVillagerDialog(
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(ctx), child: Text(langProvider.translate('cancel'))),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(langProvider.translate('cancel'))),
         ElevatedButton(
           onPressed: () {
             final newName = controller.text.trim();
@@ -196,7 +203,8 @@ Widget _happinessChip(Villager villager, LanguageProvider langProvider) {
   );
 }
 
-Widget _happinessBookBadge(VillageProvider village, Villager villager, LanguageProvider langProvider) {
+Widget _happinessBookBadge(
+    VillageProvider village, Villager villager, LanguageProvider langProvider) {
   final powerup = village.activePowerups.firstWhere(
     (p) =>
         p.type == 'book_happiness' &&
@@ -225,14 +233,14 @@ Widget _happinessBookBadge(VillageProvider village, Villager villager, LanguageP
         SizedBox(width: 8),
         Text(timeStr,
             style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.darkText.withValues(alpha: 0.6))),
+                fontSize: 12, color: AppTheme.darkText.withValues(alpha: 0.6))),
       ],
     ),
   );
 }
 
-Widget _missingNeedsBadges(VillageProvider village, Villager villager, LanguageProvider langProvider) {
+Widget _missingNeedsBadges(
+    VillageProvider village, Villager villager, LanguageProvider langProvider) {
   const needEmojis = {
     'water_plant': '💧',
     'power_plant': '⚡',

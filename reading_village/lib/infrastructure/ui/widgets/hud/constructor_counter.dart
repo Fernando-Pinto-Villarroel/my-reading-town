@@ -15,7 +15,7 @@ class ConstructorCounter extends StatelessWidget {
   Widget build(BuildContext context) {
     final busy = village.busyConstructors;
     final max = village.maxConstructors;
-    final iconSize = 32.0;
+    final iconSize = 36.0;
 
     return Container(
       width: landscape ? 110 : 120,
@@ -33,7 +33,7 @@ class ConstructorCounter extends StatelessWidget {
             height: iconSize,
             filterQuality: FilterQuality.medium,
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 4),
           Expanded(
             child: Text(
               '$busy / $max',

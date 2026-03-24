@@ -1,0 +1,75 @@
+{
+  "favorites": [
+    {
+      "author": "Gabriel Garcia Marquez",
+      "quote": "Un lettore vive mille vite prima di morire."
+    },
+    {
+      "author": "Jorge Luis Borges",
+      "quote": "Ho sempre immaginato che il paradiso fosse una specie di biblioteca."
+    },
+    {
+      "author": "Isabel Allende",
+      "quote": "Non tutti coloro che vagano sono persi."
+    },
+    {
+      "author": "Pablo Neruda",
+      "quote": "Sono le nostre scelte che mostrano chi siamo veramente."
+    },
+    {
+      "author": "Julio Cortazar",
+      "quote": "Bisogna fare attenzione ai libri e a cio che c'e dentro di loro."
+    },
+    {
+      "author": "Mario Vargas Llosa",
+      "quote": "Non c'e amico piu leale di un libro."
+    },
+    {
+      "author": "Octavio Paz",
+      "quote": "Una stanza senza libri e come un corpo senza anima."
+    },
+    {
+      "author": "Eduardo Galeano",
+      "quote": "L'unica cosa che devi assolutamente sapere e la posizione della biblioteca."
+    },
+    {
+      "author": "Laura Esquivel",
+      "quote": "Leggere e sognare con gli occhi aperti."
+    },
+    {
+      "author": "Carlos Fuentes",
+      "quote": "I libri sono una magia unicamente portatile."
+    },
+    {
+      "author": "J.K. Rowling",
+      "quote": "Leggiamo per sapere che non siamo soli."
+    },
+    {
+      "author": "J.R.R. Tolkien",
+      "quote": "Oggi un lettore, domani un leader."
+    },
+    {
+      "author": "Stephen King",
+      "quote": "Una volta che impari a leggere, sarai libero per sempre."
+    },
+    {
+      "author": "Agatha Christie",
+      "quote": "La lettura ci da un posto dove andare quando dobbiamo restare dove siamo."
+    },
+    {
+      "author": "Jane Austen",
+      "quote": "Un libro e un dono che puoi aprire ancora e ancora."
+    },
+    { "author": "Mark Twain", "quote": "Tanti libri, cosi poco tempo." },
+    { "author": "Ernest Hemingway", "quote": "Piu leggi, piu cose saprai." },
+    {
+      "author": "Antoine de Saint-Exupery",
+      "quote": "Leggere per la mente e come l'esercizio per il corpo."
+    },
+    {
+      "author": "Lewis Carroll",
+      "quote": "I libri sono gli amici piu silenziosi e costanti."
+    },
+    { "author": "Roald Dahl", "quote": "Un buon libro non ha fine." }
+  ]
+}

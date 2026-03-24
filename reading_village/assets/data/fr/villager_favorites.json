@@ -1,0 +1,78 @@
+{
+  "favorites": [
+    {
+      "author": "Gabriel Garcia Marquez",
+      "quote": "Un lecteur vit mille vies avant de mourir."
+    },
+    {
+      "author": "Jorge Luis Borges",
+      "quote": "J'ai toujours imagine que le paradis serait une espece de bibliotheque."
+    },
+    {
+      "author": "Isabel Allende",
+      "quote": "Ceux qui vaguent ne sont pas tous perdus."
+    },
+    {
+      "author": "Pablo Neruda",
+      "quote": "Ce sont nos choix qui montrent qui nous sommes vraiment."
+    },
+    {
+      "author": "Julio Cortazar",
+      "quote": "Il faut faire attention aux livres et a ce qu'il y a dedans."
+    },
+    {
+      "author": "Mario Vargas Llosa",
+      "quote": "Il n'y a pas d'ami aussi loyal qu'un livre."
+    },
+    {
+      "author": "Octavio Paz",
+      "quote": "Une piece sans livres est comme un corps sans ame."
+    },
+    {
+      "author": "Eduardo Galeano",
+      "quote": "La seule chose que vous devez absolument savoir, c'est l'emplacement de la bibliotheque."
+    },
+    {
+      "author": "Laura Esquivel",
+      "quote": "Lire c'est rever les yeux ouverts."
+    },
+    {
+      "author": "Carlos Fuentes",
+      "quote": "Les livres sont une magie portable unique."
+    },
+    {
+      "author": "J.K. Rowling",
+      "quote": "Nous lisons pour savoir que nous ne sommes pas seuls."
+    },
+    {
+      "author": "J.R.R. Tolkien",
+      "quote": "Aujourd'hui un lecteur, demain un meneur."
+    },
+    {
+      "author": "Stephen King",
+      "quote": "Une fois que vous apprenez a lire, vous serez libre pour toujours."
+    },
+    {
+      "author": "Agatha Christie",
+      "quote": "La lecture nous donne un endroit ou aller quand nous devons rester ou nous sommes."
+    },
+    {
+      "author": "Jane Austen",
+      "quote": "Un livre est un cadeau que vous pouvez ouvrir encore et encore."
+    },
+    { "author": "Mark Twain", "quote": "Tant de livres, si peu de temps." },
+    {
+      "author": "Ernest Hemingway",
+      "quote": "Plus vous lisez, plus vous saurez de choses."
+    },
+    {
+      "author": "Antoine de Saint-Exupery",
+      "quote": "Lire pour l'esprit, c'est ce que l'exercice est pour le corps."
+    },
+    {
+      "author": "Lewis Carroll",
+      "quote": "Les livres sont les amis les plus silencieux et les plus constants."
+    },
+    { "author": "Roald Dahl", "quote": "Un bon livre n'a pas de fin." }
+  ]
+}
