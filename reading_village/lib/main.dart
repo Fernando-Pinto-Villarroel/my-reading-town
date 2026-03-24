@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'config/app_theme.dart';
-import 'data/villager_favorites.dart';
-import 'widgets/skeleton.dart';
-import 'providers/book_provider.dart';
-import 'providers/tag_provider.dart';
-import 'providers/village_provider.dart';
-import 'screens/game_screen.dart';
+import 'package:reading_village/infrastructure/di/service_locator.dart';
+import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+import 'package:reading_village/adapters/repositories/villager_favorites.dart';
+import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
+import 'package:reading_village/adapters/providers/book_provider.dart';
+import 'package:reading_village/adapters/providers/tag_provider.dart';
+import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/infrastructure/ui/screens/game_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  initServiceLocator();
   runApp(const ReadingVillageApp());
 }
 
@@ -20,9 +22,9 @@ class ReadingVillageApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => BookProvider()),
-        ChangeNotifierProvider(create: (_) => TagProvider()),
-        ChangeNotifierProvider(create: (_) => VillageProvider()),
+        ChangeNotifierProvider.value(value: sl<BookProvider>()),
+        ChangeNotifierProvider.value(value: sl<TagProvider>()),
+        ChangeNotifierProvider.value(value: sl<VillageProvider>()),
       ],
       child: MaterialApp(
         title: 'Reading Village',

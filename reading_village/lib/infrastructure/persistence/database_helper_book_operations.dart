@@ -1,0 +1,103 @@
+part of 'database_helper.dart';
+
+extension DatabaseHelperBookOperations on DatabaseHelper {
+  Future<List<Map<String, dynamic>>> getBooks() async {
+    final db = await database;
+    return db.query('books', orderBy: 'created_at DESC');
+  }
+
+  Future<int> insertBook(Map<String, dynamic> book) async {
+    final db = await database;
+    return db.insert('books', book);
+  }
+
+  Future<void> updateBookPages(int bookId, int newPagesRead, bool isCompleted) async {
+    final db = await database;
+    await db.update('books',
+        {'pages_read': newPagesRead, 'is_completed': isCompleted ? 1 : 0},
+        where: 'id = ?', whereArgs: [bookId]);
+  }
+
+  Future<void> updateBook(int bookId, Map<String, dynamic> values) async {
+    final db = await database;
+    await db.update('books', values, where: 'id = ?', whereArgs: [bookId]);
+  }
+
+  Future<void> deleteBook(int bookId) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
+    await db.delete('reading_sessions', where: 'book_id = ?', whereArgs: [bookId]);
+    await db.delete('books', where: 'id = ?', whereArgs: [bookId]);
+  }
+
+  Future<int> getCompletedBooksCount() async {
+    final db = await database;
+    final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM books WHERE is_completed = 1');
+    return result.first['count'] as int;
+  }
+
+  Future<int> insertReadingSession(Map<String, dynamic> session) async {
+    final db = await database;
+    return db.insert('reading_sessions', session);
+  }
+
+  Future<List<Map<String, dynamic>>> getReadingSessions() async {
+    final db = await database;
+    return db.query('reading_sessions', orderBy: 'date DESC');
+  }
+
+  Future<int> getTotalPagesRead() async {
+    final db = await database;
+    final result = await db.rawQuery(
+        'SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions');
+    return result.first['total'] as int;
+  }
+
+  Future<int> getTotalSessionsCount() async {
+    final db = await database;
+    final result = await db
+        .rawQuery('SELECT COUNT(*) as count FROM reading_sessions');
+    return result.first['count'] as int;
+  }
+
+  Future<List<Map<String, dynamic>>> getTags() async {
+    final db = await database;
+    return db.query('tags', orderBy: 'title ASC');
+  }
+
+  Future<int> insertTag(Map<String, dynamic> tag) async {
+    final db = await database;
+    return db.insert('tags', tag);
+  }
+
+  Future<void> updateTag(int tagId, Map<String, dynamic> values) async {
+    final db = await database;
+    await db.update('tags', values, where: 'id = ?', whereArgs: [tagId]);
+  }
+
+  Future<void> deleteTag(int tagId) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'tag_id = ?', whereArgs: [tagId]);
+    await db.delete('tags', where: 'id = ?', whereArgs: [tagId]);
+  }
+
+  Future<List<Map<String, dynamic>>> getBookTags(int bookId) async {
+    final db = await database;
+    return db.rawQuery('''
+      SELECT t.* FROM tags t
+      INNER JOIN book_tags bt ON bt.tag_id = t.id
+      WHERE bt.book_id = ?
+      ORDER BY t.title ASC
+    ''', [bookId]);
+  }
+
+  Future<void> setBookTags(int bookId, List<int> tagIds) async {
+    final db = await database;
+    await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
+    for (final tagId in tagIds) {
+      await db.insert('book_tags', {'book_id': bookId, 'tag_id': tagId},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+  }
+}

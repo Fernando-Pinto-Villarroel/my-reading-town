@@ -1,0 +1,29 @@
+abstract class VillageRepository {
+  Future<List<Map<String, dynamic>>> getPlacedBuildings();
+  Future<int> insertPlacedBuilding(Map<String, dynamic> building);
+  Future<void> markBuildingConstructed(int buildingId);
+  Future<void> upgradePlacedBuilding(int id, int newLevel, String constructionStart, int constructionMinutes);
+  Future<void> deletePlacedBuilding(int buildingId);
+  Future<void> revertBuildingUpgrade(int id, int previousLevel, int previousMinutes);
+  Future<void> movePlacedBuilding(int id, int tileX, int tileY);
+  Future<void> flipBuilding(int id, bool isFlipped);
+  Future<void> insertRoadTile(int x, int y);
+  Future<void> deleteRoadTile(int x, int y);
+  Future<List<Map<String, dynamic>>> getRoadTiles();
+  Future<List<Map<String, dynamic>>> getUnlockedChunks();
+  Future<void> insertUnlockedChunk(int chunkX, int chunkY);
+  Future<Map<String, dynamic>> getResources();
+  Future<void> addResources({int coins = 0, int gems = 0, int wood = 0, int metal = 0});
+  Future<void> subtractResources({int coins = 0, int gems = 0, int wood = 0, int metal = 0});
+  Future<List<Map<String, dynamic>>> getVillagers();
+  Future<int> insertVillager(String name, String species, int houseId);
+  Future<void> updateVillagerHappiness(int villagerId, int happiness);
+  Future<void> renameVillager(int villagerId, String newName);
+  Future<Map<String, dynamic>> getGameState();
+  Future<void> incrementExpansionCount();
+  Future<void> updateVillageLevel(int level);
+  Future<void> addExp(int amount);
+  Future<void> updatePlayerLevel(int level);
+  Future<void> updateUsername(String username);
+  Future<void> updateTownName(String townName);
+}

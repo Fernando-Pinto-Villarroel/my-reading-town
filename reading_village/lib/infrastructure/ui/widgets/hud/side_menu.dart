@@ -1,0 +1,114 @@
+import 'package:flutter/material.dart';
+import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
+
+class SideMenu extends StatelessWidget {
+  final bool menuOpen;
+  final VoidCallback onToggleMenu;
+  final VoidCallback onBackpackTap;
+  final VoidCallback onStatsTap;
+  final VoidCallback onSettingsTap;
+
+  const SideMenu({
+    super.key,
+    required this.menuOpen,
+    required this.onToggleMenu,
+    required this.onBackpackTap,
+    required this.onStatsTap,
+    required this.onSettingsTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        DropdownToggleButton(isOpen: menuOpen, onTap: onToggleMenu),
+        if (menuOpen) ...[
+          SizedBox(height: 6),
+          SideMenuButton(
+            icon: Icons.backpack,
+            isActive: false,
+            onTap: onBackpackTap,
+          ),
+          SizedBox(height: 6),
+          SideMenuButton(
+            icon: Icons.bar_chart,
+            isActive: false,
+            onTap: onStatsTap,
+          ),
+          SizedBox(height: 6),
+          SideMenuButton(
+            icon: Icons.settings,
+            isActive: false,
+            onTap: onSettingsTap,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class SideMenuButton extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const SideMenuButton({
+    super.key,
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppTheme.mint.withValues(alpha: 0.9)
+              : const Color(0xAA000000),
+          borderRadius: BorderRadius.circular(14),
+          border: isActive ? Border.all(color: Colors.white, width: 2) : null,
+        ),
+        child: Icon(icon,
+            size: 26, color: isActive ? AppTheme.darkText : Colors.white),
+      ),
+    );
+  }
+}
+
+class DropdownToggleButton extends StatelessWidget {
+  final bool isOpen;
+  final VoidCallback onTap;
+
+  const DropdownToggleButton(
+      {super.key, required this.isOpen, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.red.shade400,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child:
+            Icon(isOpen ? Icons.close : Icons.apps, size: 26, color: Colors.white),
+      ),
+    );
+  }
+}
