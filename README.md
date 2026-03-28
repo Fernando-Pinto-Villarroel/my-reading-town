@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="reading_village/assets/images/reading_village_icon_rounded.png" alt="My Reading Town" width="220" />
+  <img src="my_reading_town/assets/images/my_reading_town_icon_rounded.png" alt="My Reading Town" width="220" />
 
   <br>
 
@@ -165,7 +165,7 @@ This loop mimics dopamine feedback patterns found in modern mobile games — but
 
 ```
 my-reading-town/
-├── reading_village/
+├── my_reading_town/
 │   ├── assets/
 │   │   └── images/                  # Sprites, building art, icons
 │   ├── lib/
@@ -223,7 +223,7 @@ The app uses a local SQLite database. All data stays on-device.
 ```bash
 # 1. Clone the repository
 git clone https://github.com/FernandoPV02/my-reading-town.git
-cd my-reading-town/reading_village
+cd my-reading-town/my_reading_town
 
 # 2. Install dependencies
 flutter pub get
@@ -238,7 +238,7 @@ flutter run
 
 ```bash
 # Build a release APK
-cd reading_village
+cd my_reading_town
 flutter build apk --release
 
 # The APK will be at:

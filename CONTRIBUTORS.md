@@ -85,7 +85,7 @@ See the [Getting Started](README.md#getting-started) section in the README.
 Before submitting, verify there are no Dart analysis issues:
 
 ```bash
-cd reading_village
+cd my_reading_town
 flutter analyze
 ```
 

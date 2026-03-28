@@ -1,0 +1,54 @@
+name: my_reading_town
+description: Read-to-Play Village - A mobile game that turns reading into a village builder.
+
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flame: ^1.21.0
+  provider: ^6.1.2
+  sqflite: ^2.3.3+2
+  path: ^1.9.0
+  cupertino_icons: ^1.0.8
+  confetti: ^0.8.0
+  intl: ^0.20.2
+  image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  http: ^1.2.2
+  get_it: ^9.2.1
+  share_plus: ^12.0.1
+  gal: ^2.3.0
+  file_picker: ^10.3.10
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/data/en/
+    - assets/data/es/
+    - assets/data/fr/
+    - assets/data/it/
+    - assets/data/pt/
+    - assets/messages/
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/my_reading_town_icon_cropped.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/my_reading_town_icon_cropped.png"
