@@ -181,26 +181,21 @@ class BuildingService {
       List<PlacedBuilding> buildings, Set<String> roadTiles) {
     int total = 0;
     for (var b in buildings) {
-      if (b.type == 'house' &&
-          b.isConstructed &&
-          isBuildingRoadConnected(b, roadTiles)) {
-        total += VillageRules.villagersPerHouse(b.level);
+      if (b.type == 'house' && isBuildingRoadConnected(b, roadTiles)) {
+        final effectiveLevel = effectiveBuildingLevel(b);
+        if (effectiveLevel > 0) {
+          total += VillageRules.villagersPerHouse(effectiveLevel);
+        }
       }
     }
     return total;
   }
 
   int effectiveBuildingLevel(PlacedBuilding b) {
-    // If not constructed at all, effective level is 0
-    if (!b.isConstructed) return 0;
-
-    // If constructed but has active construction (upgrade in progress),
-    // use the previous level that was actually working
-    if (b.constructionStart != null && !b.isConstructionComplete) {
+    if (!b.isConstructed) {
+      if (b.level <= 1) return 0;
       return b.level - 1;
     }
-
-    // Otherwise use the actual level
     return b.level;
   }
 

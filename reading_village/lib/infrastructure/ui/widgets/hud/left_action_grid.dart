@@ -23,7 +23,7 @@ class LeftActionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final btnSize = landscape ? 42.0 : 48.0;
+    final btnSize = landscape ? 48.0 : 48.0;
     const gap = 6.0;
 
     return Column(

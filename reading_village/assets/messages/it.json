@@ -370,5 +370,11 @@
   "cannot_place_here": "Non è possibile posizionare qui — le caselle sono occupate, bloccate o non sbloccate",
   "building_limit_reached": "Limite edifici raggiunto! Sali di livello per sbloccare altri.",
   "not_enough_resources_read_more": "Risorse insufficienti! Leggi di più per guadagnarle.",
-  "error_prefix": "Errore: "
+  "error_prefix": "Errore: ",
+  "daily_limit_title": "Limite Giornaliero di Lettura",
+  "daily_limit_reached_message": "Hai già registrato 200 pagine oggi! Questo è il limite giornaliero. Ricorda, imbrogliare fa del male solo a te stesso — questo è un viaggio personale per crescere come lettore, non una gara con gli altri. Sii onesto e goditi il processo!",
+  "daily_limit_partial_message": "Puoi registrare solo altre {allowed} pagine oggi (limite giornaliero: {limit}). Registrare più di 200 pagine al giorno non è tipico e non aiuta la tua crescita. Vuoi registrare {allowed} pagine invece?",
+  "log_partial_button": "Registra {pages} pagine",
+  "rewards_for_new_pages": "+{pages} nuove pagine lette",
+  "no_new_pages_reward_hint": "Nessuna nuova risorsa — le pagine già registrate mantengono le loro ricompense anche se le sessioni vengono eliminate."
 }

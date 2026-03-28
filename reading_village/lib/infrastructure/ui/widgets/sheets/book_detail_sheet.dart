@@ -123,7 +123,7 @@ void showBookDetailSheet(BuildContext context, Book book) {
                         backgroundColor: AppTheme.pink),
                   ),
                 ),
-              if (!book.isCompleted) SizedBox(height: 8),
+              if (!book.isCompleted) SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(

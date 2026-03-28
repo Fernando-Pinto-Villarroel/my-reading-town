@@ -7,6 +7,7 @@ class Book {
   final int totalPages;
   int pagesRead;
   final bool isCompleted;
+  final int maxRewardedPages;
   final String? coverImagePath;
   final String createdAt;
   List<Tag> tags;
@@ -18,6 +19,7 @@ class Book {
     required this.totalPages,
     this.pagesRead = 0,
     this.isCompleted = false,
+    this.maxRewardedPages = 0,
     this.coverImagePath,
     String? createdAt,
     List<Tag>? tags,
@@ -35,6 +37,7 @@ class Book {
       'total_pages': totalPages,
       'pages_read': pagesRead,
       'is_completed': isCompleted ? 1 : 0,
+      'max_rewarded_pages': maxRewardedPages,
       'cover_image_path': coverImagePath,
       'created_at': createdAt,
     };
@@ -48,6 +51,7 @@ class Book {
       totalPages: map['total_pages'] as int,
       pagesRead: map['pages_read'] as int? ?? 0,
       isCompleted: (map['is_completed'] as int? ?? 0) == 1,
+      maxRewardedPages: map['max_rewarded_pages'] as int? ?? 0,
       coverImagePath: map['cover_image_path'] as String?,
       createdAt: map['created_at'] as String,
     );
@@ -60,6 +64,7 @@ class Book {
     int? totalPages,
     int? pagesRead,
     bool? isCompleted,
+    int? maxRewardedPages,
     String? Function()? coverImagePath,
     String? createdAt,
     List<Tag>? tags,
@@ -71,6 +76,7 @@ class Book {
       totalPages: totalPages ?? this.totalPages,
       pagesRead: pagesRead ?? this.pagesRead,
       isCompleted: isCompleted ?? this.isCompleted,
+      maxRewardedPages: maxRewardedPages ?? this.maxRewardedPages,
       coverImagePath: coverImagePath != null ? coverImagePath() : this.coverImagePath,
       createdAt: createdAt ?? this.createdAt,
       tags: tags ?? this.tags,

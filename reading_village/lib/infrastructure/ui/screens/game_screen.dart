@@ -230,7 +230,7 @@ class _GameScreenState extends State<GameScreen>
       final screenH = boundary.size.height;
 
       final fitZoom = min(screenW / contentWorldW, screenH / contentWorldH)
-          .clamp(UiConstants.minZoom, UiConstants.maxZoom);
+          .clamp(0.005, 10.0);
 
       _game.setCameraForCapture(Vector2(worldCenterX, worldCenterY), fitZoom);
       await Future.delayed(const Duration(milliseconds: 100));

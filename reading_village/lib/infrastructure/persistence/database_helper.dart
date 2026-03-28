@@ -9,6 +9,8 @@ part 'database_helper_game_state_operations.dart';
 part 'database_helper_inventory_operations.dart';
 
 class DatabaseHelper {
+  static const bool test = true;
+
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
@@ -23,17 +25,20 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'reading_village.db');
-    // await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
+    await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle future schema migrations here
+    if (oldVersion < 3) {
+      await db.execute(
+          'ALTER TABLE books ADD COLUMN max_rewarded_pages INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   Future<void> _createTables(Database db, int version) async {
@@ -45,6 +50,7 @@ class DatabaseHelper {
         total_pages INTEGER NOT NULL,
         pages_read INTEGER NOT NULL DEFAULT 0,
         is_completed INTEGER NOT NULL DEFAULT 0,
+        max_rewarded_pages INTEGER NOT NULL DEFAULT 0,
         cover_image_path TEXT,
         created_at TEXT NOT NULL
       )
@@ -194,10 +200,10 @@ class DatabaseHelper {
 
     await db.insert('resources', {
       'id': 1,
-      'coins': VillageRules.startingCoins,
-      'gems': VillageRules.startingGems,
-      'wood': VillageRules.startingWood,
-      'metal': VillageRules.startingMetal,
+      'coins': test ? 9999 : VillageRules.startingCoins,
+      'gems': test ? 9999 : VillageRules.startingGems,
+      'wood': test ? 9999 : VillageRules.startingWood,
+      'metal': test ? 9999 : VillageRules.startingMetal,
     });
 
     await db.insert('game_state', {

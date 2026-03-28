@@ -245,7 +245,7 @@ class _BookCardState extends State<BookCard> {
                 padding: EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   children: [
-                    Icon(Icons.history, size: 14, color: AppTheme.lavender),
+                    Icon(Icons.history, size: 16, color: AppTheme.lavender),
                     SizedBox(width: 4),
                     Text(
                       '${sessions.length} $sessionLabel',
@@ -258,7 +258,7 @@ class _BookCardState extends State<BookCard> {
                     Spacer(),
                     Icon(
                       _sessionsExpanded ? Icons.expand_less : Icons.expand_more,
-                      size: 18,
+                      size: 24,
                       color: AppTheme.lavender,
                     ),
                   ],
@@ -401,14 +401,14 @@ class _SessionRow extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.edit_outlined, size: 16, color: AppTheme.lavender),
+            icon: Icon(Icons.edit_outlined, size: 20, color: AppTheme.lavender),
             padding: EdgeInsets.zero,
             constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             onPressed: () => _showEditDialog(context, bookProvider),
           ),
           IconButton(
             icon: Icon(Icons.delete_outline,
-                size: 16, color: Colors.red.shade300),
+                size: 20, color: Colors.red.shade300),
             padding: EdgeInsets.zero,
             constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             onPressed: () => _confirmDelete(context, bookProvider),

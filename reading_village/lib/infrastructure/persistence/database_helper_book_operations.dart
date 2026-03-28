@@ -18,6 +18,12 @@ extension DatabaseHelperBookOperations on DatabaseHelper {
         where: 'id = ?', whereArgs: [bookId]);
   }
 
+  Future<void> updateMaxRewardedPages(int bookId, int maxRewardedPages) async {
+    final db = await database;
+    await db.update('books', {'max_rewarded_pages': maxRewardedPages},
+        where: 'id = ?', whereArgs: [bookId]);
+  }
+
   Future<void> updateBook(int bookId, Map<String, dynamic> values) async {
     final db = await database;
     await db.update('books', values, where: 'id = ?', whereArgs: [bookId]);
@@ -82,6 +88,18 @@ extension DatabaseHelperBookOperations on DatabaseHelper {
     final result = await db.rawQuery(
         'SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE book_id = ?',
         [bookId]);
+    return result.first['total'] as int;
+  }
+
+  Future<int> getTodayPagesRead() async {
+    final db = await database;
+    final today = DateTime.now();
+    final datePrefix =
+        '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final result = await db.rawQuery(
+      "SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE date LIKE ?",
+      ['$datePrefix%'],
+    );
     return result.first['total'] as int;
   }
 

@@ -301,8 +301,7 @@ class VillageGame extends FlameGame {
 
   void setCameraForCapture(Vector2 position, double zoom) {
     camera.viewfinder.position = position;
-    camera.viewfinder.zoom =
-        zoom.clamp(UiConstants.minZoom, UiConstants.maxZoom);
+    camera.viewfinder.zoom = zoom.clamp(0.005, 10.0);
   }
 
   ({int minX, int minY, int maxX, int maxY})? getOccupiedBounds() {

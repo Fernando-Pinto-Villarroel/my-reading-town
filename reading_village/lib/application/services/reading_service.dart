@@ -134,31 +134,38 @@ class ReadingService {
       return {'coins': 0, 'gems': 0, 'wood': 0, 'metal': 0, 'exp': 0, 'bookCompleted': false};
     }
 
+    final rewardablePages = (newPagesRead - book.maxRewardedPages).clamp(0, actualPagesLogged);
+
     final random = Random();
-    int coinsEarned = actualPagesLogged * VillageRules.coinsPerPage;
+    int coinsEarned = rewardablePages * VillageRules.coinsPerPage;
     int gemsEarned = 0;
     int woodEarned = 0;
     int metalEarned = 0;
 
-    if (actualPagesLogged >= 10) {
-      woodEarned = actualPagesLogged * VillageRules.woodPerPage;
-      metalEarned = actualPagesLogged * VillageRules.metalPerPage;
-    } else {
-      if (random.nextBool()) {
-        woodEarned = actualPagesLogged * VillageRules.woodPerPage;
+    if (rewardablePages > 0) {
+      if (rewardablePages >= 10) {
+        woodEarned = rewardablePages * VillageRules.woodPerPage;
+        metalEarned = rewardablePages * VillageRules.metalPerPage;
       } else {
-        metalEarned = actualPagesLogged * VillageRules.metalPerPage;
+        if (random.nextBool()) {
+          woodEarned = rewardablePages * VillageRules.woodPerPage;
+        } else {
+          metalEarned = rewardablePages * VillageRules.metalPerPage;
+        }
       }
     }
 
     bool bookCompleted = newPagesRead >= book.totalPages;
-
-    if (bookCompleted && !book.isCompleted) {
+    final completionBonusEarned = bookCompleted && book.maxRewardedPages < book.totalPages;
+    if (completionBonusEarned) {
       coinsEarned += VillageRules.bookCompletionCoinBonus;
       gemsEarned += VillageRules.bookCompletionGemBonus;
     }
 
+    final newMaxRewarded = max(book.maxRewardedPages, newPagesRead);
+
     await _repo.updateBookPages(bookId, newPagesRead, bookCompleted);
+    await _repo.updateMaxRewardedPages(bookId, newMaxRewarded);
     await _repo.insertReadingSession(ReadingSession(
       bookId: bookId,
       pagesRead: actualPagesLogged,
@@ -175,8 +182,10 @@ class ReadingService {
       'wood': woodEarned,
       'metal': metalEarned,
       'exp': 0,
-      'bookCompleted': bookCompleted,
+      'bookCompleted': completionBonusEarned,
       'newPagesRead': newPagesRead,
+      'rewardablePages': rewardablePages,
+      'newMaxRewarded': newMaxRewarded,
     };
   }
 

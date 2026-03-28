@@ -151,6 +151,7 @@ class BookProvider extends ChangeNotifier {
       _books[bookIndex] = _books[bookIndex].copyWith(
         pagesRead: result['newPagesRead'] as int?,
         isCompleted: result['bookCompleted'] as bool?,
+        maxRewardedPages: result['newMaxRewarded'] as int?,
       );
     }
 

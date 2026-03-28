@@ -370,5 +370,11 @@
   "cannot_place_here": "Cannot place here — tiles are occupied, blocked, or not unlocked",
   "building_limit_reached": "Building limit reached! Level up to unlock more.",
   "not_enough_resources_read_more": "Not enough resources! Read more to earn them.",
-  "error_prefix": "Error: "
+  "error_prefix": "Error: ",
+  "daily_limit_title": "Daily Reading Limit",
+  "daily_limit_reached_message": "You've already logged 200 pages today! That's the daily limit. Remember, cheating only hurts yourself — this is a personal journey to grow your reading habit, not a competition with others. Keep it real and enjoy the process!",
+  "daily_limit_partial_message": "You can only log {allowed} more pages today (daily limit: {limit}). Logging more than 200 pages per day is not typical and doesn't help you grow. Want to log {allowed} pages instead?",
+  "log_partial_button": "Log {pages} pages",
+  "rewards_for_new_pages": "+{pages} newly read pages",
+  "no_new_pages_reward_hint": "No new resources — pages already logged keep their rewards even if sessions are deleted."
 }

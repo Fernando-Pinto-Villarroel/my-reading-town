@@ -96,10 +96,74 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 }
                 setDialogState(() => timeError = null);
 
+                const int dailyPageLimit = 200;
+                final db = DatabaseHelper();
+                final todayPages = await db.getTodayPagesRead();
+                if (todayPages >= dailyPageLimit) {
+                  if (dialogCtx.mounted) {
+                    showDialog(
+                      context: dialogCtx,
+                      builder: (ctx) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        title: Text(langProvider.translate('daily_limit_title'),
+                            textAlign: TextAlign.center),
+                        content: Text(
+                            langProvider.translate('daily_limit_reached_message'),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: AppTheme.darkText.withValues(alpha: 0.8))),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text(langProvider.translate('close')),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return;
+                }
+                final allowedPages = (dailyPageLimit - todayPages).clamp(0, pages);
+                if (allowedPages < pages && dialogCtx.mounted) {
+                  final confirmed = await showDialog<bool>(
+                    context: dialogCtx,
+                    builder: (ctx) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      title: Text(langProvider.translate('daily_limit_title'),
+                          textAlign: TextAlign.center),
+                      content: Text(
+                          langProvider
+                              .translate('daily_limit_partial_message')
+                              .replaceAll('{allowed}', '$allowedPages')
+                              .replaceAll('{limit}', '$dailyPageLimit'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: AppTheme.darkText.withValues(alpha: 0.8))),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(langProvider.translate('cancel')),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(langProvider.translate('log_partial_button')
+                              .replaceAll('{pages}', '$allowedPages')),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true) return;
+                }
+                final pagesToLog = allowedPages < pages ? allowedPages : pages;
+                if (pagesToLog <= 0) return;
+
+                if (!dialogCtx.mounted) return;
                 Navigator.pop(dialogCtx);
 
                 final rewards =
-                    await bookProvider.logPages(bookId, pages, timeTakenMinutes: timeMins);
+                    await bookProvider.logPages(bookId, pagesToLog, timeTakenMinutes: timeMins);
                 final coinsEarned = rewards['coins'] as int;
                 final gemsEarned = rewards['gems'] as int;
                 final woodEarned = rewards['wood'] as int;
@@ -116,7 +180,6 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                   if (expEarned > 0) {
                     await villageProvider.addExp(expEarned);
                   }
-                  final db = DatabaseHelper();
                   final totalPages = await db.getTotalPagesRead();
                   final completedBooksCount =
                       await db.getCompletedBooksCount();
@@ -133,6 +196,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                     rewards['wood'] as int,
                     rewards['metal'] as int,
                     rewards['bookCompleted'] as bool,
+                    rewards['rewardablePages'] as int,
                   );
                 }
               },
@@ -146,7 +210,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
 }
 
 void _showRewardPopup(BuildContext context, int coins, int gems, int wood,
-    int metal, bool bookCompleted) {
+    int metal, bool bookCompleted, int rewardablePages) {
   late OverlayEntry overlayEntry;
   overlayEntry = OverlayEntry(
     builder: (context) => RewardPopup(
@@ -155,6 +219,7 @@ void _showRewardPopup(BuildContext context, int coins, int gems, int wood,
       woodEarned: wood,
       metalEarned: metal,
       bookCompleted: bookCompleted,
+      rewardablePages: rewardablePages,
       onDismiss: () => overlayEntry.remove(),
     ),
   );

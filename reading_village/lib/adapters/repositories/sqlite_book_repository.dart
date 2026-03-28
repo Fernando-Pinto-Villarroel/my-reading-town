@@ -16,6 +16,10 @@ class SqliteBookRepository implements BookRepository {
       _db.updateBookPages(bookId, newPagesRead, isCompleted);
 
   @override
+  Future<void> updateMaxRewardedPages(int bookId, int maxRewardedPages) =>
+      _db.updateMaxRewardedPages(bookId, maxRewardedPages);
+
+  @override
   Future<void> updateBook(int bookId, Map<String, dynamic> values) => _db.updateBook(bookId, values);
 
   @override

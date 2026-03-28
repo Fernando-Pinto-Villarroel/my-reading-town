@@ -2,6 +2,7 @@ abstract class BookRepository {
   Future<List<Map<String, dynamic>>> getBooks();
   Future<int> insertBook(Map<String, dynamic> book);
   Future<void> updateBookPages(int bookId, int newPagesRead, bool isCompleted);
+  Future<void> updateMaxRewardedPages(int bookId, int maxRewardedPages);
   Future<void> updateBook(int bookId, Map<String, dynamic> values);
   Future<void> deleteBook(int bookId);
   Future<int> getCompletedBooksCount();

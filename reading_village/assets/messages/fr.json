@@ -370,5 +370,11 @@
   "cannot_place_here": "Impossible de placer ici — les cases sont occupées, bloquées ou non déverrouillées",
   "building_limit_reached": "Limite de bâtiments atteinte ! Montez de niveau pour en débloquer plus.",
   "not_enough_resources_read_more": "Ressources insuffisantes ! Lisez plus pour en gagner.",
-  "error_prefix": "Erreur : "
+  "error_prefix": "Erreur : ",
+  "daily_limit_title": "Limite Quotidienne de Lecture",
+  "daily_limit_reached_message": "Vous avez déjà enregistré 200 pages aujourd'hui ! C'est la limite quotidienne. Rappelez-vous, tricher ne nuit qu'à vous-même — c'est un voyage personnel pour développer votre habitude de lecture, pas une compétition avec les autres. Restez honnête et profitez du processus !",
+  "daily_limit_partial_message": "Vous ne pouvez enregistrer que {allowed} pages de plus aujourd'hui (limite quotidienne : {limit}). Enregistrer plus de 200 pages par jour n'est pas habituel et ne vous aide pas à progresser. Voulez-vous enregistrer {allowed} pages à la place ?",
+  "log_partial_button": "Enregistrer {pages} pages",
+  "rewards_for_new_pages": "+{pages} nouvelles pages lues",
+  "no_new_pages_reward_hint": "Aucune nouvelle ressource — les pages déjà enregistrées conservent leurs récompenses même si les sessions sont supprimées."
 }

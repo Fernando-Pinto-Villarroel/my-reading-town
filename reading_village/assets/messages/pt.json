@@ -370,5 +370,11 @@
   "cannot_place_here": "Não é possível posicionar aqui — os blocos estão ocupados, bloqueados ou não desbloqueados",
   "building_limit_reached": "Limite de construções atingido! Suba de nível para desbloquear mais.",
   "not_enough_resources_read_more": "Recursos insuficientes! Leia mais para ganhá-los.",
-  "error_prefix": "Erro: "
+  "error_prefix": "Erro: ",
+  "daily_limit_title": "Limite Diário de Leitura",
+  "daily_limit_reached_message": "Você já registrou 200 páginas hoje! Esse é o limite diário. Lembre-se, trapacear só prejudica a si mesmo — esta é uma jornada pessoal para crescer como leitor, não uma competição com outros. Seja honesto e aproveite o processo!",
+  "daily_limit_partial_message": "Você só pode registrar mais {allowed} páginas hoje (limite diário: {limit}). Registrar mais de 200 páginas por dia não é comum e não ajuda no seu crescimento. Quer registrar {allowed} páginas?",
+  "log_partial_button": "Registrar {pages} páginas",
+  "rewards_for_new_pages": "+{pages} páginas recém lidas",
+  "no_new_pages_reward_hint": "Sem novos recursos — páginas já registradas mantêm suas recompensas mesmo que as sessões sejam excluídas."
 }

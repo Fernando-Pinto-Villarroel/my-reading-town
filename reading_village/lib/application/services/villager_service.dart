@@ -33,10 +33,10 @@ class VillagerService {
       for (final type in _needTypes) type: 0,
     };
     for (var b in buildings) {
-      if (!b.isConstructed || b.type == 'house') continue;
+      if (b.type == 'house') continue;
       if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-      // Use effective level: if upgrade in progress, use previous level
       final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+      if (effectiveLevel <= 0) continue;
       capacityByType[b.type] = (capacityByType[b.type] ?? 0) +
           VillageRules.buildingCapacity(b.type, effectiveLevel);
     }
@@ -58,10 +58,10 @@ class VillagerService {
     for (final type in _needTypes) {
       int cap = 0;
       for (var b in buildings) {
-        if (!b.isConstructed || b.type != type) continue;
+        if (b.type != type) continue;
         if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        // Use effective level: if upgrade in progress, use previous level
         final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+        if (effectiveLevel <= 0) continue;
         cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
       }
       capacityByType[type] = cap;
@@ -83,10 +83,10 @@ class VillagerService {
     for (final type in _needTypes) {
       int cap = 0;
       for (var b in buildings) {
-        if (!b.isConstructed || b.type != type) continue;
+        if (b.type != type) continue;
         if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        // Use effective level: if upgrade in progress, use previous level
         final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
+        if (effectiveLevel <= 0) continue;
         cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
       }
       capacityByType[type] = cap;
@@ -121,7 +121,7 @@ class VillagerService {
     final houses = buildings
         .where((b) =>
             b.type == 'house' &&
-            b.isConstructed &&
+            _buildingService.effectiveBuildingLevel(b) > 0 &&
             _buildingService.isBuildingRoadConnected(b, roadTiles))
         .toList();
 
@@ -129,7 +129,8 @@ class VillagerService {
     while (villagers.length + newVillagers.length < capacity) {
       PlacedBuilding? targetHouse;
       for (var house in houses) {
-        final cap = VillageRules.villagersPerHouse(house.level);
+        final cap = VillageRules.villagersPerHouse(
+            _buildingService.effectiveBuildingLevel(house));
         final current = (villagers + newVillagers)
             .where((v) => v.houseId == house.id)
             .length;

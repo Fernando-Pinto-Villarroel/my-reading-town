@@ -10,6 +10,7 @@ class RewardPopup extends StatefulWidget {
   final int woodEarned;
   final int metalEarned;
   final bool bookCompleted;
+  final int rewardablePages;
   final VoidCallback onDismiss;
 
   const RewardPopup({
@@ -19,6 +20,7 @@ class RewardPopup extends StatefulWidget {
     this.woodEarned = 0,
     this.metalEarned = 0,
     this.bookCompleted = false,
+    this.rewardablePages = 0,
     required this.onDismiss,
   });
 
@@ -125,6 +127,26 @@ class _RewardPopupState extends State<RewardPopup>
                               : AppTheme.darkText,
                         ),
                       ),
+                      if (widget.rewardablePages > 0) ...[
+                        SizedBox(height: 4),
+                        Text(
+                          context.t('rewards_for_new_pages').replaceAll('{pages}', '${widget.rewardablePages}'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.darkText.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ] else ...[
+                        SizedBox(height: 8),
+                        Text(
+                          context.t('no_new_pages_reward_hint'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.darkText.withValues(alpha: 0.45),
+                          ),
+                        ),
+                      ],
                       SizedBox(height: 20),
                       if (widget.coinsEarned > 0) ...[
                         _RewardRow(
