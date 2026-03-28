@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/di/service_locator.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
-import 'package:reading_village/adapters/repositories/villager_favorites.dart';
-import 'package:reading_village/infrastructure/ui/widgets/common/skeleton.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/tag_provider.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
-import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
-import 'package:reading_village/infrastructure/ui/screens/game_screen.dart';
+import 'package:reading_village/infrastructure/ui/screens/splash_screen.dart';
+import 'package:reading_village/application/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initServiceLocator();
   await sl<LanguageProvider>().load(LanguageProvider.defaultLocale);
+  await sl<NotificationService>().initialize();
+  await sl<NotificationService>().requestPermission();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const ReadingVillageApp());
 }
 
@@ -34,89 +36,8 @@ class ReadingVillageApp extends StatelessWidget {
         title: 'Reading Village',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.theme,
-        home: AppInitializer(),
+        home: const SplashScreen(),
       ),
     );
-  }
-}
-
-class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
-
-  @override
-  State<AppInitializer> createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeApp();
-  }
-
-  Future<void> _initializeApp() async {
-    final bookProvider = context.read<BookProvider>();
-    final tagProvider = context.read<TagProvider>();
-    final villageProvider = context.read<VillageProvider>();
-    final languageProvider = context.read<LanguageProvider>();
-
-    // Load village data first to get the saved language
-    await villageProvider.loadData();
-    await languageProvider.load(villageProvider.language);
-
-    // Set locale and load villager favorites with the correct language
-    VillagerFavorites.setLocale(villageProvider.language);
-    await VillagerFavorites.load();
-
-    await tagProvider.loadTags();
-    await bookProvider.loadData();
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: AppTheme.cream,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.auto_stories, size: 64, color: AppTheme.pink),
-              SizedBox(height: 16),
-              Text(
-                'Reading Village',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.darkText,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                context.t('building_your_village'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.darkText.withValues(alpha: 0.6),
-                ),
-              ),
-              SizedBox(height: 24),
-              Skeleton(width: 180, height: 12, borderRadius: 6),
-              SizedBox(height: 10),
-              Skeleton(width: 120, height: 12, borderRadius: 6),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return GameScreen();
   }
 }

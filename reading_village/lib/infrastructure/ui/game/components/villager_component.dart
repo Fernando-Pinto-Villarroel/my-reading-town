@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:reading_village/domain/entities/villager.dart';
 import 'package:reading_village/infrastructure/ui/config/ui_constants.dart';
 import 'package:reading_village/adapters/repositories/villager_favorites.dart' show VillagerFavorites;
+import 'package:reading_village/infrastructure/ui/game/village_game.dart';
 
 class VillagerComponent extends PositionComponent with TapCallbacks {
   Villager villager;
@@ -32,6 +33,8 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   double _happyBubbleTimer = 0;
   bool _showHappyBubble = false;
 
+  double _zzzTimer = 0;
+
   VillagerComponent({
     required this.villager,
     required Vector2 position,
@@ -46,6 +49,7 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
         ) {
     _targetPosition = position.clone();
     _waitTimer = _random.nextDouble() * 2;
+    _facingRight = _random.nextBool();
   }
 
   @override
@@ -60,8 +64,13 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
     onTapped?.call(villager);
   }
 
+  bool _isNightMode() => (findGame() as VillageGame?)?.isNightMode ?? false;
+
+  void randomizeFacing() => _facingRight = _random.nextBool();
+
   Future<void> _refreshSprite() async {
-    final newFile = villager.spriteFile;
+    final night = _isNightMode();
+    final newFile = night ? villager.sleepingSpriteFile : villager.spriteFile;
     if (newFile != _currentSpriteFile) {
       _currentSpriteFile = newFile;
       _sprite = await Sprite.load(_currentSpriteFile);
@@ -72,6 +81,18 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   void update(double dt) {
     super.update(dt);
     _refreshSprite();
+
+    if (_isNightMode()) {
+      _isWaiting = true;
+      _showBubble = false;
+      _showHappyBubble = false;
+      _bubbleTimer = 0;
+      _happyBubbleTimer = 0;
+      _bobTimer += dt;
+      _bobOffset = sin(_bobTimer * 1.5) * 0.5;
+      _zzzTimer += dt;
+      return;
+    }
 
     if (_isWaiting) {
       _waitTimer -= dt;
@@ -166,6 +187,29 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
       target.$2 * UiConstants.tilePixelSize +
           UiConstants.tilePixelSize / 2,
     );
+  }
+
+  void _renderZzz(Canvas canvas) {
+    const letters = ['z', 'z', 'Z'];
+    for (int i = 0; i < letters.length; i++) {
+      final offset = (_zzzTimer + i * 0.7) % 2.1;
+      final alpha = (offset < 1.0 ? offset : max(0.0, 2.1 - offset)).clamp(0.0, 1.0);
+      if (alpha <= 0.05) continue;
+      final yOff = -5.0 - offset * 20.0;
+      final xOff = size.x * 0.7 + i * 4.0;
+      final painter = TextPainter(
+        text: TextSpan(
+          text: letters[i],
+          style: TextStyle(
+            fontSize: 9.0 + i * 3.0,
+            color: Color.fromARGB((alpha * 180).round(), 120, 120, 220),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(canvas, Offset(xOff, yOff));
+    }
   }
 
   void _renderThoughtBubble(Canvas canvas) {
@@ -292,8 +336,12 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
       canvas.translate(-size.x, 0);
     }
 
-    _renderThoughtBubble(canvas);
-    _renderHappyBubble(canvas);
+    if (_isNightMode()) {
+      _renderZzz(canvas);
+    } else {
+      _renderThoughtBubble(canvas);
+      _renderHappyBubble(canvas);
+    }
 
     final namePainter = TextPainter(
       text: TextSpan(

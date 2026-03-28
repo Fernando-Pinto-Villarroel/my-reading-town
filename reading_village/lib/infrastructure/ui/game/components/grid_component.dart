@@ -25,8 +25,31 @@ class GridComponent extends Component with HasGameReference<FlameGame> {
     Color(0xFFB0E0B0),
   ];
 
+  static const List<Color> _nightGrassColors = [
+    Color(0xFF2A4A5C),
+    Color(0xFF2C4E62),
+    Color(0xFF264658),
+    Color(0xFF2E5060),
+    Color(0xFF28485A),
+  ];
+
   static const Color _roadColor = Color(0xFFE0D8C8);
   static const Color _roadDetailColor = Color(0xFFD0C8B8);
+  static const Color _nightRoadColor = Color(0xFF3A3C50);
+  static const Color _nightRoadDetailColor = Color(0xFF2E3044);
+
+  static const List<Color> _fogColors = [
+    Color(0xFF8AB08A),
+    Color(0xFF80A880),
+    Color(0xFF90B890),
+  ];
+  static const List<Color> _nightFogColors = [
+    Color(0xFF1A2E3C),
+    Color(0xFF182A38),
+    Color(0xFF1E3240),
+  ];
+
+  bool isNightMode = false;
 
   GridComponent() : super(priority: -10);
 
@@ -73,30 +96,30 @@ class GridComponent extends Component with HasGameReference<FlameGame> {
         final unlocked = _isChunkUnlocked(x, y);
         final isRoad = roadTiles.contains(key);
 
+        final grassColors = isNightMode ? _nightGrassColors : _grassColors;
+        final roadColor = isNightMode ? _nightRoadColor : _roadColor;
+        final roadDetailColor = isNightMode ? _nightRoadDetailColor : _roadDetailColor;
+
         if (isRoad && unlocked) {
-          tilePaint.color = _roadColor;
+          tilePaint.color = roadColor;
           canvas.drawRect(rect, tilePaint);
           final detailHash = (x * 11 + y * 23) % 5;
           if (detailHash == 0) {
             canvas.drawCircle(
                 Offset(rect.left + 12, rect.top + 20), 1.5,
-                Paint()..color = _roadDetailColor);
+                Paint()..color = roadDetailColor);
           }
           if (detailHash == 2) {
             canvas.drawCircle(
                 Offset(rect.left + 28, rect.top + 32), 1.0,
-                Paint()..color = _roadDetailColor);
+                Paint()..color = roadDetailColor);
           }
         } else if (unlocked) {
-          final colorIdx = (x * 7 + y * 13) % _grassColors.length;
-          tilePaint.color = _grassColors[colorIdx];
+          final colorIdx = (x * 7 + y * 13) % grassColors.length;
+          tilePaint.color = grassColors[colorIdx];
           canvas.drawRect(rect, tilePaint);
         } else {
-          const fogColors = [
-            Color(0xFF8AB08A),
-            Color(0xFF80A880),
-            Color(0xFF90B890),
-          ];
+          final fogColors = isNightMode ? _nightFogColors : _fogColors;
           tilePaint.color = fogColors[(x * 7 + y * 13) % 3];
           canvas.drawRect(rect, tilePaint);
           canvas.drawRect(rect, Paint()..color = const Color(0x40606060));

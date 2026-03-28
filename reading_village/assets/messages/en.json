@@ -1,6 +1,7 @@
 {
   "app_title": "Reading Village",
   "building_your_village": "Building your village...",
+  "splash_tap_tip": "tap for next tip",
   "settings": "Settings",
   "player_level": "Player Level",
   "exp_to_next_level": "to next level",
@@ -376,5 +377,19 @@
   "daily_limit_partial_message": "You can only log {allowed} more pages today (daily limit: {limit}). Logging more than 200 pages per day is not typical and doesn't help you grow. Want to log {allowed} pages instead?",
   "log_partial_button": "Log {pages} pages",
   "rewards_for_new_pages": "+{pages} newly read pages",
-  "no_new_pages_reward_hint": "No new resources — pages already logged keep their rewards even if sessions are deleted."
+  "no_new_pages_reward_hint": "No new resources — pages already logged keep their rewards even if sessions are deleted.",
+  "data_management": "Data Management",
+  "export_data": "Export Backup",
+  "import_data": "Import Backup",
+  "reset_all_data": "Reset All Data",
+  "import_warning_title": "Import Data?",
+  "import_warning_body": "This will replace ALL your current data with the imported backup. This action cannot be undone!",
+  "import_confirm": "Import",
+  "reset_warning_title": "Reset Everything?",
+  "reset_warning_body": "This will permanently delete ALL your data: books, village, progress — everything. This cannot be undone!",
+  "reset_confirm": "Delete Everything",
+  "notification_daily_title": "Time to read!",
+  "notification_daily_body": "Your village is waiting! Read a few pages today.",
+  "notification_construction_title": "Construction Complete!",
+  "notification_construction_body": "is ready in your village!"
 }

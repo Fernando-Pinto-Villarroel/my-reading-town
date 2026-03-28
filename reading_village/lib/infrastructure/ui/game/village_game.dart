@@ -25,6 +25,12 @@ class VillageGame extends FlameGame {
   bool isRoadMode = false;
   bool _isReady = false;
 
+  bool _isNightMode = false;
+  double _nightCheckTimer = 0;
+  late NightOverlayComponent _nightOverlay;
+
+  bool get isNightMode => _isNightMode;
+
   late GridComponent _gridComponent;
   final Set<String> _roadTiles = {};
   final Set<String> _unlockedChunks = {};
@@ -64,7 +70,11 @@ class VillageGame extends FlameGame {
 
     world.add(_WorldTapHandler(this));
 
+    _nightOverlay = NightOverlayComponent();
+    camera.viewport.add(_nightOverlay);
+
     _isReady = true;
+    _updateNightMode();
     updateGridState();
   }
 
@@ -76,6 +86,36 @@ class VillageGame extends FlameGame {
     _villagerService = service;
   }
 
+  void _updateNightMode() {
+    final hour = DateTime.now().hour;
+    final isNight = hour >= 19 || hour < 5;
+    final wasNight = _isNightMode;
+    _isNightMode = isNight;
+    _nightOverlay.isNight = isNight;
+    if (_isReady) _gridComponent.isNightMode = isNight;
+    if (isNight && !wasNight) {
+      _repositionVillagersForNight();
+      for (final comp in _villagerComponents) {
+        comp.randomizeFacing();
+      }
+    }
+  }
+
+  void _repositionVillagersForNight() {
+    final perHouseSlot = <int, int>{};
+    for (final comp in _villagerComponents) {
+      final v = comp.villager;
+      if (v.houseId != null && _buildingsById.containsKey(v.houseId)) {
+        final house = _buildingsById[v.houseId!]!;
+        final slot = perHouseSlot[v.houseId!] ?? 0;
+        perHouseSlot[v.houseId!] = slot + 1;
+        final x = (house.tileX + 0.55 + slot * 0.5) * UiConstants.tilePixelSize;
+        final y = (house.tileY + house.tileHeight - 0.5) * UiConstants.tilePixelSize;
+        comp.position = Vector2(x, y);
+      }
+    }
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -83,6 +123,11 @@ class VillageGame extends FlameGame {
     if (_constructionCheckTimer >= 1.0) {
       _constructionCheckTimer = 0;
       _checkConstructionCompletion();
+    }
+    _nightCheckTimer += dt;
+    if (_nightCheckTimer >= 60.0) {
+      _nightCheckTimer = 0;
+      _updateNightMode();
     }
     for (final entry in _buildingComponents.entries) {
       final b = _buildingsById[entry.key];
@@ -271,21 +316,29 @@ class VillageGame extends FlameGame {
         existingById[v.id!]!.roadTiles = _roadTilesList;
         existingById[v.id!]!.missingBuildingTypes = villagerMissingNeeds;
       } else {
-        String? spawnTile;
-        if (v.houseId != null) {
-          spawnTile = houseRoadTiles[v.houseId];
+        Vector2 spawnPos;
+        if (_isNightMode && v.houseId != null && _buildingsById.containsKey(v.houseId)) {
+          final house = _buildingsById[v.houseId!]!;
+          final slot = _villagerComponents.where((c) => c.villager.houseId == v.houseId).length;
+          final x = (house.tileX + 0.55 + slot * 0.5) * UiConstants.tilePixelSize;
+          final y = (house.tileY + house.tileHeight - 0.5) * UiConstants.tilePixelSize;
+          spawnPos = Vector2(x, y);
+        } else {
+          String? spawnTile;
+          if (v.houseId != null) {
+            spawnTile = houseRoadTiles[v.houseId];
+          }
+          spawnTile ??= _roadTilesList[i % _roadTilesList.length];
+          final parts = spawnTile.split(',');
+          spawnPos = Vector2(
+            int.parse(parts[0]) * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
+            int.parse(parts[1]) * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
+          );
         }
-        spawnTile ??= _roadTilesList[i % _roadTilesList.length];
-
-        final parts = spawnTile.split(',');
-        final startX = int.parse(parts[0]) * UiConstants.tilePixelSize +
-            UiConstants.tilePixelSize / 2;
-        final startY = int.parse(parts[1]) * UiConstants.tilePixelSize +
-            UiConstants.tilePixelSize / 2;
 
         final comp = VillagerComponent(
           villager: v,
-          position: Vector2(startX, startY),
+          position: spawnPos,
           roadTiles: _roadTilesList,
           missingBuildingTypes: villagerMissingNeeds,
           onTapped: onVillagerTapped,
@@ -382,6 +435,29 @@ class VillageGame extends FlameGame {
         tileY < VillageRules.mapSize) {
       onTileTapped?.call(tileX, tileY);
     }
+  }
+}
+
+class NightOverlayComponent extends PositionComponent with HasGameReference<FlameGame> {
+  static const Color _overlayColor = Color(0x40102040);
+
+  bool isNight = false;
+
+  NightOverlayComponent() : super(priority: 500);
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    this.size = size;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (!isNight) return;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      Paint()..color = _overlayColor,
+    );
   }
 }
 

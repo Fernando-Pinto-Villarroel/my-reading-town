@@ -20,6 +20,8 @@ class Villager {
   String get spriteFile =>
       isSad ? '${species}_villager_sad.png' : '${species}_villager.png';
 
+  String get sleepingSpriteFile => '${species}_villager_sleeping.png';
+
   String get assetPath => 'assets/images/$spriteFile';
 
   String get moodText {

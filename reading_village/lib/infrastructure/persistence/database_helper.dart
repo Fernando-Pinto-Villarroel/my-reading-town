@@ -7,6 +7,7 @@ part 'database_helper_book_operations.dart';
 part 'database_helper_building_operations.dart';
 part 'database_helper_game_state_operations.dart';
 part 'database_helper_inventory_operations.dart';
+part 'database_helper_backup_operations.dart';
 
 class DatabaseHelper {
   static const bool test = true;
@@ -25,7 +26,7 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'reading_village.db');
-    await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
+    // await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
     return await openDatabase(
       path,
       version: 3,

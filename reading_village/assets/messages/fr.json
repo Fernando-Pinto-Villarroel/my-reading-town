@@ -1,6 +1,7 @@
 {
   "app_title": "Village des Lecteurs",
   "building_your_village": "Construction de votre village...",
+  "splash_tap_tip": "touchez pour le conseil suivant",
   "settings": "Paramètres",
   "player_level": "Niveau du Joueur",
   "exp_to_next_level": "pour le niveau suivant",
@@ -376,5 +377,19 @@
   "daily_limit_partial_message": "Vous ne pouvez enregistrer que {allowed} pages de plus aujourd'hui (limite quotidienne : {limit}). Enregistrer plus de 200 pages par jour n'est pas habituel et ne vous aide pas à progresser. Voulez-vous enregistrer {allowed} pages à la place ?",
   "log_partial_button": "Enregistrer {pages} pages",
   "rewards_for_new_pages": "+{pages} nouvelles pages lues",
-  "no_new_pages_reward_hint": "Aucune nouvelle ressource — les pages déjà enregistrées conservent leurs récompenses même si les sessions sont supprimées."
+  "no_new_pages_reward_hint": "Aucune nouvelle ressource — les pages déjà enregistrées conservent leurs récompenses même si les sessions sont supprimées.",
+  "data_management": "Gestion des Données",
+  "export_data": "Exporter la Sauvegarde",
+  "import_data": "Importer la Sauvegarde",
+  "reset_all_data": "Réinitialiser Tout",
+  "import_warning_title": "Importer les Données ?",
+  "import_warning_body": "Cela remplacera TOUTES vos données actuelles par la sauvegarde importée. Cette action est irréversible !",
+  "import_confirm": "Importer",
+  "reset_warning_title": "Tout Réinitialiser ?",
+  "reset_warning_body": "Cela supprimera définitivement TOUTES vos données : livres, village, progression — tout. Impossible d'annuler !",
+  "reset_confirm": "Tout Supprimer",
+  "notification_daily_title": "C'est l'heure de lire !",
+  "notification_daily_body": "Votre village vous attend ! Lisez quelques pages aujourd'hui.",
+  "notification_construction_title": "Construction Terminée !",
+  "notification_construction_body": "est prêt dans votre village !"
 }

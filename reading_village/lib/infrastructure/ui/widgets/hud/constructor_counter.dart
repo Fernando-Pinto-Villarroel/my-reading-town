@@ -31,6 +31,8 @@ class ConstructorCounter extends StatelessWidget {
             'assets/images/cat_constructor.png',
             width: iconSize,
             height: iconSize,
+            cacheWidth: (iconSize * 3).round(),
+            cacheHeight: (iconSize * 3).round(),
             filterQuality: FilterQuality.medium,
           ),
           SizedBox(width: 4),

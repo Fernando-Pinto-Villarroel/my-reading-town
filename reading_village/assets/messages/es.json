@@ -1,6 +1,7 @@
 {
   "app_title": "Villa Lectora",
   "building_your_village": "Construyendo tu villa...",
+  "splash_tap_tip": "toca para el siguiente consejo",
   "settings": "Ajustes",
   "player_level": "Nivel de Jugador",
   "exp_to_next_level": "para el siguiente nivel",
@@ -376,5 +377,19 @@
   "daily_limit_partial_message": "Solo puedes registrar {allowed} páginas más hoy (límite diario: {limit}). Registrar más de 200 páginas al día no es habitual y no te ayuda a crecer. ¿Quieres registrar {allowed} páginas en su lugar?",
   "log_partial_button": "Registrar {pages} páginas",
   "rewards_for_new_pages": "+{pages} páginas nuevas leídas",
-  "no_new_pages_reward_hint": "Sin nuevos recursos — las páginas ya registradas conservan sus recompensas aunque se eliminen las sesiones."
+  "no_new_pages_reward_hint": "Sin nuevos recursos — las páginas ya registradas conservan sus recompensas aunque se eliminen las sesiones.",
+  "data_management": "Gestión de Datos",
+  "export_data": "Exportar Copia de Seguridad",
+  "import_data": "Importar Copia de Seguridad",
+  "reset_all_data": "Restablecer Todo",
+  "import_warning_title": "¿Importar Datos?",
+  "import_warning_body": "Esto reemplazará TODOS tus datos actuales con la copia de seguridad importada. ¡Esta acción no se puede deshacer!",
+  "import_confirm": "Importar",
+  "reset_warning_title": "¿Resetear Todo?",
+  "reset_warning_body": "Esto eliminará permanentemente TODOS tus datos: libros, villa, progreso — todo. ¡No se puede deshacer!",
+  "reset_confirm": "Eliminar Todo",
+  "notification_daily_title": "¡Es hora de leer!",
+  "notification_daily_body": "¡Tu villa te espera! Lee algunas páginas hoy.",
+  "notification_construction_title": "¡Construcción Completada!",
+  "notification_construction_body": "está listo en tu villa!"
 }

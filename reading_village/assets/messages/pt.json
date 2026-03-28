@@ -1,6 +1,7 @@
 {
   "app_title": "Reading Village",
   "building_your_village": "Construindo sua vila...",
+  "splash_tap_tip": "toque para a próxima dica",
   "settings": "Configurações",
   "player_level": "Nível do Jogador",
   "exp_to_next_level": "para o próximo nível",
@@ -376,5 +377,19 @@
   "daily_limit_partial_message": "Você só pode registrar mais {allowed} páginas hoje (limite diário: {limit}). Registrar mais de 200 páginas por dia não é comum e não ajuda no seu crescimento. Quer registrar {allowed} páginas?",
   "log_partial_button": "Registrar {pages} páginas",
   "rewards_for_new_pages": "+{pages} páginas recém lidas",
-  "no_new_pages_reward_hint": "Sem novos recursos — páginas já registradas mantêm suas recompensas mesmo que as sessões sejam excluídas."
+  "no_new_pages_reward_hint": "Sem novos recursos — páginas já registradas mantêm suas recompensas mesmo que as sessões sejam excluídas.",
+  "data_management": "Gerenciamento de Dados",
+  "export_data": "Exportar Backup",
+  "import_data": "Importar Backup",
+  "reset_all_data": "Redefinir Tudo",
+  "import_warning_title": "Importar Dados?",
+  "import_warning_body": "Isso substituirá TODOS os seus dados atuais pelo backup importado. Esta ação não pode ser desfeita!",
+  "import_confirm": "Importar",
+  "reset_warning_title": "Redefinir Tudo?",
+  "reset_warning_body": "Isso excluirá permanentemente TODOS os seus dados: livros, vila, progresso — tudo. Não é possível desfazer!",
+  "reset_confirm": "Excluir Tudo",
+  "notification_daily_title": "Hora de ler!",
+  "notification_daily_body": "Sua vila está esperando! Leia algumas páginas hoje.",
+  "notification_construction_title": "Construção Concluída!",
+  "notification_construction_body": "está pronto na sua vila!"
 }

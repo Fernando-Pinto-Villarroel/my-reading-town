@@ -1,6 +1,7 @@
 {
   "app_title": "Reading Village",
   "building_your_village": "Costruendo il tuo villaggio...",
+  "splash_tap_tip": "tocca per il prossimo consiglio",
   "settings": "Impostazioni",
   "player_level": "Livello Giocatore",
   "exp_to_next_level": "al livello successivo",
@@ -376,5 +377,19 @@
   "daily_limit_partial_message": "Puoi registrare solo altre {allowed} pagine oggi (limite giornaliero: {limit}). Registrare più di 200 pagine al giorno non è tipico e non aiuta la tua crescita. Vuoi registrare {allowed} pagine invece?",
   "log_partial_button": "Registra {pages} pagine",
   "rewards_for_new_pages": "+{pages} nuove pagine lette",
-  "no_new_pages_reward_hint": "Nessuna nuova risorsa — le pagine già registrate mantengono le loro ricompense anche se le sessioni vengono eliminate."
+  "no_new_pages_reward_hint": "Nessuna nuova risorsa — le pagine già registrate mantengono le loro ricompense anche se le sessioni vengono eliminate.",
+  "data_management": "Gestione Dati",
+  "export_data": "Esporta Backup",
+  "import_data": "Importa Backup",
+  "reset_all_data": "Reimposta Tutto",
+  "import_warning_title": "Importare i Dati?",
+  "import_warning_body": "Questo sostituirà TUTTI i tuoi dati attuali con il backup importato. Questa azione non può essere annullata!",
+  "import_confirm": "Importa",
+  "reset_warning_title": "Reimpostare Tutto?",
+  "reset_warning_body": "Questo eliminerà definitivamente TUTTI i tuoi dati: libri, villaggio, progressi — tutto. Impossibile annullare!",
+  "reset_confirm": "Elimina Tutto",
+  "notification_daily_title": "È ora di leggere!",
+  "notification_daily_body": "Il tuo villaggio ti aspetta! Leggi qualche pagina oggi.",
+  "notification_construction_title": "Costruzione Completata!",
+  "notification_construction_body": "è pronto nel tuo villaggio!"
 }

@@ -31,7 +31,8 @@ class BuildingComponent extends PositionComponent {
   }
 
   Future<void> _loadLevelSprite() async {
-    final filename = VillageRules.spriteForBuilding(building.type, building.level);
+    final filename =
+        VillageRules.spriteForBuilding(building.type, building.level);
     _builtSprite = await Sprite.load(filename);
     _loadedLevel = building.level;
   }
@@ -66,13 +67,51 @@ class BuildingComponent extends PositionComponent {
     }
   }
 
+  static const _glowTypes = {
+    'house',
+    'hospital',
+    'park',
+    'power_plant',
+    'lamp_post'
+  };
+
+  void _renderNightGlow(Canvas canvas, double offsetX, double offsetY,
+      double spriteW, double spriteH) {
+    if (!_glowTypes.contains(building.type)) return;
+
+    if (building.type == 'lamp_post') {
+      final bulbX = offsetX + spriteW / 2;
+      final bulbY = offsetY + spriteH * 0.20;
+      final glowRadius = spriteH * 0.9;
+      final paint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFE57A),
+            const Color.fromARGB(105, 255, 107, 2),
+            const Color(0x00FF8C00),
+          ],
+          stops: const [0.0, 0.25, 1.0],
+        ).createShader(
+            Rect.fromCircle(center: Offset(bulbX, bulbY), radius: glowRadius));
+      canvas.drawCircle(Offset(bulbX, bulbY), glowRadius, paint);
+    } else {
+      final centerX = offsetX + spriteW / 2;
+      final centerY = offsetY + spriteH / 2;
+      final glowRadius = (spriteW + spriteH) * 0.6;
+      final glowColor = const Color(0x77FF6D00);
+      final paint = Paint()
+        ..shader = RadialGradient(
+          colors: [glowColor, glowColor.withValues(alpha: 0)],
+        ).createShader(Rect.fromCircle(
+            center: Offset(centerX, centerY), radius: glowRadius));
+      canvas.drawCircle(Offset(centerX, centerY), glowRadius, paint);
+    }
+  }
+
   @override
   void render(Canvas canvas) {
-    final sprite =
-        building.isConstructed ? _builtSprite : _constructionSprite;
+    final sprite = building.isConstructed ? _builtSprite : _constructionSprite;
     if (sprite == null) return;
-
-    canvas.save();
 
     final imgW = sprite.image.width.toDouble();
     final imgH = sprite.image.height.toDouble();
@@ -89,6 +128,13 @@ class BuildingComponent extends PositionComponent {
     final offsetX = (size.x - spriteW) / 2;
     final offsetY = size.y - spriteH;
 
+    final isNight = (findGame() as VillageGame?)?.isNightMode ?? false;
+    if (isNight && building.isConstructed) {
+      _renderNightGlow(canvas, offsetX, offsetY, spriteW, spriteH);
+    }
+
+    canvas.save();
+
     final cx = offsetX + spriteW / 2;
     final cy = offsetY + spriteH / 2;
     canvas.translate(cx, cy);
@@ -99,7 +145,8 @@ class BuildingComponent extends PositionComponent {
     }
     canvas.translate(-cx, -cy);
 
-    sprite.render(canvas, position: Vector2(offsetX, offsetY), size: Vector2(spriteW, spriteH));
+    sprite.render(canvas,
+        position: Vector2(offsetX, offsetY), size: Vector2(spriteW, spriteH));
 
     canvas.restore();
 
@@ -141,7 +188,9 @@ class BuildingComponent extends PositionComponent {
       );
       canvas.drawRRect(pillRect, Paint()..color = const Color(0xCC000000));
       timerPainter.paint(
-          canvas, Offset((size.x - timerPainter.width) / 2, pillRect.top + 1 * uiScale));
+          canvas,
+          Offset(
+              (size.x - timerPainter.width) / 2, pillRect.top + 1 * uiScale));
 
       final total = building.constructionDurationMinutes * 60;
       final elapsed = total - remaining.inSeconds;
@@ -151,8 +200,7 @@ class BuildingComponent extends PositionComponent {
       final barY = pillRect.bottom + 2 * uiScale;
       final barH = 5.0 * uiScale;
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            Rect.fromLTWH(barX, barY, barWidth, barH),
+        RRect.fromRectAndRadius(Rect.fromLTWH(barX, barY, barWidth, barH),
             Radius.circular(barH / 2)),
         Paint()..color = const Color(0x40000000),
       );

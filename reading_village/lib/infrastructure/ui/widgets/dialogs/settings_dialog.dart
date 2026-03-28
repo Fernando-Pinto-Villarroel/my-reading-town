@@ -3,10 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:reading_village/infrastructure/ui/config/app_theme.dart';
 import 'package:reading_village/domain/rules/village_rules.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
+import 'package:reading_village/adapters/providers/book_provider.dart';
+import 'package:reading_village/adapters/providers/tag_provider.dart';
 import 'package:reading_village/adapters/repositories/villager_favorites.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/localization/language_provider.dart';
 import 'package:reading_village/infrastructure/ui/localization/context_ext.dart';
+import 'package:reading_village/infrastructure/di/service_locator.dart';
+import 'package:reading_village/application/services/backup_service.dart';
 
 void showSettingsDialog(BuildContext context, VillageProvider village) {
   final usernameController = TextEditingController(text: village.username);
@@ -20,10 +24,11 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
       final landscape = isLandscape(ctx);
       return Dialog(
         insetPadding: EdgeInsets.symmetric(
-            horizontal: landscape ? 24 : 6, vertical: landscape ? 16 : 24),
+            horizontal: landscape ? 65 : 22, vertical: landscape ? 18 : 26),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           padding: EdgeInsets.all(20),
+          constraints: BoxConstraints(maxHeight: 620),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.circular(24),
@@ -130,12 +135,187 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                     child: Text(ctx.t('save')),
                   ),
                 ),
+                SizedBox(height: 20),
+                Divider(color: AppTheme.darkText.withValues(alpha: 0.15)),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.storage_rounded,
+                        size: 20, color: AppTheme.darkMint),
+                    SizedBox(width: 8),
+                    Text(ctx.t('data_management'),
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.darkText)),
+                  ],
+                ),
+                SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: Icon(Icons.upload_file, color: AppTheme.darkMint),
+                    label: Text(ctx.t('export_data')),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.darkText,
+                      side: BorderSide(color: AppTheme.darkMint),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      try {
+                        await sl<BackupService>().exportData();
+                      } catch (_) {}
+                    },
+                  ),
+                ),
+                SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: Icon(Icons.download_rounded,
+                        color: AppTheme.darkSkyBlue),
+                    label: Text(ctx.t('import_data')),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.darkText,
+                      side: BorderSide(color: AppTheme.darkSkyBlue),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      final confirmed = await _showImportWarning(ctx);
+                      if (confirmed != true || !ctx.mounted) return;
+                      try {
+                        final success = await sl<BackupService>().importData();
+                        if (success && ctx.mounted) {
+                          await village.loadData();
+                          await sl<BookProvider>().loadData();
+                          await sl<TagProvider>().loadTags();
+                          VillagerFavorites.setLocale(village.language);
+                          await VillagerFavorites.load();
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        }
+                      } catch (_) {}
+                    },
+                  ),
+                ),
+                SizedBox(height: 16),
+                Divider(color: AppTheme.darkText.withValues(alpha: 0.15)),
+                SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.delete_forever, color: Colors.white),
+                    label: Text(ctx.t('reset_all_data'),
+                        style: const TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF6B6B),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      final confirmed = await _showResetWarning(ctx);
+                      if (confirmed != true || !ctx.mounted) return;
+                      await sl<BackupService>().resetData();
+                      if (!ctx.mounted) return;
+                      await village.loadData();
+                      await sl<BookProvider>().loadData();
+                      await sl<TagProvider>().loadTags();
+                      VillagerFavorites.setLocale(village.language);
+                      await VillagerFavorites.load();
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                  ),
+                ),
               ],
             ),
           ),
         ),
       );
     },
+  );
+}
+
+Future<bool?> _showImportWarning(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppTheme.cream,
+      title: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppTheme.peach),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(ctx.t('import_warning_title'),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: AppTheme.darkText)),
+          ),
+        ],
+      ),
+      content: Text(ctx.t('import_warning_body'),
+          style: TextStyle(color: AppTheme.darkText)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child:
+              Text(ctx.t('cancel'), style: TextStyle(color: AppTheme.darkText)),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.skyBlue,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text(ctx.t('import_confirm'),
+              style: const TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<bool?> _showResetWarning(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppTheme.cream,
+      title: Row(
+        children: [
+          const Icon(Icons.warning_rounded, color: Color(0xFFFF6B6B)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(ctx.t('reset_warning_title'),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Color(0xFFFF6B6B))),
+          ),
+        ],
+      ),
+      content: Text(ctx.t('reset_warning_body'),
+          style: TextStyle(color: AppTheme.darkText)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child:
+              Text(ctx.t('cancel'), style: TextStyle(color: AppTheme.darkText)),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFF6B6B),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: Text(ctx.t('reset_confirm'),
+              style: const TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
   );
 }
 

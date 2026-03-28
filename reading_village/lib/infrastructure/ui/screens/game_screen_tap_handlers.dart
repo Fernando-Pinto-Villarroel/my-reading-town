@@ -43,6 +43,8 @@ mixin _GameTapHandlers on State<GameScreen> {
           Navigator.pop(context);
           final success = await village.speedUpConstruction(building.id!);
           if (success) {
+            sl<NotificationService>()
+                .cancelConstructionNotification(building.id!);
             _syncGameState();
             _notifiedCompletions.add(building.id!);
             if (mounted) showConstructionCompleteDialog(context, building);
@@ -50,7 +52,11 @@ mixin _GameTapHandlers on State<GameScreen> {
         }, onCancel: () async {
           Navigator.pop(context);
           final success = await village.cancelConstruction(building.id!);
-          if (success) _syncGameState();
+          if (success) {
+            sl<NotificationService>()
+                .cancelConstructionNotification(building.id!);
+            _syncGameState();
+          }
         });
       }
     }
@@ -125,6 +131,7 @@ mixin _GameTapHandlers on State<GameScreen> {
 
   void _placeBuilding(int tileX, int tileY) async {
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final notif = sl<NotificationService>();
     final village = _villageProvider;
     final template = VillageRules.findTemplate(_selectedBuildingType!);
     if (template == null) return;
@@ -184,6 +191,23 @@ mixin _GameTapHandlers on State<GameScreen> {
       tileHeight: VillageRules.buildingTileHeight(_selectedBuildingType!),
       isDecoration: isDecoration,
     );
+
+    if (!isDecoration) {
+      final placed = village.getBuildingAt(tileX, tileY);
+      if (placed != null && placed.id != null) {
+        final remaining = BuildingService.effectiveRemainingTime(
+            placed, village.activePowerups);
+        if (remaining > Duration.zero) {
+          notif.scheduleConstructionComplete(
+            buildingId: placed.id!,
+            buildingName: placed.name,
+            remaining: remaining,
+            title: langProvider.translate('notification_construction_title'),
+            body: langProvider.translate('notification_construction_body'),
+          );
+        }
+      }
+    }
 
     setState(() {
       _mode = GameMode.normal;

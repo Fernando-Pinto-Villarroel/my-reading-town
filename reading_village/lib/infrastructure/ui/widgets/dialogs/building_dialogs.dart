@@ -238,6 +238,8 @@ class _ConstructionSheetContentState extends State<ConstructionSheetContent> {
                   Image.asset('assets/images/cat_constructor.png',
                       width: 40,
                       height: 40,
+                      cacheWidth: 120,
+                      cacheHeight: 120,
                       filterQuality: FilterQuality.medium),
                   SizedBox(width: 6),
                   Text(context.t('under_construction'),

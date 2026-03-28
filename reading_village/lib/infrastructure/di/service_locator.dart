@@ -17,6 +17,8 @@ import 'package:reading_village/application/services/inventory_service.dart';
 import 'package:reading_village/application/services/mission_service.dart';
 import 'package:reading_village/application/services/player_service.dart';
 import 'package:reading_village/application/services/tag_service.dart';
+import 'package:reading_village/application/services/backup_service.dart';
+import 'package:reading_village/application/services/notification_service.dart';
 import 'package:reading_village/adapters/providers/village_provider.dart';
 import 'package:reading_village/adapters/providers/book_provider.dart';
 import 'package:reading_village/adapters/providers/tag_provider.dart';
@@ -41,6 +43,8 @@ void initServiceLocator() {
   sl.registerLazySingleton(() => MissionService(sl(), sl()));
   sl.registerLazySingleton(() => PlayerService(sl()));
   sl.registerLazySingleton(() => TagService(sl()));
+  sl.registerLazySingleton(() => BackupService(sl()));
+  sl.registerLazySingleton(() => NotificationService());
 
   // Adapters (providers)
   sl.registerLazySingleton(() => VillageProvider(

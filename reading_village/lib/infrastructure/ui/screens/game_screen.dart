@@ -31,6 +31,9 @@ import 'package:reading_village/infrastructure/ui/widgets/dialogs/minigames_dial
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/missions_modal.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/reading_modal.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/settings_dialog.dart';
+import 'package:reading_village/application/services/building_service.dart';
+import 'package:reading_village/application/services/notification_service.dart';
+import 'package:reading_village/infrastructure/di/service_locator.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:reading_village/infrastructure/ui/widgets/dialogs/stats_dialog.dart';
 import 'package:reading_village/infrastructure/ui/widgets/common/tap_through_interactive_viewer.dart';
@@ -64,6 +67,7 @@ class _GameScreenState extends State<GameScreen>
   Timer? _constructionTimer;
   @override
   final Set<int> _notifiedCompletions = {};
+  int _lastSandwichCount = 0;
   bool _menuOpen = false;
   bool _resourceHudExpanded = false;
   bool _isCapturing = false;
@@ -148,6 +152,32 @@ class _GameScreenState extends State<GameScreen>
             _selectedBuildingType != null &&
             VillageRules.isTileType(_selectedBuildingType!));
     _game.updateGridState();
+
+    final sandwichCount = village.activePowerups
+        .where((p) => p.type == 'sandwich_speed')
+        .length;
+    if (sandwichCount != _lastSandwichCount) {
+      _lastSandwichCount = sandwichCount;
+      _rescheduleConstructionNotifications();
+    }
+  }
+
+  void _rescheduleConstructionNotifications() {
+    final village = _villageProvider;
+    final lang = sl<LanguageProvider>();
+    final notif = sl<NotificationService>();
+    for (final b in village.placedBuildings) {
+      if (b.isConstructed || b.id == null) continue;
+      final remaining =
+          BuildingService.effectiveRemainingTime(b, village.activePowerups);
+      notif.scheduleConstructionComplete(
+        buildingId: b.id!,
+        buildingName: b.name,
+        remaining: remaining,
+        title: lang.translate('notification_construction_title'),
+        body: lang.translate('notification_construction_body'),
+      );
+    }
   }
 
   void _checkConstructions() async {
