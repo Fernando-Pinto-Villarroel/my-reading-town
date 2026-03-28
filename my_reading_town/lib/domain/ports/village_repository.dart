@@ -26,4 +26,5 @@ abstract class VillageRepository {
   Future<void> updatePlayerLevel(int level);
   Future<void> updateUsername(String username);
   Future<void> updateTownName(String townName);
+  Future<void> setTutorialCompleted();
 }

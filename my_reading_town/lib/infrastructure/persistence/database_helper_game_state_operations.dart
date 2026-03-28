@@ -89,4 +89,14 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     await db.update('game_state', {'language': language}, where: 'id = 1');
   }
+
+  Future<bool> getTutorialCompleted() async {
+    final state = await getGameState();
+    return (state['tutorial_completed'] as int? ?? 0) == 1;
+  }
+
+  Future<void> setTutorialCompleted() async {
+    final db = await database;
+    await db.update('game_state', {'tutorial_completed': 1}, where: 'id = 1');
+  }
 }

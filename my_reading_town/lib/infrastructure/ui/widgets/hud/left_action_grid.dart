@@ -10,6 +10,10 @@ class LeftActionGrid extends StatelessWidget {
   final VoidCallback onMissionsTap;
   final VoidCallback onBackpackTap;
   final VoidCallback onMinigamesTap;
+  final GlobalKey? missionsButtonKey;
+  final GlobalKey? buildButtonKey;
+  final GlobalKey? backpackButtonKey;
+  final GlobalKey? minigamesButtonKey;
 
   const LeftActionGrid({
     super.key,
@@ -19,6 +23,10 @@ class LeftActionGrid extends StatelessWidget {
     required this.onMissionsTap,
     required this.onBackpackTap,
     required this.onMinigamesTap,
+    this.missionsButtonKey,
+    this.buildButtonKey,
+    this.backpackButtonKey,
+    this.minigamesButtonKey,
   });
 
   @override
@@ -36,11 +44,14 @@ class LeftActionGrid extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                _ActionButton(
-                  icon: Icons.flag,
-                  color: AppTheme.gemPurple,
-                  size: btnSize,
-                  onTap: onMissionsTap,
+                SizedBox(
+                  key: missionsButtonKey,
+                  child: _ActionButton(
+                    icon: Icons.flag,
+                    color: AppTheme.gemPurple,
+                    size: btnSize,
+                    onTap: onMissionsTap,
+                  ),
                 ),
                 if (context
                         .watch<VillageProvider>()
@@ -62,12 +73,15 @@ class LeftActionGrid extends StatelessWidget {
               ],
             ),
             SizedBox(width: gap),
-            _ActionButton(
-              icon: Icons.house,
-              color: AppTheme.mediumOrange,
-              size: btnSize,
-              isActive: isConstructionMode,
-              onTap: onConstructionTap,
+            SizedBox(
+              key: buildButtonKey,
+              child: _ActionButton(
+                icon: Icons.house,
+                color: AppTheme.mediumOrange,
+                size: btnSize,
+                isActive: isConstructionMode,
+                onTap: onConstructionTap,
+              ),
             ),
           ],
         ),
@@ -75,18 +89,24 @@ class LeftActionGrid extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _ActionButton(
-              icon: Icons.backpack,
-              color: AppTheme.mediumMint,
-              size: btnSize,
-              onTap: onBackpackTap,
+            SizedBox(
+              key: backpackButtonKey,
+              child: _ActionButton(
+                icon: Icons.backpack,
+                color: AppTheme.mediumMint,
+                size: btnSize,
+                onTap: onBackpackTap,
+              ),
             ),
             SizedBox(width: gap),
-            _ActionButton(
-              icon: Icons.sports_esports,
-              color: AppTheme.darkSkyBlue,
-              size: btnSize,
-              onTap: onMinigamesTap,
+            SizedBox(
+              key: minigamesButtonKey,
+              child: _ActionButton(
+                icon: Icons.sports_esports,
+                color: AppTheme.darkSkyBlue,
+                size: btnSize,
+                onTap: onMinigamesTap,
+              ),
             ),
           ],
         ),

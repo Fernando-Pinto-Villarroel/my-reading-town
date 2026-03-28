@@ -10,8 +10,8 @@ import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart'
 export 'package:my_reading_town/infrastructure/ui/widgets/common/missions_active_tab.dart'
     show MissionColors;
 
-void showMissionsModal(BuildContext context) {
-  showDialog(
+Future<void> showMissionsModal(BuildContext context) {
+  return showDialog(
     context: context,
     builder: (ctx) => const MissionsDialog(),
   );

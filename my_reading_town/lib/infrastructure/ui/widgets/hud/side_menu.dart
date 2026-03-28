@@ -8,6 +8,10 @@ class SideMenu extends StatelessWidget {
   final VoidCallback onStatsTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onPhotoTap;
+  final GlobalKey? readingButtonKey;
+  final GlobalKey? photoButtonKey;
+  final GlobalKey? statsButtonKey;
+  final GlobalKey? settingsButtonKey;
 
   const SideMenu({
     super.key,
@@ -17,6 +21,10 @@ class SideMenu extends StatelessWidget {
     required this.onStatsTap,
     required this.onSettingsTap,
     required this.onPhotoTap,
+    this.readingButtonKey,
+    this.photoButtonKey,
+    this.statsButtonKey,
+    this.settingsButtonKey,
   });
 
   @override
@@ -27,29 +35,38 @@ class SideMenu extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _ReadingButton(onTap: onReadingTap),
+            SizedBox(key: readingButtonKey, child: _ReadingButton(onTap: onReadingTap)),
             SizedBox(width: 6),
             DropdownToggleButton(isOpen: menuOpen, onTap: onToggleMenu),
           ],
         ),
         if (menuOpen) ...[
           SizedBox(height: 6),
-          SideMenuButton(
-            icon: Icons.camera_alt,
-            isActive: false,
-            onTap: onPhotoTap,
+          SizedBox(
+            key: photoButtonKey,
+            child: SideMenuButton(
+              icon: Icons.camera_alt,
+              isActive: false,
+              onTap: onPhotoTap,
+            ),
           ),
           SizedBox(height: 6),
-          SideMenuButton(
-            icon: Icons.bar_chart,
-            isActive: false,
-            onTap: onStatsTap,
+          SizedBox(
+            key: statsButtonKey,
+            child: SideMenuButton(
+              icon: Icons.bar_chart,
+              isActive: false,
+              onTap: onStatsTap,
+            ),
           ),
           SizedBox(height: 6),
-          SideMenuButton(
-            icon: Icons.settings,
-            isActive: false,
-            onTap: onSettingsTap,
+          SizedBox(
+            key: settingsButtonKey,
+            child: SideMenuButton(
+              icon: Icons.settings,
+              isActive: false,
+              onTap: onSettingsTap,
+            ),
           ),
         ],
       ],

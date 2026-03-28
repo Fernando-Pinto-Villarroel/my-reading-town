@@ -39,6 +39,7 @@ import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/stats_dialog.d
 import 'package:my_reading_town/infrastructure/ui/widgets/common/tap_through_interactive_viewer.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/village_photo_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/sheets/villager_sheets.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/tour/tour_overlay.dart';
 
 part 'game_screen_tap_handlers.dart';
 
@@ -76,6 +77,17 @@ class _GameScreenState extends State<GameScreen>
   bool _flipNextBuilding = false;
   late final TransformationController _transformController;
   late final TabController _buildingTabController;
+  final GlobalKey _tourMissionsKey = GlobalKey();
+  final GlobalKey _tourBuildKey = GlobalKey();
+  final GlobalKey _tourReadingKey = GlobalKey();
+  final GlobalKey _tourResourcesKey = GlobalKey();
+  final GlobalKey _tourBackpackKey = GlobalKey();
+  final GlobalKey _tourMinigamesKey = GlobalKey();
+  final GlobalKey _tourPhotoKey = GlobalKey();
+  final GlobalKey _tourStatsKey = GlobalKey();
+  final GlobalKey _tourSettingsKey = GlobalKey();
+  int _tourStep = -1;
+  bool _tourInitialized = false;
 
   @override
   void initState() {
@@ -132,6 +144,14 @@ class _GameScreenState extends State<GameScreen>
     );
     _syncGameState();
     _villageProvider.checkMissions();
+    if (!_tourInitialized) {
+      _tourInitialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_villageProvider.tutorialCompleted) {
+          setState(() => _tourStep = 0);
+        }
+      });
+    }
   }
 
   void _onVillageProviderChanged() => _checkLevelUp();
@@ -304,6 +324,55 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
+  String get _tourVillagerName {
+    final villagers = _villageProvider.villagers;
+    return villagers.isNotEmpty ? villagers.first.name : 'Mochi';
+  }
+
+  String get _tourVillagerSpecies {
+    final villagers = _villageProvider.villagers;
+    return villagers.isNotEmpty ? villagers.first.species : 'cat';
+  }
+
+  void _onTourAdvance() {
+    final step = _tourStep;
+    if (step == 5) {
+      setState(() {
+        _mode = GameMode.normal;
+        _selectedBuildingType = null;
+        _flipNextBuilding = false;
+        _tourStep = 6;
+      });
+      _syncGameState();
+    } else if (step == 11) {
+      setState(() => _menuOpen = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _tourStep = 12);
+      });
+    } else if (step == 17) {
+      setState(() {
+        _menuOpen = false;
+        _tourStep = 18;
+      });
+    } else if (step == 19) {
+      _completeTour();
+    } else if (step >= 0 && step < tourTotalSteps) {
+      setState(() => _tourStep = step + 1);
+    }
+  }
+
+  Future<void> _onTourInputSubmit(String username, String townName) async {
+    if (username.isNotEmpty) await _villageProvider.updateUsername(username);
+    if (townName.isNotEmpty) await _villageProvider.updateTownName(townName);
+    if (mounted) setState(() => _tourStep = 19);
+  }
+
+  Future<void> _completeTour() async {
+    await _villageProvider.markTutorialCompleted();
+    if (mounted) setState(() => _tourStep = -1);
+  }
+
+
   void _onVillagerTapped(Villager villager) {
     if (!mounted) return;
     showVillagerInfoSheet(context,
@@ -377,17 +446,24 @@ class _GameScreenState extends State<GameScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ResourceHud(
-                  village: village,
-                  landscape: landscape,
-                  expanded: _resourceHudExpanded,
-                  onToggle: () => setState(
-                      () => _resourceHudExpanded = !_resourceHudExpanded),
+                SizedBox(
+                  key: _tourResourcesKey,
+                  child: ResourceHud(
+                    village: village,
+                    landscape: landscape,
+                    expanded: _resourceHudExpanded,
+                    onToggle: () => setState(
+                        () => _resourceHudExpanded = !_resourceHudExpanded),
+                  ),
                 ),
                 SizedBox(height: 6),
                 LeftActionGrid(
                   landscape: landscape,
                   isConstructionMode: _mode == GameMode.construction,
+                  missionsButtonKey: _tourMissionsKey,
+                  buildButtonKey: _tourBuildKey,
+                  backpackButtonKey: _tourBackpackKey,
+                  minigamesButtonKey: _tourMinigamesKey,
                   onConstructionTap: () {
                     setState(() {
                       if (_mode == GameMode.construction) {
@@ -396,18 +472,36 @@ class _GameScreenState extends State<GameScreen>
                         _flipNextBuilding = false;
                       } else {
                         _mode = GameMode.construction;
+                        if (_tourStep == 4) _tourStep = 5;
                       }
                     });
                     _syncGameState();
                   },
-                  onMissionsTap: () => showMissionsModal(context),
-                  onBackpackTap: () =>
-                      showBackpackDialog(context, _villageProvider),
-                  onMinigamesTap: () => showMinigamesDialog(context,
-                      village: _villageProvider, onReturn: () {
-                    _villageProvider.loadData();
-                    _syncGameState();
-                  }),
+                  onMissionsTap: () {
+                    if (_tourStep == 2) {
+                      setState(() => _tourStep = 3);
+                    } else {
+                      showMissionsModal(context);
+                    }
+                  },
+                  onBackpackTap: () {
+                    if (_tourStep == 8) {
+                      setState(() => _tourStep = 9);
+                    } else {
+                      showBackpackDialog(context, _villageProvider);
+                    }
+                  },
+                  onMinigamesTap: () {
+                    if (_tourStep == 10) {
+                      setState(() => _tourStep = 11);
+                    } else {
+                      showMinigamesDialog(context,
+                          village: _villageProvider, onReturn: () {
+                        _villageProvider.loadData();
+                        _syncGameState();
+                      });
+                    }
+                  },
                 ),
               ],
             ),
@@ -425,13 +519,39 @@ class _GameScreenState extends State<GameScreen>
                 SizedBox(height: landscape ? 6 : 10),
                 SideMenu(
                   menuOpen: _menuOpen,
+                  readingButtonKey: _tourReadingKey,
+                  photoButtonKey: _tourPhotoKey,
+                  statsButtonKey: _tourStatsKey,
+                  settingsButtonKey: _tourSettingsKey,
                   onToggleMenu: () => setState(() => _menuOpen = !_menuOpen),
-                  onReadingTap: () => showReadingModal(context),
-                  onPhotoTap: _captureVillagePhoto,
-                  onStatsTap: () =>
-                      showStatsDialog(context, _villageProvider, _bookProvider),
-                  onSettingsTap: () =>
-                      showSettingsDialog(context, _villageProvider),
+                  onReadingTap: () {
+                    if (_tourStep == 6) {
+                      setState(() => _tourStep = 7);
+                    } else {
+                      showReadingModal(context);
+                    }
+                  },
+                  onPhotoTap: () {
+                    if (_tourStep == 12) {
+                      setState(() => _tourStep = 13);
+                    } else {
+                      _captureVillagePhoto();
+                    }
+                  },
+                  onStatsTap: () {
+                    if (_tourStep == 14) {
+                      setState(() => _tourStep = 15);
+                    } else {
+                      showStatsDialog(context, _villageProvider, _bookProvider);
+                    }
+                  },
+                  onSettingsTap: () {
+                    if (_tourStep == 16) {
+                      setState(() => _tourStep = 17);
+                    } else {
+                      showSettingsDialog(context, _villageProvider);
+                    }
+                  },
                 ),
               ],
             ),
@@ -439,8 +559,8 @@ class _GameScreenState extends State<GameScreen>
           if (_mode == GameMode.construction)
             Positioned(
               bottom: bottomPadding + 8,
-              left: leftPadding,
-              right: rightPadding,
+              left: leftPadding + (landscape ? hudEdge : 0),
+              right: rightPadding + (landscape ? hudEdge : 0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -465,6 +585,25 @@ class _GameScreenState extends State<GameScreen>
                   ),
                 ],
               ),
+            ),
+          if (_tourStep >= 0 && _tourStep < tourTotalSteps)
+            TourOverlay(
+              stepIndex: _tourStep,
+              villagerName: _tourVillagerName,
+              villagerSpecies: _tourVillagerSpecies,
+              missionsButtonKey: _tourMissionsKey,
+              buildButtonKey: _tourBuildKey,
+              readingButtonKey: _tourReadingKey,
+              backpackButtonKey: _tourBackpackKey,
+              minigamesButtonKey: _tourMinigamesKey,
+              photoButtonKey: _tourPhotoKey,
+              statsButtonKey: _tourStatsKey,
+              settingsButtonKey: _tourSettingsKey,
+              resourcesKey: _tourResourcesKey,
+              translate: (key, {fallback}) =>
+                  sl<LanguageProvider>().translate(key, fallback: fallback ?? key),
+              onAdvance: _onTourAdvance,
+              onInputSubmit: _onTourInputSubmit,
             ),
         ],
       ),

@@ -26,21 +26,16 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'my_reading_town.db');
-    // await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
+    await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
-      await db.execute(
-          'ALTER TABLE books ADD COLUMN max_rewarded_pages INTEGER NOT NULL DEFAULT 0');
-    }
-  }
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {}
 
   Future<void> _createTables(Database db, int version) async {
     await db.execute('''
@@ -157,7 +152,8 @@ class DatabaseHelper {
         player_level INTEGER NOT NULL DEFAULT 1,
         username TEXT NOT NULL DEFAULT '',
         town_name TEXT NOT NULL DEFAULT 'My Village',
-        language TEXT NOT NULL DEFAULT 'en'
+        language TEXT NOT NULL DEFAULT 'en',
+        tutorial_completed INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -215,6 +211,7 @@ class DatabaseHelper {
       'username': '',
       'town_name': 'My Village',
       'language': 'en',
+      'tutorial_completed': 0,
     });
 
     final defaultStart = VillageRules.defaultChunkStart;

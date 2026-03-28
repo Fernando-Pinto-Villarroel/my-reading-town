@@ -41,7 +41,7 @@ class TemplateList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.only(left: 8, right: 24),
       itemCount: templates.length,
       itemBuilder: (ctx, index) {
         final template = templates[index];

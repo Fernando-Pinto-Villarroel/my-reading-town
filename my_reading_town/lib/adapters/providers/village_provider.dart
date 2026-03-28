@@ -46,6 +46,7 @@ class VillageProvider extends ChangeNotifier {
   bool _bookItemUsedSinceActive = false;
   int? _pendingLevelUp;
   String _language = 'en';
+  bool _tutorialCompleted = false;
 
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
@@ -62,6 +63,7 @@ class VillageProvider extends ChangeNotifier {
   String get username => _username;
   String get townName => _townName;
   String get language => _language;
+  bool get tutorialCompleted => _tutorialCompleted;
 
   List<InventoryItem> get inventoryItems => _inventoryItems;
   List<ActivePowerup> get activePowerups => _activePowerups;
@@ -230,6 +232,7 @@ class VillageProvider extends ChangeNotifier {
     _username = gameState['username'] as String;
     _townName = gameState['town_name'] as String;
     _language = gameState['language'] as String? ?? 'en';
+    _tutorialCompleted = (gameState['tutorial_completed'] as int? ?? 0) == 1;
 
     _inventoryItems = await _inventorySvc.loadInventoryItems();
     await _crystallizeExpiredSpeedups();
@@ -241,6 +244,12 @@ class VillageProvider extends ChangeNotifier {
         _villagers, _placedBuildings, _roadTiles);
     _villagerSvc.updateVillagerHappiness(
         _villagers, _placedBuildings, _roadTiles, _activePowerups);
+    notifyListeners();
+  }
+
+  Future<void> markTutorialCompleted() async {
+    await _repo.setTutorialCompleted();
+    _tutorialCompleted = true;
     notifyListeners();
   }
 

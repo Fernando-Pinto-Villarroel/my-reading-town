@@ -15,9 +15,9 @@ import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/tag_manager_di
 import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 
-void showReadingModal(BuildContext context) {
+Future<void> showReadingModal(BuildContext context) {
   final landscape = isLandscape(context);
-  showModalBottomSheet(
+  return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

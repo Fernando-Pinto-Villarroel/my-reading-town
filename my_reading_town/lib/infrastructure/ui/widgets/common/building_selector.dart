@@ -32,6 +32,7 @@ class BuildingSelector extends StatelessWidget {
     return Container(
       height: landscape ? 180 : 310,
       margin: EdgeInsets.symmetric(horizontal: 8),
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: AppTheme.cream.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(landscape ? 14 : 20),
@@ -198,7 +199,7 @@ class _TileList extends StatelessWidget {
     final templates = VillageRules.tileTemplates;
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.only(left: 8, right: 24),
       itemCount: templates.length,
       itemBuilder: (ctx, index) {
         final template = templates[index];

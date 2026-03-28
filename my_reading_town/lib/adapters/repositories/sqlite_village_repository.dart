@@ -107,4 +107,7 @@ class SqliteVillageRepository implements VillageRepository {
 
   @override
   Future<void> updateTownName(String townName) => _db.updateTownName(townName);
+
+  @override
+  Future<void> setTutorialCompleted() => _db.setTutorialCompleted();
 }
