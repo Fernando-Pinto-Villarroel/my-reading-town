@@ -6,12 +6,13 @@ import 'package:my_reading_town/infrastructure/ui/widgets/common/resource_icon.d
 import 'package:my_reading_town/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart';
 
-class TemplateList extends StatelessWidget {
+class TemplateList extends StatefulWidget {
   final VillageProvider village;
   final bool landscape;
   final List<Map<String, dynamic>> templates;
   final bool isDecorationTab;
   final String? selectedType;
+  final String? scrollToType;
   final ValueChanged<String?> onSelect;
 
   const TemplateList({
@@ -22,7 +23,53 @@ class TemplateList extends StatelessWidget {
     required this.isDecorationTab,
     required this.selectedType,
     required this.onSelect,
+    this.scrollToType,
   });
+
+  @override
+  State<TemplateList> createState() => _TemplateListState();
+}
+
+class _TemplateListState extends State<TemplateList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.scrollToType != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToType(widget.scrollToType!));
+    }
+  }
+
+  @override
+  void didUpdateWidget(TemplateList old) {
+    super.didUpdateWidget(old);
+    if (widget.scrollToType != null &&
+        widget.scrollToType != old.scrollToType) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToType(widget.scrollToType!));
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToType(String type) {
+    final index = widget.templates.indexWhere((t) => t['type'] == type);
+    if (index < 0 || !_scrollController.hasClients) return;
+    // Portrait: fixed card width 140 + horizontal margin 4*2 = 148px, left padding 8
+    // Landscape: approximate card width 180px, left padding 8
+    final itemWidth = widget.landscape ? 180.0 : 148.0;
+    final offset = (8.0 + index * itemWidth)
+        .clamp(0.0, _scrollController.position.maxScrollExtent);
+    _scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
+  }
 
   String _capacityText(String type, int level, BuildContext context) {
     if (VillageRules.isDecorationType(type)) return '';
@@ -40,27 +87,29 @@ class TemplateList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      controller: _scrollController,
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(left: 8, right: 24),
-      itemCount: templates.length,
+      itemCount: widget.templates.length,
       itemBuilder: (ctx, index) {
-        final template = templates[index];
+        final template = widget.templates[index];
         final type = template['type'] as String;
-        final isSelected = selectedType == type;
+        final isSelected = widget.selectedType == type;
+        final isHighlighted = widget.scrollToType == type;
         final coinCost = template['coinCost'] as int;
         final gemCost = template['gemCost'] as int;
         final woodCost = template['woodCost'] as int;
         final metalCost = template['metalCost'] as int;
         final buildMinutes = template['constructionMinutes'] as int;
-        final canAfford = village.coins >= coinCost &&
-            village.gems >= gemCost &&
-            village.wood >= woodCost &&
-            village.metal >= metalCost;
+        final canAfford = widget.village.coins >= coinCost &&
+            widget.village.gems >= gemCost &&
+            widget.village.wood >= woodCost &&
+            widget.village.metal >= metalCost;
         final canPlace =
-            isDecorationTab ? true : village.canPlaceBuildingType(type);
-        final currentCount = village.buildingCountOfType(type);
+            widget.isDecorationTab ? true : widget.village.canPlaceBuildingType(type);
+        final currentCount = widget.village.buildingCountOfType(type);
         final maxCount = VillageRules.maxBuildingsOfTypeForPlayerLevel(
-            type, village.playerLevel);
+            type, widget.village.playerLevel);
 
         final translatedName = context.t(
           'building_name_$type',
@@ -68,15 +117,16 @@ class TemplateList extends StatelessWidget {
         );
         return GestureDetector(
           onTap: canPlace
-              ? () => onSelect(selectedType == type ? null : type)
+              ? () => widget.onSelect(widget.selectedType == type ? null : type)
               : null,
-          child: landscape
+          child: widget.landscape
               ? _landscapeCard(
                   context,
                   translatedName,
                   template,
                   type,
                   isSelected,
+                  isHighlighted,
                   coinCost,
                   gemCost,
                   woodCost,
@@ -92,6 +142,7 @@ class TemplateList extends StatelessWidget {
                   template,
                   type,
                   isSelected,
+                  isHighlighted,
                   coinCost,
                   gemCost,
                   woodCost,
@@ -112,6 +163,7 @@ class TemplateList extends StatelessWidget {
       Map<String, dynamic> template,
       String type,
       bool isSelected,
+      bool isHighlighted,
       int coinCost,
       int gemCost,
       int woodCost,
@@ -124,7 +176,7 @@ class TemplateList extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: _cardDecoration(isSelected),
+      decoration: _cardDecoration(isSelected, isHighlighted),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -145,8 +197,8 @@ class TemplateList extends StatelessWidget {
                   _costRow(coinCost, gemCost, woodCost, metalCost, 9, 12),
                   _timeExpRow(
                       buildMinutes, template['exp'] as int? ?? 20, 9, 10),
-                  if (!isDecorationTab) _capacityRow(type, 9, 10, context),
-                  if (!isDecorationTab)
+                  if (!widget.isDecorationTab) _capacityRow(type, 9, 10, context),
+                  if (!widget.isDecorationTab)
                     _countRow(currentCount, maxCount, canPlace, 9, 10),
                 ],
               ),
@@ -163,6 +215,7 @@ class TemplateList extends StatelessWidget {
       Map<String, dynamic> template,
       String type,
       bool isSelected,
+      bool isHighlighted,
       int coinCost,
       int gemCost,
       int woodCost,
@@ -176,7 +229,7 @@ class TemplateList extends StatelessWidget {
       width: 140,
       margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: EdgeInsets.all(6),
-      decoration: _cardDecoration(isSelected),
+      decoration: _cardDecoration(isSelected, isHighlighted),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
@@ -197,24 +250,33 @@ class TemplateList extends StatelessWidget {
             child: _costRow(coinCost, gemCost, woodCost, metalCost, 10, 14),
           ),
           _timeExpRow(buildMinutes, template['exp'] as int? ?? 20, 11, 13),
-          if (!isDecorationTab) _capacityRow(type, 10, 12, context),
-          if (!isDecorationTab)
+          if (!widget.isDecorationTab) _capacityRow(type, 10, 12, context),
+          if (!widget.isDecorationTab)
             _countRow(currentCount, maxCount, canPlace, 10, 12),
         ],
       ),
     );
   }
 
-  BoxDecoration _cardDecoration(bool isSelected) {
+  BoxDecoration _cardDecoration(bool isSelected, bool isHighlighted) {
+    if (isSelected) {
+      return BoxDecoration(
+        color: AppTheme.mint.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.mint, width: 2),
+      );
+    }
+    if (isHighlighted) {
+      return BoxDecoration(
+        color: AppTheme.pink.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.darkPink, width: 2),
+      );
+    }
     return BoxDecoration(
-      color: isSelected
-          ? AppTheme.mint.withValues(alpha: 0.3)
-          : AppTheme.softWhite,
+      color: AppTheme.softWhite,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: isSelected ? AppTheme.mint : Colors.grey.shade300,
-        width: isSelected ? 2 : 1,
-      ),
+      border: Border.all(color: Colors.grey.shade300, width: 1),
     );
   }
 

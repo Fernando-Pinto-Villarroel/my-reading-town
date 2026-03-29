@@ -139,21 +139,26 @@ class _ReadingCalendarTabState extends State<ReadingCalendarTab> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.calendar_month, size: 60, color: AppTheme.lavender),
-          SizedBox(height: 16),
-          Text(
-            context.t('no_reading_sessions'),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              color: AppTheme.darkText.withValues(alpha: 0.6),
-            ),
+    return SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.calendar_month, size: 60, color: AppTheme.lavender),
+              SizedBox(height: 16),
+              Text(
+                context.t('no_reading_sessions'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppTheme.darkText.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

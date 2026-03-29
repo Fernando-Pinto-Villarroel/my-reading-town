@@ -16,6 +16,8 @@ class AppTheme {
   static const Color mediumMint = Color.fromARGB(255, 88, 206, 153);
   static const Color darkMint = Color(0xFF2E9E6B);
   static const Color darkSkyBlue = Color.fromARGB(255, 80, 155, 225);
+  static const Color darkPink = Color(0xFFE8637A);
+  static const Color darkLavender = Color(0xFF7B79E8);
 
   static const List<Color> tagColors = [
     Color(0xFFFFB3BA), // pink

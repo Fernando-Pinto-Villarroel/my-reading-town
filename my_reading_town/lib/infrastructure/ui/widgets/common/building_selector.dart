@@ -14,6 +14,7 @@ class BuildingSelector extends StatelessWidget {
   final bool flipNextBuilding;
   final ValueChanged<String?> onSelectBuilding;
   final VoidCallback onToggleFlip;
+  final String? scrollToType;
 
   const BuildingSelector({
     super.key,
@@ -25,6 +26,7 @@ class BuildingSelector extends StatelessWidget {
     required this.flipNextBuilding,
     required this.onSelectBuilding,
     required this.onToggleFlip,
+    this.scrollToType,
   });
 
   @override
@@ -81,6 +83,7 @@ class BuildingSelector extends StatelessWidget {
                   templates: VillageRules.buildingTemplates,
                   isDecorationTab: false,
                   selectedType: selectedBuildingType,
+                  scrollToType: scrollToType,
                   onSelect: onSelectBuilding,
                 ),
                 TemplateList(

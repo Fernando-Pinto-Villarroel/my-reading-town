@@ -71,24 +71,38 @@ class _BookFilterBarState extends State<BookFilterBar> {
               Expanded(
                 child: SizedBox(
                   height: 36,
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (v) => onFilterChanged(filter.copyWith(
-                        searchQuery: () => v.isEmpty ? null : v)),
-                    style: TextStyle(fontSize: 13),
-                    decoration: InputDecoration(
-                      hintText: context.t('search_by_title_author'),
-                      hintStyle: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.darkText.withValues(alpha: 0.4)),
-                      prefixIcon: Icon(Icons.search, size: 18),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none),
-                      filled: true,
-                      fillColor: AppTheme.darkText.withValues(alpha: 0.06),
+                  child: ListenableBuilder(
+                    listenable: _searchController,
+                    builder: (context, _) => TextField(
+                      controller: _searchController,
+                      onChanged: (v) => onFilterChanged(filter.copyWith(
+                          searchQuery: () => v.isEmpty ? null : v)),
+                      style: TextStyle(fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: context.t('search_by_title_author'),
+                        hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.darkText.withValues(alpha: 0.4)),
+                        prefixIcon: Icon(Icons.search, size: 18),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  _searchController.clear();
+                                  onFilterChanged(filter.copyWith(
+                                      searchQuery: () => null));
+                                },
+                                child: Icon(Icons.cancel,
+                                    size: 17, color: AppTheme.darkPink),
+                              )
+                            : null,
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        filled: true,
+                        fillColor: AppTheme.darkText.withValues(alpha: 0.06),
+                      ),
                     ),
                   ),
                 ),

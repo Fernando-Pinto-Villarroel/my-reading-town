@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
@@ -22,7 +23,28 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
       final progress = VillageRules.expProgressToNextLevel(village.exp);
       final expToNext = VillageRules.expToNextLevel(village.exp);
       final landscape = isLandscape(ctx);
-      return Dialog(
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          String? usernameError;
+          String? townNameError;
+
+          void save() {
+            final username = usernameController.text.trim();
+            final townName = townNameController.text.trim();
+            final minMsg = ctx.t('tour_input_min_chars');
+            final uErr = username.isNotEmpty && username.length < 3 ? minMsg : null;
+            final tErr = townName.isNotEmpty && townName.length < 3 ? minMsg : null;
+            setState(() {
+              usernameError = uErr;
+              townNameError = tErr;
+            });
+            if (uErr != null || tErr != null) return;
+            if (username.isNotEmpty) village.updateUsername(username);
+            if (townName.isNotEmpty) village.updateTownName(townName);
+            Navigator.pop(ctx);
+          }
+
+          return Dialog(
         insetPadding: EdgeInsets.symmetric(
             horizontal: landscape ? 65 : 22, vertical: landscape ? 18 : 26),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -97,20 +119,40 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                 SizedBox(height: 18),
                 TextField(
                   controller: usernameController,
+                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
                   decoration: InputDecoration(
                     labelText: ctx.t('username'),
+                    errorText: usernameError,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: usernameError != null
+                            ? AppTheme.pink
+                            : AppTheme.lavender.withValues(alpha: 0.5),
+                      ),
+                    ),
                   ),
                   textCapitalization: TextCapitalization.words,
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 14),
                 TextField(
                   controller: townNameController,
+                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
                   decoration: InputDecoration(
                     labelText: ctx.t('town_name'),
+                    errorText: townNameError,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: townNameError != null
+                            ? AppTheme.pink
+                            : AppTheme.lavender.withValues(alpha: 0.5),
+                      ),
+                    ),
                   ),
                   textCapitalization: TextCapitalization.words,
                 ),
@@ -121,17 +163,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                   width: double.infinity,
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: () {
-                      final username = usernameController.text.trim();
-                      final townName = townNameController.text.trim();
-                      if (username.isNotEmpty) {
-                        village.updateUsername(username);
-                      }
-                      if (townName.isNotEmpty) {
-                        village.updateTownName(townName);
-                      }
-                      Navigator.pop(ctx);
-                    },
+                    onPressed: save,
                     child: Text(ctx.t('save')),
                   ),
                 ),
@@ -257,6 +289,8 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
             ),
           ),
         ),
+      );
+        },
       );
     },
   );

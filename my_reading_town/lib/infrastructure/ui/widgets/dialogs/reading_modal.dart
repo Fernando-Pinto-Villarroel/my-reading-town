@@ -24,12 +24,12 @@ Future<void> showReadingModal(BuildContext context) {
     useSafeArea: true,
     constraints: landscape
         ? BoxConstraints(
-            maxWidth: 480, maxHeight: MediaQuery.of(context).size.height * 0.95)
+            maxWidth: 480, maxHeight: MediaQuery.of(context).size.height)
         : null,
     builder: (ctx) => DraggableScrollableSheet(
-      initialChildSize: landscape ? 0.95 : 0.85,
+      initialChildSize: landscape ? 1.0 : 0.85,
       minChildSize: landscape ? 0.5 : 0.4,
-      maxChildSize: 0.95,
+      maxChildSize: 1.0,
       builder: (ctx, scrollController) {
         return _ReadingModalContent(scrollController: scrollController);
       },
@@ -85,7 +85,7 @@ class _ReadingModalContent extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.add_circle,
-                          size: 30, color: AppTheme.pink),
+                          size: 30, color: AppTheme.darkPink),
                       onPressed: () => _showAddBookDialog(context),
                     ),
                   ],
@@ -143,21 +143,26 @@ class _BooksTab extends StatelessWidget {
             builder: (ctx, bookProvider, _) {
               final books = bookProvider.filteredBooks;
               if (bookProvider.books.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.auto_stories,
-                          size: 60, color: AppTheme.lavender),
-                      SizedBox(height: 16),
-                      Text(
-                        context.t('no_books_yet'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: AppTheme.darkText.withValues(alpha: 0.6)),
+                return SingleChildScrollView(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.auto_stories,
+                              size: 60, color: AppTheme.lavender),
+                          SizedBox(height: 16),
+                          Text(
+                            context.t('no_books_yet'),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: AppTheme.darkText.withValues(alpha: 0.6)),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 );
               }
@@ -204,7 +209,7 @@ void _showAddBookDialog(BuildContext context) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
-          Icon(Icons.add_circle, size: 22, color: AppTheme.pink),
+          Icon(Icons.add_circle, size: 22, color: AppTheme.darkPink),
           SizedBox(width: 8),
           Text(langProvider.translate('add_a_book'),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

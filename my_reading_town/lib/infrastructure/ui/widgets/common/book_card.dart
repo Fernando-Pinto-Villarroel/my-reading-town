@@ -166,17 +166,21 @@ class _BookCardState extends State<BookCard> {
                               ),
                             ),
                             if (!widget.book.isCompleted)
-                              SizedBox(
-                                height: 28,
-                                child: ElevatedButton.icon(
-                                  onPressed: widget.onLogPages,
-                                  icon: Icon(Icons.menu_book, size: 14),
-                                  label: Text(context.t('log_pages'),
-                                      style: TextStyle(fontSize: 12)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.pink,
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
+                                child: SizedBox(
+                                  height: 32,
+                                  child: ElevatedButton.icon(
+                                    onPressed: widget.onLogPages,
+                                    icon: Icon(Icons.menu_book, size: 18),
+                                    label: Text(context.t('log_pages'),
+                                        style: TextStyle(fontSize: 12)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.pink,
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 14),
+                                    ),
                                   ),
                                 ),
                               ),

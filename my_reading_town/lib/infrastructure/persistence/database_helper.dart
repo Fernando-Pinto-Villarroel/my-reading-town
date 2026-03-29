@@ -10,7 +10,7 @@ part 'database_helper_inventory_operations.dart';
 part 'database_helper_backup_operations.dart';
 
 class DatabaseHelper {
-  static const bool test = true;
+  static const bool test = false;
 
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
@@ -26,7 +26,9 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'my_reading_town.db');
-    await deleteDatabase(path); // DEBUG: uncomment to reset DB on each launch
+    if (test) {
+      await deleteDatabase(path); // DEBUG: reset DB on each launch
+    }
     return await openDatabase(
       path,
       version: 4,

@@ -63,6 +63,7 @@ class _GameScreenState extends State<GameScreen>
   GameMode _mode = GameMode.normal;
   @override
   String? _selectedBuildingType;
+  String? _scrollToBuildingType;
   @override
   int? _movingBuildingId;
   Timer? _constructionTimer;
@@ -70,7 +71,7 @@ class _GameScreenState extends State<GameScreen>
   final Set<int> _notifiedCompletions = {};
   int _lastSandwichCount = 0;
   bool _menuOpen = false;
-  bool _resourceHudExpanded = false;
+  bool _resourceHudExpanded = true;
   bool _isCapturing = false;
   final GlobalKey _gameRepaintKey = GlobalKey();
   @override
@@ -378,7 +379,22 @@ class _GameScreenState extends State<GameScreen>
     showVillagerInfoSheet(context,
         villager: villager,
         village: _villageProvider,
-        onSyncGameState: _syncGameState);
+        onSyncGameState: _syncGameState,
+        onNeedTapped: (type) {
+          setState(() {
+            _mode = GameMode.construction;
+            _buildingTabController.index = 0;
+            _scrollToBuildingType = type;
+            if (_villageProvider.canPlaceBuildingType(type)) {
+              _selectedBuildingType = type;
+            } else {
+              _selectedBuildingType = null;
+            }
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _scrollToBuildingType = null);
+          });
+        });
   }
 
   @override
@@ -576,6 +592,7 @@ class _GameScreenState extends State<GameScreen>
                     selectedBuildingType: _selectedBuildingType,
                     movingBuildingId: _movingBuildingId,
                     flipNextBuilding: _flipNextBuilding,
+                    scrollToType: _scrollToBuildingType,
                     onSelectBuilding: (type) => setState(() {
                       _selectedBuildingType = type;
                       _movingBuildingId = null;

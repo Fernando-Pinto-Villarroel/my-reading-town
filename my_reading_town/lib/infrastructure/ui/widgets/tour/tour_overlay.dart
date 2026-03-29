@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
@@ -115,6 +116,9 @@ class _TourOverlayState extends State<TourOverlay>
   late Animation<double> _pulseAnim;
   late final TextEditingController _usernameController;
   late final TextEditingController _townNameController;
+  String? _submittedUsername;
+  String? _usernameError;
+  String? _townNameError;
 
   @override
   void initState() {
@@ -194,7 +198,7 @@ class _TourOverlayState extends State<TourOverlay>
       case 17:
         return t('tour_settings_explain');
       case 19:
-        return t('tour_farewell').replaceAll('{name}', name);
+        return t('tour_farewell').replaceAll('{name}', _submittedUsername ?? '');
       default:
         return '';
     }
@@ -557,6 +561,7 @@ class _TourOverlayState extends State<TourOverlay>
             label: t('username'),
             hint: 'e.g. Sakura',
             accentColor: AppTheme.gemPurple,
+            errorText: _usernameError,
           ),
           const SizedBox(height: 14),
           _InputField(
@@ -565,14 +570,23 @@ class _TourOverlayState extends State<TourOverlay>
             label: t('town_name'),
             hint: 'e.g. Blossom Valley',
             accentColor: AppTheme.mediumOrange,
+            errorText: _townNameError,
           ),
           const SizedBox(height: 26),
           Center(
             child: GestureDetector(
-              onTap: () => widget.onInputSubmit(
-                _usernameController.text.trim(),
-                _townNameController.text.trim(),
-              ),
+              onTap: () {
+                final username = _usernameController.text.trim();
+                final townName = _townNameController.text.trim();
+                final minMsg = t('tour_input_min_chars');
+                setState(() {
+                  _usernameError = username.length < 3 ? minMsg : null;
+                  _townNameError = townName.length < 3 ? minMsg : null;
+                });
+                if (_usernameError != null || _townNameError != null) return;
+                setState(() => _submittedUsername = username);
+                widget.onInputSubmit(username, townName);
+              },
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 36, vertical: 15),
@@ -615,6 +629,7 @@ class _InputField extends StatelessWidget {
   final String label;
   final String hint;
   final Color accentColor;
+  final String? errorText;
 
   const _InputField({
     required this.controller,
@@ -622,6 +637,7 @@ class _InputField extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.accentColor,
+    this.errorText,
   });
 
   @override
@@ -647,6 +663,7 @@ class _InputField extends StatelessWidget {
         const SizedBox(height: 7),
         TextField(
           controller: controller,
+          inputFormatters: [LengthLimitingTextInputFormatter(20)],
           style: const TextStyle(color: AppTheme.darkText, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -664,7 +681,10 @@ class _InputField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppTheme.lavender, width: 1.5),
+              borderSide: BorderSide(
+                color: errorText != null ? AppTheme.pink : AppTheme.lavender,
+                width: 1.5,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -672,6 +692,24 @@ class _InputField extends StatelessWidget {
             ),
           ),
         ),
+        if (errorText != null) ...[
+          const SizedBox(height: 5),
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 12, color: AppTheme.pink),
+              const SizedBox(width: 4),
+              Text(
+                errorText!,
+                style: const TextStyle(
+                  color: AppTheme.pink,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

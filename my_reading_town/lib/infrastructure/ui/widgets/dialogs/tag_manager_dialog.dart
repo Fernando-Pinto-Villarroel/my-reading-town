@@ -47,7 +47,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
     return Consumer<TagProvider>(
       builder: (context, tagProvider, _) {
         return Container(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 36),
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 64),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -74,8 +74,8 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
                           color: AppTheme.darkText)),
                   Spacer(),
                   IconButton(
-                    icon:
-                        Icon(Icons.add_circle, size: 28, color: AppTheme.pink),
+                    icon: Icon(Icons.add_circle,
+                        size: 28, color: AppTheme.darkPink),
                     onPressed: () => _showAddEditTagDialog(null),
                   ),
                 ],
@@ -91,10 +91,40 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
               SizedBox(height: 8),
               if (tagProvider.tags.isEmpty)
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Text(context.t('no_tags_yet'),
-                      style: TextStyle(
-                          color: AppTheme.darkText.withValues(alpha: 0.5))),
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        context.t('no_tags_yet'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.darkText.withValues(alpha: 0.5),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.lavender.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.lavender.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Text(
+                          context.t('tags_empty_hint'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.darkText.withValues(alpha: 0.6),
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else
                 ConstrainedBox(

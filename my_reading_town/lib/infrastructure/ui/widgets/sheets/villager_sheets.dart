@@ -12,6 +12,7 @@ void showVillagerInfoSheet(
   required Villager villager,
   required VillageProvider village,
   required VoidCallback onSyncGameState,
+  void Function(String buildingType)? onNeedTapped,
 }) {
   final villagerIdx = villager.id ?? 0;
   final langProvider = context.read<LanguageProvider>();
@@ -91,7 +92,7 @@ void showVillagerInfoSheet(
               ],
               if (villager.happiness < 100) ...[
                 SizedBox(height: 8),
-                _missingNeedsBadges(village, villager, langProvider),
+                _missingNeedsBadges(village, villager, langProvider, sheetCtx, onNeedTapped),
               ],
               SizedBox(height: 16),
               _infoRow(
@@ -240,7 +241,11 @@ Widget _happinessBookBadge(
 }
 
 Widget _missingNeedsBadges(
-    VillageProvider village, Villager villager, LanguageProvider langProvider) {
+    VillageProvider village,
+    Villager villager,
+    LanguageProvider langProvider,
+    BuildContext sheetCtx,
+    void Function(String buildingType)? onNeedTapped) {
   const needEmojis = {
     'water_plant': '💧',
     'power_plant': '⚡',
@@ -264,20 +269,39 @@ Widget _missingNeedsBadges(
     children: missing.map((type) {
       final labelKey = needLabelKeys[type];
       final label = labelKey != null ? langProvider.translate(labelKey) : type;
-      return Container(
+      final tappable = onNeedTapped != null;
+      final badge = Container(
         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: tappable ? Colors.red.shade100 : Colors.red.shade50,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red.shade200, width: 1),
+          border: Border.all(color: Colors.red.shade300, width: tappable ? 1.5 : 1),
         ),
-        child: Text(
-          '${needEmojis[type] ?? '❓'} ${langProvider.translate('needs_label')} $label',
-          style: TextStyle(
-              fontSize: 12,
-              color: Colors.red.shade400,
-              fontWeight: FontWeight.w600),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${needEmojis[type] ?? '❓'} ${langProvider.translate('needs_label')} $label',
+              style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.red.shade400,
+                  fontWeight: FontWeight.w600),
+            ),
+            if (tappable) ...[
+              SizedBox(width: 4),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 10, color: Colors.red.shade400),
+            ],
+          ],
         ),
+      );
+      if (!tappable) return badge;
+      return GestureDetector(
+        onTap: () {
+          Navigator.pop(sheetCtx);
+          onNeedTapped(type);
+        },
+        child: badge,
       );
     }).toList(),
   );
