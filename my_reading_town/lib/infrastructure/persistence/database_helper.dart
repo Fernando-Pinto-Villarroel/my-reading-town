@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:my_reading_town/app_constants.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
 
 part 'database_helper_book_operations.dart';
@@ -10,8 +11,6 @@ part 'database_helper_inventory_operations.dart';
 part 'database_helper_backup_operations.dart';
 
 class DatabaseHelper {
-  static const bool test = false;
-
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
@@ -26,18 +25,24 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'my_reading_town.db');
-    if (test) {
+    if (AppConstants.testMode) {
       await deleteDatabase(path); // DEBUG: reset DB on each launch
     }
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {}
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE books ADD COLUMN rating INTEGER');
+      await db.execute(
+          'ALTER TABLE game_state ADD COLUMN roulette_last_free_spin TEXT');
+    }
+  }
 
   Future<void> _createTables(Database db, int version) async {
     await db.execute('''
@@ -50,7 +55,8 @@ class DatabaseHelper {
         is_completed INTEGER NOT NULL DEFAULT 0,
         max_rewarded_pages INTEGER NOT NULL DEFAULT 0,
         cover_image_path TEXT,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        rating INTEGER
       )
     ''');
 
@@ -155,7 +161,8 @@ class DatabaseHelper {
         username TEXT NOT NULL DEFAULT '',
         town_name TEXT NOT NULL DEFAULT 'My Village',
         language TEXT NOT NULL DEFAULT 'en',
-        tutorial_completed INTEGER NOT NULL DEFAULT 0
+        tutorial_completed INTEGER NOT NULL DEFAULT 0,
+        roulette_last_free_spin TEXT
       )
     ''');
 
@@ -199,10 +206,10 @@ class DatabaseHelper {
 
     await db.insert('resources', {
       'id': 1,
-      'coins': test ? 9999 : VillageRules.startingCoins,
-      'gems': test ? 9999 : VillageRules.startingGems,
-      'wood': test ? 9999 : VillageRules.startingWood,
-      'metal': test ? 9999 : VillageRules.startingMetal,
+      'coins': AppConstants.testMode ? 9999 : VillageRules.startingCoins,
+      'gems': AppConstants.testMode ? 9999 : VillageRules.startingGems,
+      'wood': AppConstants.testMode ? 9999 : VillageRules.startingWood,
+      'metal': AppConstants.testMode ? 9999 : VillageRules.startingMetal,
     });
 
     await db.insert('game_state', {

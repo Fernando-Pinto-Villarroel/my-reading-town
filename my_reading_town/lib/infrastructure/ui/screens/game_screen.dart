@@ -38,8 +38,10 @@ import 'package:my_reading_town/infrastructure/ui/widgets/common/shared_utils.da
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/stats_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/tap_through_interactive_viewer.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/village_photo_dialog.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/roulette_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/sheets/villager_sheets.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/tour/tour_overlay.dart';
+import 'package:my_reading_town/app_constants.dart';
 
 part 'game_screen_tap_handlers.dart';
 
@@ -148,7 +150,7 @@ class _GameScreenState extends State<GameScreen>
     if (!_tourInitialized) {
       _tourInitialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_villageProvider.tutorialCompleted) {
+        if (mounted && !_villageProvider.tutorialCompleted && !AppConstants.testMode) {
           setState(() => _tourStep = 0);
         }
       });
@@ -518,6 +520,7 @@ class _GameScreenState extends State<GameScreen>
                       });
                     }
                   },
+                  onRouletteTap: () => showRouletteDialog(context),
                 ),
               ],
             ),

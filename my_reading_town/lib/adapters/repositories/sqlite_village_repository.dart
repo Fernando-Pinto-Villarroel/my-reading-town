@@ -110,4 +110,11 @@ class SqliteVillageRepository implements VillageRepository {
 
   @override
   Future<void> setTutorialCompleted() => _db.setTutorialCompleted();
+
+  @override
+  Future<String?> getRouletteLastFreeSpin() => _db.getRouletteLastFreeSpin();
+
+  @override
+  Future<void> setRouletteLastFreeSpin(String isoDate) =>
+      _db.setRouletteLastFreeSpin(isoDate);
 }

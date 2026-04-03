@@ -153,9 +153,7 @@
   [*Hardware*],
   [Limited, sandboxed by browser security model],
   [Full access: camera, file system, notifications, sensors],
-  [*Performance*],
-  [JS runtime overhead, reflows, layout recalculations],
-  [Compiled to native ARM (60/120 fps game rendering)],
+
   [*Updates*],
   [Instant, users always get latest when opening URL],
   [Must push a new release through App Store / Play Store],
@@ -223,61 +221,6 @@
     Only the subtrees that changed are repainted, not the whole screen.
   ]
 ]
-
-== Flutter's compilation model
-
-#grid(
-  columns: (1fr, auto, 1fr, auto, 1fr),
-  gutter: 8pt,
-  align(center + horizon)[
-    #cbox(fill: cream)[
-      #set align(center)
-      #text(fill: darkPink, weight: "bold")[Dart source code]
-      #v(4pt)
-      #set text(size: 13pt)
-      Human-readable files, strongly typed and easy to read
-    ]
-  ],
-  align(center + horizon)[
-    #text(fill: darkPink, size: 24pt, weight: "bold")[→]
-  ],
-  align(center + horizon)[
-    #cbox(fill: cream)[
-      #set align(center)
-      #text(fill: darkPink, weight: "bold")[AOT compilation]
-      #v(4pt)
-      #set text(size: 13pt)
-      Compiled to native ARM64/x64 machine code at build time
-    ]
-  ],
-  align(center + horizon)[
-    #text(fill: darkPink, size: 24pt, weight: "bold")[→]
-  ],
-  align(center + horizon)[
-    #cbox(fill: pink)[
-      #set align(center)
-      #text(fill: darkPink, weight: "bold")[Native binary]
-      #v(4pt)
-      #set text(size: 13pt)
-      Runs directly on the CPU (no interpreter, no warm-up)
-    ]
-  ],
-)
-
-#v(14pt)
-#grid(
-  columns: (1fr, 1fr),
-  gutter: 12pt,
-  cbox(fill: lavender)[
-    #set text(size: 13pt)
-    *During development: Hot Reload*
-    Code changes appear in under a second without restarting, the app state is preserved. Critical for fast iteration.
-  ],
-  cbox(fill: cream)[
-    #set text(size: 13pt)
-    *Compare to web:* JavaScript is interpreted in the browser each time. Flutter ships a compiled binary, closer to a native game than a website.
-  ],
-)
 
 == Dart: the language behind Flutter
 
@@ -430,173 +373,6 @@
   ]
 ]
 
-== Flame: a 2D game engine inside Flutter
-
-#columns-content()[
-  Flame is a lightweight game engine built *on top of Flutter*. It gives you a game loop, component system, sprite rendering, and input handling, while still letting regular Flutter widgets share the same screen.
-
-  #v(8pt)
-  *What Flame adds over plain Flutter:*
-  - *Game loop:* runs 60 times per second, driving all animation
-  - *Component system:* every building, villager, tile is its own object with position, size, and lifecycle
-  - *Camera:* pan, zoom, and world offset for the village map
-  - *Input routing:* taps and pinch gestures are forwarded to the right component
-
-  #v(6pt)
-  #cbox(fill: pink)[
-    #set text(size: 13pt)
-    The village map is rendered by Flame at 60 fps. The resource bar, modals, and menus on top are regular Flutter widgets, both live on the same screen simultaneously.
-  ]
-][
-  #align(center, image("./images/screenshot-village-game-closeup.jpeg", height: 10cm, fit: "contain"))
-  #v(6pt)
-  #grid(columns: (1fr, 1fr), gutter: 6pt,
-    cbox(fill: lavender)[#set text(size: 11pt); #set align(center); *Flutter layer*\nHUD, modals, menus],
-    cbox(fill: mint)[#set text(size: 11pt); #set align(center); *Flame layer*\ngrid, sprites, camera],
-  )
-]
-
-== Data layer: SQLite with sqflite
-
-#columns-content()[
-  SQLite is a database engine built into every Android and iOS device. The app talks to it through *sqflite*, a Flutter plugin. No server, the entire database lives as a single file on the device.
-
-  #v(8pt)
-  #cbox(fill: mint)[
-    #set text(size: 13pt)
-    *Compare to a web app:* a web app calls a server, which queries a remote database. Here, the app IS the server, there is no network hop, no latency, no account required.
-  ]
-
-  #v(8pt)
-  *All data is structured in 13 tables:*
-][
-  #v(4pt)
-  #grid(columns: (1fr, 1fr), gutter: 6pt,
-    cbox(fill: pink)[
-      #set text(size: 12pt)
-      #text(weight: "bold")[Reading tracker]
-      #v(3pt)
-      books\
-      reading_sessions\
-      tags / book_tags
-    ],
-    cbox(fill: lavender)[
-      #set text(size: 12pt)
-      #text(weight: "bold")[Village state]
-      #v(3pt)
-      placed_buildings\
-      villagers\
-      road_tiles\
-      unlocked_chunks
-    ],
-    cbox(fill: mint)[
-      #set text(size: 12pt)
-      #text(weight: "bold")[Economy]
-      #v(3pt)
-      resources\
-      inventory_items\
-      active_powerups
-    ],
-    cbox(fill: peach)[
-      #set text(size: 12pt)
-      #text(weight: "bold")[Progression]
-      #v(3pt)
-      missions\
-      game_state\
-      minigame_cooldowns
-    ],
-  )
-  #v(6pt)
-  #cbox(fill: cream)[
-    #set text(size: 11pt)
-    #set align(center)
-    App → Repository → SQLite .db file on device
-  ]
-]
-
-== State management: Provider + GetIt
-
-#columns-content()[
-  *Provider* is Flutter's recommended pattern for reactive state. When something changes, only the parts of the screen that care about that data are repainted, not the entire screen.
-
-  #v(8pt)
-  Three providers drive the app:
-  - *Village Provider:* buildings, villagers, resources, XP, missions
-  - *Book Provider:* book collection, reading sessions, search and filters
-  - *Language Provider:* active language, all translated strings
-][
-  #v(8pt)
-  #cbox(fill: cream)[
-    #set text(size: 12pt, weight: "bold")
-    #set align(center)
-    How a state change flows through the app
-  ]
-  #v(6pt)
-  #grid(
-    columns: (1fr, auto, 1fr),
-    rows: (auto, auto, auto),
-    gutter: 4pt,
-    align(center)[#cbox(fill: darkPink)[#set text(fill: white, size: 11pt); #set align(center); User taps "Build"]],
-    align(center + horizon)[#text(fill: darkPink, size: 16pt)[→]],
-    align(center)[#cbox(fill: darkLavender)[#set text(fill: white, size: 11pt); #set align(center); Provider calls Service]],
-    [], align(center + horizon)[], [],
-    align(center)[#cbox(fill: mint)[#set text(size: 11pt); #set align(center); Service saves to SQLite]],
-    align(center + horizon)[#text(fill: darkPink, size: 16pt)[←]],
-    align(center)[#cbox(fill: pink)[#set text(size: 11pt); #set align(center); Widget rebuilds with new data]],
-  )
-  #v(8pt)
-  #cbox(fill: cream)[
-    #set text(size: 11pt)
-    #set align(center)
-    Widgets subscribe to providers, they update automatically when the data they watch changes.
-  ]
-]
-
-// ─── LOCALIZATION ────────────────────────────────────────────────────────────
-
-= Localization
-
-== 5 languages, zero code duplication
-
-#columns-content()[
-  The app ships with full translations in *English, Spanish, Portuguese, French, and Italian*. The language can be switched at runtime from the settings screen.
-
-  #v(8pt)
-  *How it works:*
-  - Each language is a text file with key → value pairs
-  - The language provider loads the right file at startup (or on change)
-  - Every UI string is looked up by key, the same key works in all 5 languages
-  - The chosen language is saved to the local database
-
-  #v(8pt)
-  #cbox(fill: mint)[
-    #set text(size: 13pt)
-    Adding a new language only requires adding one text file. No changes to the app logic, no rebuild needed, loaded at runtime.
-  ]
-][
-  #v(4pt)
-  #table(
-    columns: (auto, 1fr),
-    inset: (x: 8pt, y: 7pt),
-    stroke: luma(220),
-    fill: (_, row) => if row == 0 { pink } else if calc.odd(row) { cream } else { white },
-    table.header(
-      [*Language*],
-      [*"Build" button label*],
-    ),
-    [🇬🇧 English], [Build],
-    [🇪🇸 Spanish], [Construir],
-    [🇧🇷 Portuguese], [Construir],
-    [🇫🇷 French], [Construire],
-    [🇮🇹 Italian], [Costruisci],
-  )
-  #v(8pt)
-  #cbox(fill: lavender)[
-    #set text(size: 12pt)
-    The same pattern applies to every label, button, message, and tooltip across the entire app (hundreds of strings, all in one place per language).
-  ]
-]
-
 // ─── CORE GAME LOOP ──────────────────────────────────────────────────────────
 
 = Core Game Loop
@@ -668,38 +444,6 @@
     Completing milestones (build 3 houses, read 500 pages…) awards XP. Missions branch into construction, villager, and reading tracks.
   ],
 )
-
-== How all layers collaborate at runtime
-
-#columns-content()[
-  When a user taps *"Build"* on the village map:
-
-  #set text(size: 13pt)
-  + *Flame* detects the tap on the grid and fires a callback
-  + *GameScreen* (Flutter widget) receives it and opens a bottom sheet
-  + User picks a building; the *Village Provider* is called
-  + *Building Service* checks the rules (enough resources? valid tile?)
-  + The *Building Repository* persists the new building to SQLite
-  + The *Resource Repository* deducts costs and saves the updated balance
-  + The provider notifies all listening widgets, the HUD counters update
-  + The Flame village map places the new building sprite on the grid
-  + *Mission Service* checks whether any mission condition is now satisfied
-
-  #v(6pt)
-  #cbox(fill: darkPink)[
-    #set text(fill: white, size: 13pt)
-    Each step crosses exactly one layer boundary. Business logic never touches the UI; the UI never touches the database.
-  ]
-][
-  #align(center, image("./images/screenshot-build-modal.jpeg", height: 10cm, fit: "contain"))
-
-  #v(8pt)
-  #cbox(fill: cream)[
-    #set text(size: 13pt)
-    *Analogous backend flow:*\
-    HTTP request → controller → service → repository → database → response. The same separation of concerns, no network, no HTTP. The "request" is a tap; the "response" is a widget rebuild.
-  ]
-]
 
 // ─── Q&A ─────────────────────────────────────────────────────────────────────
 

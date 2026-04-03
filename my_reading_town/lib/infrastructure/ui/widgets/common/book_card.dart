@@ -113,6 +113,13 @@ class _BookCardState extends State<BookCard> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
+                        if (widget.book.isCompleted) ...[
+                          SizedBox(height: 4),
+                          StarRatingRow(
+                            rating: widget.book.rating,
+                            bookId: widget.book.id!,
+                          ),
+                        ],
                         if (widget.book.tags.isNotEmpty) ...[
                           SizedBox(height: 4),
                           Wrap(
@@ -317,6 +324,92 @@ class _BookCardState extends State<BookCard> {
   }
 }
 
+class StarRatingRow extends StatelessWidget {
+  final int? rating;
+  final int bookId;
+
+  const StarRatingRow({super.key, required this.rating, required this.bookId});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showRatingDialog(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(5, (i) {
+          final starValue = i + 1;
+          return Icon(
+            rating != null && rating! >= starValue
+                ? Icons.star
+                : Icons.star_border,
+            size: 18,
+            color: AppTheme.coinGold,
+          );
+        }),
+      ),
+    );
+  }
+
+  void _showRatingDialog(BuildContext context) {
+    final bookProvider = context.read<BookProvider>();
+    final langProvider = context.read<LanguageProvider>();
+    int selectedRating = rating ?? 0;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          backgroundColor: AppTheme.cream,
+          title: Text(
+            langProvider.translate('rate_your_book'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.darkText,
+            ),
+          ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              final starValue = i + 1;
+              return GestureDetector(
+                onTap: () => setState(() => selectedRating = starValue),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    selectedRating >= starValue ? Icons.star : Icons.star_border,
+                    size: 40,
+                    color: AppTheme.coinGold,
+                  ),
+                ),
+              );
+            }),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(langProvider.translate('cancel')),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await bookProvider.rateBook(bookId, selectedRating > 0 ? selectedRating : null);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.coinGold,
+                foregroundColor: AppTheme.darkText,
+              ),
+              child: Text(langProvider.translate('save_rating')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SessionRow extends StatelessWidget {
   final ReadingSession session;
   final int bookId;
@@ -433,6 +526,13 @@ class _SessionRow extends StatelessWidget {
         ? totalPages - otherSessionsPages
         : totalPages - otherSessionsPages;
 
+    DateTime selectedDate;
+    try {
+      selectedDate = DateTime.parse(session.date);
+    } catch (_) {
+      selectedDate = DateTime.now();
+    }
+
     showDialog(
       context: context,
       builder: (dialogCtx) {
@@ -443,7 +543,8 @@ class _SessionRow extends StatelessWidget {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(langProvider.translate('edit_session')),
-            content: Column(
+            content: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
@@ -471,7 +572,53 @@ class _SessionRow extends StatelessWidget {
                   ),
                   keyboardType: TextInputType.number,
                 ),
+                SizedBox(height: 12),
+                InkWell(
+                  onTap: () async {
+                    final now = DateTime.now();
+                    final earliest = now.subtract(const Duration(days: 6));
+                    final picked = await showDatePicker(
+                      context: dialogCtx,
+                      initialDate: selectedDate.isAfter(now) ? now : selectedDate,
+                      firstDate: DateTime(earliest.year, earliest.month, earliest.day),
+                      lastDate: DateTime(now.year, now.month, now.day),
+                      builder: (ctx, child) => Theme(
+                        data: Theme.of(ctx).copyWith(
+                          colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                            primary: AppTheme.lavender,
+                            onPrimary: AppTheme.darkText,
+                          ),
+                        ),
+                        child: child!,
+                      ),
+                    );
+                    if (picked != null) {
+                      setDialogState(() => selectedDate = picked);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.lavender.withValues(alpha: 0.5)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today, size: 18, color: AppTheme.lavender),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${langProvider.translate('session_date_label')}: ${selectedDate.year.toString().padLeft(4, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                            style: TextStyle(color: AppTheme.darkText, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
+            ),
             ),
             actions: [
               TextButton(
@@ -504,17 +651,32 @@ class _SessionRow extends StatelessWidget {
                   }
                   setDialogState(() => timeError = null);
 
-                  Navigator.pop(dialogCtx);
                   try {
                     await bookProvider.editSession(
-                        session.id!, bookId, pages, timeMins);
+                        session.id!, bookId, pages, timeMins,
+                        sessionDate: selectedDate);
+                    if (dialogCtx.mounted) Navigator.pop(dialogCtx);
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                '${langProvider.translate('error_prefix')}${e.toString()}')),
-                      );
+                    final msg = e.toString();
+                    if (msg.contains('daily_limit_full:')) {
+                      final limit = msg.split(':')[1];
+                      setDialogState(() => pagesError = langProvider
+                          .translate('edit_daily_limit_full')
+                          .replaceAll('{limit}', limit));
+                    } else if (msg.contains('daily_limit_partial:')) {
+                      final parts = msg.split(':');
+                      setDialogState(() => pagesError = langProvider
+                          .translate('edit_daily_limit_partial')
+                          .replaceAll('{available}', parts[1])
+                          .replaceAll('{limit}', parts[2]));
+                    } else if (dialogCtx.mounted) {
+                      Navigator.pop(dialogCtx);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(
+                              '${langProvider.translate('error_prefix')}$msg')),
+                        );
+                      }
                     }
                   }
                 },

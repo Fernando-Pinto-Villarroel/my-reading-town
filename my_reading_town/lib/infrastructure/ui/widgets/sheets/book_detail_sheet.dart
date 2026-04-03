@@ -9,6 +9,7 @@ import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/log_pages_dial
 import 'package:my_reading_town/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/skeleton.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/book_card.dart';
 
 void showBookDetailSheet(BuildContext context, Book book) {
   final langProvider = context.read<LanguageProvider>();
@@ -80,6 +81,21 @@ void showBookDetailSheet(BuildContext context, Book book) {
                                 fontSize: 13,
                                 color: AppTheme.lavender,
                                 fontWeight: FontWeight.w600)),
+                        if (book.isCompleted) ...[
+                          SizedBox(height: 6),
+                          Consumer<BookProvider>(
+                            builder: (_, bp, __) {
+                              final liveBook = bp.books.firstWhere(
+                                (b) => b.id == book.id,
+                                orElse: () => book,
+                              );
+                              return StarRatingRow(
+                                rating: liveBook.rating,
+                                bookId: book.id!,
+                              );
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ),

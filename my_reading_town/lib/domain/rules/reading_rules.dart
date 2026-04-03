@@ -1,6 +1,7 @@
 import 'dart:math';
 
 class ReadingRules {
+  static const int dailyPageLimit = 200;
   static const int coinsPerPage = 3;
   static const int woodPerPage = 2;
   static const int metalPerPage = 1;

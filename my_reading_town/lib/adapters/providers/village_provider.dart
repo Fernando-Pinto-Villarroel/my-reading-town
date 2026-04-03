@@ -10,6 +10,7 @@ import 'package:my_reading_town/application/services/villager_service.dart';
 import 'package:my_reading_town/application/services/inventory_service.dart';
 import 'package:my_reading_town/application/services/mission_service.dart';
 import 'package:my_reading_town/application/services/player_service.dart';
+import 'package:my_reading_town/domain/rules/roulette_rules.dart';
 
 class VillageProvider extends ChangeNotifier {
   final VillageRepository _repo;
@@ -47,6 +48,7 @@ class VillageProvider extends ChangeNotifier {
   int? _pendingLevelUp;
   String _language = 'en';
   bool _tutorialCompleted = false;
+  String? _rouletteLastFreeSpin;
 
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
@@ -64,6 +66,22 @@ class VillageProvider extends ChangeNotifier {
   String get townName => _townName;
   String get language => _language;
   bool get tutorialCompleted => _tutorialCompleted;
+  String? get rouletteLastFreeSpin => _rouletteLastFreeSpin;
+
+  bool get canSpinRouletteForFree {
+    if (_rouletteLastFreeSpin == null) return true;
+    final last = DateTime.parse(_rouletteLastFreeSpin!);
+    final now = DateTime.now();
+    return !(last.year == now.year && last.month == now.month && last.day == now.day);
+  }
+
+  Duration get rouletteNextFreeSpinIn {
+    if (canSpinRouletteForFree) return Duration.zero;
+    final last = DateTime.parse(_rouletteLastFreeSpin!);
+    final nextDay = DateTime(last.year, last.month, last.day + 1);
+    final remaining = nextDay.difference(DateTime.now());
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
 
   List<InventoryItem> get inventoryItems => _inventoryItems;
   List<ActivePowerup> get activePowerups => _activePowerups;
@@ -233,6 +251,7 @@ class VillageProvider extends ChangeNotifier {
     _townName = gameState['town_name'] as String;
     _language = gameState['language'] as String? ?? 'en';
     _tutorialCompleted = (gameState['tutorial_completed'] as int? ?? 0) == 1;
+    _rouletteLastFreeSpin = gameState['roulette_last_free_spin'] as String?;
 
     _inventoryItems = await _inventorySvc.loadInventoryItems();
     await _crystallizeExpiredSpeedups();
@@ -251,6 +270,47 @@ class VillageProvider extends ChangeNotifier {
     await _repo.setTutorialCompleted();
     _tutorialCompleted = true;
     notifyListeners();
+  }
+
+  static int get rouletteGemCost => RouletteRules.gemCostPerSpin;
+
+  Future<bool> spinRoulette() async {
+    final isFree = canSpinRouletteForFree;
+    if (!isFree && _gems < rouletteGemCost) return false;
+    if (!isFree) {
+      await _repo.subtractResources(gems: rouletteGemCost);
+      _gems -= rouletteGemCost;
+    }
+    if (isFree) {
+      final now = DateTime.now().toIso8601String();
+      await _repo.setRouletteLastFreeSpin(now);
+      _rouletteLastFreeSpin = now;
+    }
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> applyRouletteReward(Map<String, dynamic> reward) async {
+    final type = reward['type'] as String;
+    switch (type) {
+      case 'coins':
+        await addResources(coins: reward['amount'] as int);
+        break;
+      case 'gems':
+        await addResources(gems: reward['amount'] as int);
+        break;
+      case 'wood':
+        await addResources(wood: reward['amount'] as int);
+        break;
+      case 'metal':
+        await addResources(metal: reward['amount'] as int);
+        break;
+      case 'book':
+      case 'sandwich':
+      case 'hammer':
+        await addItemToInventory(type);
+        break;
+    }
   }
 
   Future<void> addResources(

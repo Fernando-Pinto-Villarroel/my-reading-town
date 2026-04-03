@@ -4,6 +4,7 @@ abstract class BookRepository {
   Future<void> updateBookPages(int bookId, int newPagesRead, bool isCompleted);
   Future<void> updateMaxRewardedPages(int bookId, int maxRewardedPages);
   Future<void> updateBook(int bookId, Map<String, dynamic> values);
+  Future<void> updateBookRating(int bookId, int? rating);
   Future<void> deleteBook(int bookId);
   Future<int> getCompletedBooksCount();
   Future<int> insertReadingSession(Map<String, dynamic> session);
@@ -12,6 +13,7 @@ abstract class BookRepository {
   Future<void> updateReadingSession(int sessionId, Map<String, dynamic> values);
   Future<void> deleteReadingSession(int sessionId);
   Future<int> sumSessionPagesForBook(int bookId);
+  Future<int> getPagesReadForDate(DateTime date, {int? excludingSessionId});
   Future<int> getTotalPagesRead();
   Future<int> getTotalSessionsCount();
   Future<int> getTotalTimeMinutes();

@@ -146,9 +146,9 @@ class BookProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> logPages(int bookId, int pages,
-      {int? timeTakenMinutes}) async {
+      {int? timeTakenMinutes, DateTime? sessionDate}) async {
     final result = await _readingSvc.logPages(bookId, pages, _books,
-        timeTakenMinutes: timeTakenMinutes);
+        timeTakenMinutes: timeTakenMinutes, sessionDate: sessionDate);
 
     final bookIndex = _books.indexWhere((b) => b.id == bookId);
     if (bookIndex != -1) {
@@ -165,9 +165,11 @@ class BookProvider extends ChangeNotifier {
   }
 
   Future<void> editSession(
-      int sessionId, int bookId, int newPages, int? newTimeMins) async {
+      int sessionId, int bookId, int newPages, int? newTimeMins,
+      {DateTime? sessionDate}) async {
     final updatedBook = await _readingSvc.editSession(
-        sessionId, bookId, newPages, newTimeMins, _books);
+        sessionId, bookId, newPages, newTimeMins, _books,
+        sessionDate: sessionDate);
     final bookIdx = _books.indexWhere((b) => b.id == bookId);
     if (bookIdx != -1) _books[bookIdx] = updatedBook;
     await _reloadSessionsForBook(bookId);
@@ -186,6 +188,11 @@ class BookProvider extends ChangeNotifier {
     final bookSessions = await _readingSvc.getSessionsForBook(bookId);
     _sessions.removeWhere((s) => s.bookId == bookId);
     _sessions.insertAll(0, bookSessions);
+    notifyListeners();
+  }
+
+  Future<void> rateBook(int bookId, int? rating) async {
+    await _readingSvc.rateBook(bookId, rating, _books);
     notifyListeners();
   }
 

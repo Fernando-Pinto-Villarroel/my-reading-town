@@ -263,6 +263,10 @@ class _BookFormDialogState extends State<BookFormDialog> {
       pErr = langProvider.translate('minimum_2_pages');
     } else if (pages > 9999) {
       pErr = langProvider.translate('maximum_9999_pages');
+    } else if (_isEditing && pages < widget.existingBook!.pagesRead) {
+      pErr = langProvider
+          .translate('pages_below_logged')
+          .replaceAll('{pages}', '${widget.existingBook!.pagesRead}');
     }
 
     if (tErr != null || pErr != null) {

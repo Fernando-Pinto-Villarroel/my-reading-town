@@ -27,4 +27,6 @@ abstract class VillageRepository {
   Future<void> updateUsername(String username);
   Future<void> updateTownName(String townName);
   Future<void> setTutorialCompleted();
+  Future<String?> getRouletteLastFreeSpin();
+  Future<void> setRouletteLastFreeSpin(String isoDate);
 }

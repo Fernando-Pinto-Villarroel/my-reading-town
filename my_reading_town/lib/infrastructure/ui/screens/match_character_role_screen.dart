@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
+import 'package:my_reading_town/domain/rules/minigame_rules.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/match_character_role_body.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
@@ -25,7 +26,7 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
   final Random _random = Random();
   int _consecutiveWins = 0;
   static const String _minigameId = 'match_character_role';
-  static final _config = VillageRules.minigames[_minigameId]!;
+  static final _config = MinigameRules.configs[_minigameId]!;
 
   Map<String, dynamic>? _currentQuestion;
   List<String> _shuffledOptions = [];

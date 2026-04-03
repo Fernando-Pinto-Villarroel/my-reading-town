@@ -6,6 +6,7 @@ import 'package:my_reading_town/adapters/providers/book_provider.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/popups/reward_popup.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
+import 'package:my_reading_town/domain/rules/reading_rules.dart';
 
 void showLogPagesDialog(BuildContext context, int bookId) {
   final bookProvider = context.read<BookProvider>();
@@ -15,6 +16,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
   final timeController = TextEditingController();
   final book = bookProvider.books.firstWhere((b) => b.id == bookId);
   final remainingPages = book.totalPages - book.pagesRead;
+  DateTime selectedDate = DateTime.now();
 
   showDialog(
     context: context,
@@ -66,6 +68,51 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 ),
                 keyboardType: TextInputType.number,
               ),
+              SizedBox(height: 12),
+              InkWell(
+                onTap: () async {
+                  final now = DateTime.now();
+                  final earliest = now.subtract(const Duration(days: 6));
+                  final picked = await showDatePicker(
+                    context: dialogCtx,
+                    initialDate: selectedDate,
+                    firstDate: DateTime(earliest.year, earliest.month, earliest.day),
+                    lastDate: DateTime(now.year, now.month, now.day),
+                    builder: (ctx, child) => Theme(
+                      data: Theme.of(ctx).copyWith(
+                        colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                          primary: AppTheme.lavender,
+                          onPrimary: AppTheme.darkText,
+                        ),
+                      ),
+                      child: child!,
+                    ),
+                  );
+                  if (picked != null) {
+                    setDialogState(() => selectedDate = picked);
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppTheme.lavender.withValues(alpha: 0.5)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 18, color: AppTheme.lavender),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${langProvider.translate('session_date_label')}: ${selectedDate.year.toString().padLeft(4, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                          style: TextStyle(color: AppTheme.darkText, fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           )),
           actions: [
@@ -99,9 +146,9 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 }
                 setDialogState(() => timeError = null);
 
-                const int dailyPageLimit = 200;
+                const int dailyPageLimit = ReadingRules.dailyPageLimit;
                 final db = DatabaseHelper();
-                final todayPages = await db.getTodayPagesRead();
+                final todayPages = await db.getPagesReadForDate(selectedDate);
                 if (todayPages >= dailyPageLimit) {
                   if (dialogCtx.mounted) {
                     showDialog(
@@ -170,7 +217,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 Navigator.pop(dialogCtx);
 
                 final rewards = await bookProvider.logPages(bookId, pagesToLog,
-                    timeTakenMinutes: timeMins);
+                    timeTakenMinutes: timeMins, sessionDate: selectedDate);
                 final coinsEarned = rewards['coins'] as int;
                 final gemsEarned = rewards['gems'] as int;
                 final woodEarned = rewards['wood'] as int;
@@ -203,6 +250,8 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                     rewards['metal'] as int,
                     rewards['bookCompleted'] as bool,
                     rewards['rewardablePages'] as int,
+                    bookId: bookId,
+                    bookProvider: bookProvider,
                   );
                 }
               },
@@ -216,7 +265,8 @@ void showLogPagesDialog(BuildContext context, int bookId) {
 }
 
 void _showRewardPopup(BuildContext context, int coins, int gems, int wood,
-    int metal, bool bookCompleted, int rewardablePages) {
+    int metal, bool bookCompleted, int rewardablePages,
+    {int? bookId, BookProvider? bookProvider}) {
   late OverlayEntry overlayEntry;
   overlayEntry = OverlayEntry(
     builder: (context) => RewardPopup(
@@ -226,8 +276,90 @@ void _showRewardPopup(BuildContext context, int coins, int gems, int wood,
       metalEarned: metal,
       bookCompleted: bookCompleted,
       rewardablePages: rewardablePages,
-      onDismiss: () => overlayEntry.remove(),
+      onDismiss: () {
+        overlayEntry.remove();
+        if (bookCompleted && bookId != null && bookProvider != null && context.mounted) {
+          _showRatingDialog(context, bookId, bookProvider);
+        }
+      },
     ),
   );
   Overlay.of(context).insert(overlayEntry);
+}
+
+void _showRatingDialog(BuildContext context, int bookId, BookProvider bookProvider) {
+  int selectedRating = 0;
+  final langProvider = context.read<LanguageProvider>();
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: AppTheme.cream,
+        title: Column(
+          children: [
+            Text(
+              langProvider.translate('rate_your_book'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.darkText,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              langProvider.translate('rate_book_subtitle'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.darkText.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (i) {
+            final starValue = i + 1;
+            return GestureDetector(
+              onTap: () => setState(() => selectedRating = starValue),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  selectedRating >= starValue ? Icons.star : Icons.star_border,
+                  size: 40,
+                  color: AppTheme.coinGold,
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              langProvider.translate('skip_rating'),
+              style: TextStyle(color: AppTheme.darkText.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              if (selectedRating > 0) {
+                await bookProvider.rateBook(bookId, selectedRating);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.coinGold,
+              foregroundColor: AppTheme.darkText,
+            ),
+            child: Text(langProvider.translate('save_rating')),
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -419,5 +419,22 @@
   "tour_input_min_chars": "Doit comporter au moins 3 caractères",
   "tour_farewell": "C'est tout bon, {name} ! Ton aventure commence MAINTENANT ! Lis chaque jour, construis la ville de tes rêves et rends tes villageois heureux ! 🌸",
   "tour_tap_continue": "Appuie n'importe où pour continuer",
-  "tour_tap_highlighted": "Appuie sur le bouton lumineux !"
+  "tour_tap_highlighted": "Appuie sur le bouton lumineux !",
+  "session_date_label": "Date de la session",
+  "rate_your_book": "Évalue ton livre !",
+  "rate_book_subtitle": "Comment tu l'as trouvé ?",
+  "skip_rating": "Ignorer",
+  "save_rating": "Enregistrer la note",
+  "your_rating": "Ta note",
+  "roulette": "Tour de chance !",
+  "roulette_spin": "Tourner !",
+  "roulette_free_spin": "Tour GRATUIT !",
+  "roulette_costs": "Coûte {gems} gemmes",
+  "roulette_not_enough_gems": "Pas assez de gemmes ! Tu as besoin de {gems} gemmes pour tourner.",
+  "roulette_next_free": "Prochain tour gratuit dans {hours}h {minutes}m",
+  "roulette_you_won": "Tu as gagné !",
+  "roulette_spin_again": "Tourner à nouveau",
+  "roulette_close": "Fermer",
+  "edit_daily_limit_full": "La date cible a déjà {limit} pages enregistrées (limite journalière atteinte).",
+  "edit_daily_limit_partial": "La date cible ne peut accueillir que {available} pages supplémentaires (limite: {limit})."
 }

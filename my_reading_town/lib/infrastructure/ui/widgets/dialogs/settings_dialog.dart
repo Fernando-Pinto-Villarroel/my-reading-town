@@ -119,7 +119,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                 SizedBox(height: 18),
                 TextField(
                   controller: usernameController,
-                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(30)],
                   decoration: InputDecoration(
                     labelText: ctx.t('username'),
                     errorText: usernameError,
@@ -139,7 +139,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                 SizedBox(height: 14),
                 TextField(
                   controller: townNameController,
-                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(30)],
                   decoration: InputDecoration(
                     labelText: ctx.t('town_name'),
                     errorText: townNameError,

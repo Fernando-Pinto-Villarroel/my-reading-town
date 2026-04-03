@@ -4,6 +4,7 @@ import 'package:my_reading_town/domain/entities/reading_session.dart';
 import 'package:my_reading_town/domain/entities/tag.dart';
 import 'package:my_reading_town/domain/ports/book_repository.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
+import 'package:my_reading_town/domain/rules/reading_rules.dart';
 
 class ReadingService {
   final BookRepository _repo;
@@ -78,7 +79,11 @@ class ReadingService {
     } else if (clearAuthor) {
       updates['author'] = null;
     }
-    if (totalPages != null) updates['total_pages'] = totalPages;
+    if (totalPages != null) {
+      updates['total_pages'] = totalPages;
+      final currentPagesRead = books[idx].pagesRead;
+      updates['is_completed'] = currentPagesRead >= totalPages ? 1 : 0;
+    }
     if (coverImagePath != null) updates['cover_image_path'] = coverImagePath;
     if (removeCover) {
       final oldPath = books[idx].coverImagePath;
@@ -122,7 +127,7 @@ class ReadingService {
   }
 
   Future<Map<String, dynamic>> logPages(int bookId, int pages, List<Book> books,
-      {int? timeTakenMinutes}) async {
+      {int? timeTakenMinutes, DateTime? sessionDate}) async {
     final bookIndex = books.indexWhere((b) => b.id == bookId);
     if (bookIndex == -1) throw Exception('Book not found');
 
@@ -182,6 +187,7 @@ class ReadingService {
       gemsEarned: gemsEarned,
       woodEarned: woodEarned,
       metalEarned: metalEarned,
+      date: sessionDate?.toIso8601String(),
       timeTakenMinutes: timeTakenMinutes,
     ).toMap());
 
@@ -199,7 +205,7 @@ class ReadingService {
   }
 
   Future<Book> editSession(int sessionId, int bookId, int newPages,
-      int? newTimeMins, List<Book> books) async {
+      int? newTimeMins, List<Book> books, {DateTime? sessionDate}) async {
     final bookIdx = books.indexWhere((b) => b.id == bookId);
     if (bookIdx == -1) throw Exception('Book not found');
     final book = books[bookIdx];
@@ -214,9 +220,25 @@ class ReadingService {
           'Total pages would exceed book total (${book.totalPages})');
     }
 
+    final targetDate = sessionDate ?? DateTime.parse(
+      allSessions.firstWhere((s) => s['id'] == sessionId)['date'] as String,
+    );
+    final pagesOnTargetDate = await _repo.getPagesReadForDate(
+      targetDate,
+      excludingSessionId: sessionId,
+    );
+    final available = ReadingRules.dailyPageLimit - pagesOnTargetDate;
+    if (available <= 0) {
+      throw Exception('daily_limit_full:${ReadingRules.dailyPageLimit}');
+    }
+    if (newPages > available) {
+      throw Exception('daily_limit_partial:$available:${ReadingRules.dailyPageLimit}');
+    }
+
     await _repo.updateReadingSession(sessionId, {
       'pages_read': newPages,
       'time_taken_minutes': newTimeMins,
+      if (sessionDate != null) 'date': sessionDate.toIso8601String(),
     });
 
     final newPagesRead = otherPagesSum + newPages;
@@ -239,6 +261,14 @@ class ReadingService {
     await _repo.updateBookPages(bookId, newPagesRead, isCompleted);
 
     return book.copyWith(pagesRead: newPagesRead, isCompleted: isCompleted);
+  }
+
+  Future<void> rateBook(int bookId, int? rating, List<Book> books) async {
+    await _repo.updateBookRating(bookId, rating);
+    final idx = books.indexWhere((b) => b.id == bookId);
+    if (idx != -1) {
+      books[idx] = books[idx].copyWith(rating: () => rating);
+    }
   }
 
   Future<int> getTotalPagesRead() => _repo.getTotalPagesRead();

@@ -25,6 +25,10 @@ class SqliteBookRepository implements BookRepository {
       _db.updateBook(bookId, values);
 
   @override
+  Future<void> updateBookRating(int bookId, int? rating) =>
+      _db.updateBookRating(bookId, rating);
+
+  @override
   Future<void> deleteBook(int bookId) => _db.deleteBook(bookId);
 
   @override
@@ -54,6 +58,10 @@ class SqliteBookRepository implements BookRepository {
   @override
   Future<int> sumSessionPagesForBook(int bookId) =>
       _db.sumSessionPagesForBook(bookId);
+
+  @override
+  Future<int> getPagesReadForDate(DateTime date, {int? excludingSessionId}) =>
+      _db.getPagesReadForDate(date, excludingSessionId: excludingSessionId);
 
   @override
   Future<int> getTotalPagesRead() => _db.getTotalPagesRead();

@@ -29,6 +29,11 @@ extension DatabaseHelperBookOperations on DatabaseHelper {
     await db.update('books', values, where: 'id = ?', whereArgs: [bookId]);
   }
 
+  Future<void> updateBookRating(int bookId, int? rating) async {
+    final db = await database;
+    await db.update('books', {'rating': rating}, where: 'id = ?', whereArgs: [bookId]);
+  }
+
   Future<void> deleteBook(int bookId) async {
     final db = await database;
     await db.delete('book_tags', where: 'book_id = ?', whereArgs: [bookId]);
@@ -92,14 +97,22 @@ extension DatabaseHelperBookOperations on DatabaseHelper {
   }
 
   Future<int> getTodayPagesRead() async {
+    return getPagesReadForDate(DateTime.now());
+  }
+
+  Future<int> getPagesReadForDate(DateTime date, {int? excludingSessionId}) async {
     final db = await database;
-    final today = DateTime.now();
     final datePrefix =
-        '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-    final result = await db.rawQuery(
-      "SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE date LIKE ?",
-      ['$datePrefix%'],
-    );
+        '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final result = excludingSessionId != null
+        ? await db.rawQuery(
+            "SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE date LIKE ? AND id != ?",
+            ['$datePrefix%', excludingSessionId],
+          )
+        : await db.rawQuery(
+            "SELECT COALESCE(SUM(pages_read), 0) as total FROM reading_sessions WHERE date LIKE ?",
+            ['$datePrefix%'],
+          );
     return result.first['total'] as int;
   }
 

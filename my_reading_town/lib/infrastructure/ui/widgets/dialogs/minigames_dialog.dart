@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
-import 'package:my_reading_town/domain/rules/village_rules.dart';
+import 'package:my_reading_town/domain/rules/minigame_rules.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/guess_author_screen.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/match_character_role_screen.dart';
@@ -114,7 +114,7 @@ class MinigameCard extends StatelessWidget {
     required this.onPlay,
   });
 
-  int get winsNeeded => VillageRules.minigames[minigameId]!.winsNeeded;
+  int get winsNeeded => MinigameRules.configs[minigameId]!.winsNeeded;
 
   @override
   Widget build(BuildContext context) {

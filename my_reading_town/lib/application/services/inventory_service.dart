@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:my_reading_town/domain/entities/inventory_item.dart';
 import 'package:my_reading_town/domain/ports/inventory_repository.dart';
 import 'package:my_reading_town/domain/ports/village_repository.dart';
+import 'package:my_reading_town/domain/rules/minigame_rules.dart';
 
 class InventoryService {
   final InventoryRepository _invRepo;
@@ -167,22 +168,11 @@ class InventoryService {
   }
 
   Future<String> grantMinigameReward(List<InventoryItem> items) async {
-    final random = Random();
-    final roll = random.nextDouble();
-
-    String rewardType;
-    if (roll < 0.45) {
-      rewardType = 'gems';
-      await _villageRepo.addResources(gems: 5);
-    } else if (roll < 0.70) {
-      rewardType = 'book';
-      await addItem('book', items);
-    } else if (roll < 0.95) {
-      rewardType = 'sandwich';
-      await addItem('sandwich', items);
+    final rewardType = MinigameRules.pickRewardType(Random());
+    if (rewardType == 'gems') {
+      await _villageRepo.addResources(gems: MinigameRules.gemsRewardAmount);
     } else {
-      rewardType = 'hammer';
-      await addItem('hammer', items);
+      await addItem(rewardType, items);
     }
     return rewardType;
   }

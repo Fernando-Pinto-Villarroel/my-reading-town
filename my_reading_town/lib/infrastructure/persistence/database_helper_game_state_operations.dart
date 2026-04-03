@@ -99,4 +99,14 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     await db.update('game_state', {'tutorial_completed': 1}, where: 'id = 1');
   }
+
+  Future<String?> getRouletteLastFreeSpin() async {
+    final state = await getGameState();
+    return state['roulette_last_free_spin'] as String?;
+  }
+
+  Future<void> setRouletteLastFreeSpin(String isoDate) async {
+    final db = await database;
+    await db.update('game_state', {'roulette_last_free_spin': isoDate}, where: 'id = 1');
+  }
 }

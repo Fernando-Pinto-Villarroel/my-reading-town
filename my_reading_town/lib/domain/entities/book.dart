@@ -11,6 +11,7 @@ class Book {
   final String? coverImagePath;
   final String createdAt;
   List<Tag> tags;
+  final int? rating;
 
   Book({
     this.id,
@@ -23,6 +24,7 @@ class Book {
     this.coverImagePath,
     String? createdAt,
     List<Tag>? tags,
+    this.rating,
   })  : createdAt = createdAt ?? DateTime.now().toIso8601String(),
         tags = tags ?? [];
 
@@ -40,6 +42,7 @@ class Book {
       'max_rewarded_pages': maxRewardedPages,
       'cover_image_path': coverImagePath,
       'created_at': createdAt,
+      'rating': rating,
     };
   }
 
@@ -54,6 +57,7 @@ class Book {
       maxRewardedPages: map['max_rewarded_pages'] as int? ?? 0,
       coverImagePath: map['cover_image_path'] as String?,
       createdAt: map['created_at'] as String,
+      rating: map['rating'] as int?,
     );
   }
 
@@ -68,6 +72,7 @@ class Book {
     String? Function()? coverImagePath,
     String? createdAt,
     List<Tag>? tags,
+    int? Function()? rating,
   }) {
     return Book(
       id: id ?? this.id,
@@ -80,6 +85,7 @@ class Book {
       coverImagePath: coverImagePath != null ? coverImagePath() : this.coverImagePath,
       createdAt: createdAt ?? this.createdAt,
       tags: tags ?? this.tags,
+      rating: rating != null ? rating() : this.rating,
     );
   }
 }

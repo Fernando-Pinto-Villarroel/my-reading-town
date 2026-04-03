@@ -341,16 +341,4 @@ class VillageRules {
     return '${type}_lv$level.png';
   }
 
-  // ── Minigame rules ──────────────────────────────────────────────
-  static const Map<String, MinigameConfig> minigames = {
-    'guess_author': MinigameConfig(winsNeeded: 5, cooldownHours: 4),
-    'match_character_role': MinigameConfig(winsNeeded: 10, cooldownHours: 5),
-  };
-}
-
-class MinigameConfig {
-  final int winsNeeded;
-  final int cooldownHours;
-
-  const MinigameConfig({required this.winsNeeded, required this.cooldownHours});
 }

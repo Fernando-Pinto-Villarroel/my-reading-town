@@ -419,5 +419,22 @@
   "tour_input_min_chars": "Deve ter pelo menos 3 caracteres",
   "tour_farewell": "Tudo pronto, {name}! Sua aventura começa AGORA MESMO! Leia todos os dias, construa a cidade dos seus sonhos e mantenha seus aldeões felizes! 🌸",
   "tour_tap_continue": "Toque em qualquer lugar para continuar",
-  "tour_tap_highlighted": "Toque no botão brilhante!"
+  "tour_tap_highlighted": "Toque no botão brilhante!",
+  "session_date_label": "Data da sessão",
+  "rate_your_book": "Avalie seu livro!",
+  "rate_book_subtitle": "O que você achou?",
+  "skip_rating": "Pular",
+  "save_rating": "Salvar avaliação",
+  "your_rating": "Sua avaliação",
+  "roulette": "Giro da sorte!",
+  "roulette_spin": "Girar!",
+  "roulette_free_spin": "Giro GRÁTIS!",
+  "roulette_costs": "Custa {gems} gemas",
+  "roulette_not_enough_gems": "Gemas insuficientes! Você precisa de {gems} gemas para girar.",
+  "roulette_next_free": "Próximo giro grátis em {hours}h {minutes}m",
+  "roulette_you_won": "Você ganhou!",
+  "roulette_spin_again": "Girar novamente",
+  "roulette_close": "Fechar",
+  "edit_daily_limit_full": "A data alvo já tem {limit} páginas registradas (limite diário atingido).",
+  "edit_daily_limit_partial": "A data alvo só tem espaço para mais {available} páginas (limite: {limit})."
 }
