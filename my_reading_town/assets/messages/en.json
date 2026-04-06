@@ -375,8 +375,8 @@
   "not_enough_resources_read_more": "Not enough resources! Read more to earn them.",
   "error_prefix": "Error: ",
   "daily_limit_title": "Daily Reading Limit",
-  "daily_limit_reached_message": "You've already logged 200 pages today! That's the daily limit. Remember, cheating only hurts yourself — this is a personal journey to grow your reading habit, not a competition with others. Keep it real and enjoy the process!",
-  "daily_limit_partial_message": "You can only log {allowed} more pages today (daily limit: {limit}). Logging more than 200 pages per day is not typical and doesn't help you grow. Want to log {allowed} pages instead?",
+  "daily_limit_reached_message": "You've already logged 200 pages on {date}! That's the daily limit. Remember, cheating only hurts yourself — this is a personal journey to grow your reading habit, not a competition with others. Keep it real and enjoy the process!",
+  "daily_limit_partial_message": "You can only log {allowed} more pages on {date} (daily limit: {limit}). Logging more than 200 pages per day is not typical and doesn't help you grow. Want to log {allowed} pages instead?",
   "log_partial_button": "Log {pages} pages",
   "rewards_for_new_pages": "+{pages} newly read pages",
   "no_new_pages_reward_hint": "No new resources — pages already logged keep their rewards even if sessions are deleted.",
@@ -436,6 +436,6 @@
   "roulette_you_won": "You won!",
   "roulette_spin_again": "Spin Again",
   "roulette_close": "Close",
-  "edit_daily_limit_full": "The target date already has {limit} pages logged (daily limit reached).",
-  "edit_daily_limit_partial": "The target date only has room for {available} more pages (daily limit: {limit})."
+  "edit_daily_limit_full": "{date} already has {limit} pages logged (daily limit reached).",
+  "edit_daily_limit_partial": "{date} only has room for {available} more pages (daily limit: {limit})."
 }

@@ -7,6 +7,7 @@ import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/popups/reward_popup.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 import 'package:my_reading_town/domain/rules/reading_rules.dart';
+import 'package:intl/intl.dart';
 
 void showLogPagesDialog(BuildContext context, int bookId) {
   final bookProvider = context.read<BookProvider>();
@@ -149,6 +150,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 const int dailyPageLimit = ReadingRules.dailyPageLimit;
                 final db = DatabaseHelper();
                 final todayPages = await db.getPagesReadForDate(selectedDate);
+                final formattedDate = DateFormat('MMM d, yyyy').format(selectedDate);
                 if (todayPages >= dailyPageLimit) {
                   if (dialogCtx.mounted) {
                     showDialog(
@@ -160,7 +162,8 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                             textAlign: TextAlign.center),
                         content: Text(
                             langProvider
-                                .translate('daily_limit_reached_message'),
+                                .translate('daily_limit_reached_message')
+                                .replaceAll('{date}', formattedDate),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color:
@@ -189,6 +192,7 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                       content: Text(
                           langProvider
                               .translate('daily_limit_partial_message')
+                              .replaceAll('{date}', formattedDate)
                               .replaceAll('{allowed}', '$allowedPages')
                               .replaceAll('{limit}', '$dailyPageLimit'),
                           textAlign: TextAlign.center,

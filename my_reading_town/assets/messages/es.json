@@ -374,8 +374,8 @@
   "not_enough_resources_read_more": "¡Recursos insuficientes! Lee más para ganarlos.",
   "error_prefix": "Error: ",
   "daily_limit_title": "Límite Diario de Lectura",
-  "daily_limit_reached_message": "¡Ya registraste 200 páginas hoy! Ese es el límite diario. Recuerda, hacer trampa solo te perjudica a ti mismo — este es un viaje personal para crecer como lector, no una competencia con otros. ¡Sé honesto y disfruta el proceso!",
-  "daily_limit_partial_message": "Solo puedes registrar {allowed} páginas más hoy (límite diario: {limit}). Registrar más de 200 páginas al día no es habitual y no te ayuda a crecer. ¿Quieres registrar {allowed} páginas en su lugar?",
+  "daily_limit_reached_message": "¡Ya registraste 200 páginas el {date}! Ese es el límite diario. Recuerda, hacer trampa solo te perjudica a ti mismo — este es un viaje personal para crecer tu hábito de lectura, no una competencia.",
+  "daily_limit_partial_message": "Solo puedes registrar {allowed} páginas más el {date} (límite diario: {limit}). ¿Quieres registrar {allowed} páginas?",
   "log_partial_button": "Registrar {pages} páginas",
   "rewards_for_new_pages": "+{pages} páginas nuevas leídas",
   "no_new_pages_reward_hint": "Sin nuevos recursos — las páginas ya registradas conservan sus recompensas aunque se eliminen las sesiones.",
@@ -435,6 +435,6 @@
   "roulette_you_won": "¡Ganaste!",
   "roulette_spin_again": "Girar de nuevo",
   "roulette_close": "Cerrar",
-  "edit_daily_limit_full": "La fecha destino ya tiene {limit} páginas registradas (límite diario alcanzado).",
-  "edit_daily_limit_partial": "La fecha destino solo tiene espacio para {available} páginas más (límite diario: {limit})."
+  "edit_daily_limit_full": "El {date} ya tiene {limit} páginas registradas (límite diario alcanzado).",
+  "edit_daily_limit_partial": "El {date} solo tiene espacio para {available} páginas más (límite diario: {limit})."
 }

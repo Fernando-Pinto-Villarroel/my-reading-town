@@ -374,8 +374,8 @@
   "not_enough_resources_read_more": "Ressources insuffisantes ! Lisez plus pour en gagner.",
   "error_prefix": "Erreur : ",
   "daily_limit_title": "Limite Quotidienne de Lecture",
-  "daily_limit_reached_message": "Vous avez déjà enregistré 200 pages aujourd'hui ! C'est la limite quotidienne. Rappelez-vous, tricher ne nuit qu'à vous-même — c'est un voyage personnel pour développer votre habitude de lecture, pas une compétition avec les autres. Restez honnête et profitez du processus !",
-  "daily_limit_partial_message": "Vous ne pouvez enregistrer que {allowed} pages de plus aujourd'hui (limite quotidienne : {limit}). Enregistrer plus de 200 pages par jour n'est pas habituel et ne vous aide pas à progresser. Voulez-vous enregistrer {allowed} pages à la place ?",
+  "daily_limit_reached_message": "Vous avez déjà enregistré 200 pages le {date} ! C'est la limite journalière. Tricher ne vous aide pas — c'est un voyage personnel pour développer votre habitude de lecture.",
+  "daily_limit_partial_message": "Vous ne pouvez enregistrer que {allowed} pages de plus le {date} (limite: {limit}). Voulez-vous enregistrer {allowed} pages?",
   "log_partial_button": "Enregistrer {pages} pages",
   "rewards_for_new_pages": "+{pages} nouvelles pages lues",
   "no_new_pages_reward_hint": "Aucune nouvelle ressource — les pages déjà enregistrées conservent leurs récompenses même si les sessions sont supprimées.",
@@ -435,6 +435,6 @@
   "roulette_you_won": "Tu as gagné !",
   "roulette_spin_again": "Tourner à nouveau",
   "roulette_close": "Fermer",
-  "edit_daily_limit_full": "La date cible a déjà {limit} pages enregistrées (limite journalière atteinte).",
-  "edit_daily_limit_partial": "La date cible ne peut accueillir que {available} pages supplémentaires (limite: {limit})."
+  "edit_daily_limit_full": "Le {date} a déjà {limit} pages enregistrées (limite journalière atteinte).",
+  "edit_daily_limit_partial": "Le {date} ne peut accueillir que {available} pages supplémentaires (limite: {limit})."
 }

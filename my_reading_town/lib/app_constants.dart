@@ -1,3 +1,3 @@
 class AppConstants {
-  static const bool testMode = true;
+  static const bool testMode = false;
 }

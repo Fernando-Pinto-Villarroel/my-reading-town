@@ -658,15 +658,18 @@ class _SessionRow extends StatelessWidget {
                     if (dialogCtx.mounted) Navigator.pop(dialogCtx);
                   } catch (e) {
                     final msg = e.toString();
+                    final formattedDate = DateFormat('MMM d, yyyy').format(selectedDate);
                     if (msg.contains('daily_limit_full:')) {
                       final limit = msg.split(':')[1];
                       setDialogState(() => pagesError = langProvider
                           .translate('edit_daily_limit_full')
+                          .replaceAll('{date}', formattedDate)
                           .replaceAll('{limit}', limit));
                     } else if (msg.contains('daily_limit_partial:')) {
                       final parts = msg.split(':');
                       setDialogState(() => pagesError = langProvider
                           .translate('edit_daily_limit_partial')
+                          .replaceAll('{date}', formattedDate)
                           .replaceAll('{available}', parts[1])
                           .replaceAll('{limit}', parts[2]));
                     } else if (dialogCtx.mounted) {
