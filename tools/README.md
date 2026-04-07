@@ -2,78 +2,6 @@
 
 ---
 
-# Autocrop Tool
-
-Batch crops images by removing the outer empty space around the image core.
-Detects content boundaries automatically — using alpha transparency if present, or by sampling the background color from the corners — then cuts only the exterior boundaries, leaving the core intact.
-
-## Usage
-
-1. Place your images in `images-to-cut/`
-2. Run the script
-3. Find results in `images-to-cut/output/`
-
-### Autocrop with auto-detection (default)
-
-```bash
-.venv/bin/python3 autocrop.py
-```
-
-### Keep a padding margin around the core
-
-```bash
-.venv/bin/python3 autocrop.py --padding 5
-.venv/bin/python3 autocrop.py --padding 10
-```
-
-### Force a specific background color to crop against
-
-```bash
-.venv/bin/python3 autocrop.py --color white
-.venv/bin/python3 autocrop.py --color "#F0F0F0"
-```
-
-### Adjust color tolerance
-
-Lower = stricter match, higher = more aggressive crop.
-
-```bash
-.venv/bin/python3 autocrop.py --color white --tolerance 15
-.venv/bin/python3 autocrop.py --color white --tolerance 50
-```
-
-### Adjust alpha threshold (for images with transparency)
-
-Pixels with alpha below this value are treated as transparent (and cropped).
-
-```bash
-.venv/bin/python3 autocrop.py --alpha-threshold 25
-```
-
-### Custom input/output directories
-
-```bash
-.venv/bin/python3 autocrop.py --input /path/to/images --output /path/to/results
-```
-
-## How it works
-
-1. If the image has an alpha channel with meaningful transparency → finds the bounding box of non-transparent pixels
-2. Otherwise → samples the four corners to detect the background color, then finds the bounding box of pixels that differ from it
-3. `--color` overrides auto-detection and forces a specific background color
-4. Crops to the detected bounding box, with optional padding
-5. Saves as PNG
-
-Original images are never modified. Output is always a new file in the output directory.
-
-## Supported formats
-
-Input: PNG, JPG, JPEG, BMP, WebP, TIFF
-
-Output: always PNG
-
----
-
 # Background Remover Tool
 
 Batch removes a specific background color from images using flood-fill from the edges.
@@ -155,3 +83,75 @@ Original images are never modified. Output is always a new file in the output di
 Input: PNG, JPG, JPEG, BMP, WebP, TIFF
 
 Output: always PNG (transparency requires it)
+
+---
+
+# Autocrop Tool
+
+Batch crops images by removing the outer empty space around the image core.
+Detects content boundaries automatically — using alpha transparency if present, or by sampling the background color from the corners — then cuts only the exterior boundaries, leaving the core intact.
+
+## Usage
+
+1. Place your images in `images-to-cut/`
+2. Run the script
+3. Find results in `images-to-cut/output/`
+
+### Autocrop with auto-detection (default)
+
+```bash
+.venv/bin/python3 autocrop.py
+```
+
+### Keep a padding margin around the core
+
+```bash
+.venv/bin/python3 autocrop.py --padding 5
+.venv/bin/python3 autocrop.py --padding 10
+```
+
+### Force a specific background color to crop against
+
+```bash
+.venv/bin/python3 autocrop.py --color white
+.venv/bin/python3 autocrop.py --color "#F0F0F0"
+```
+
+### Adjust color tolerance
+
+Lower = stricter match, higher = more aggressive crop.
+
+```bash
+.venv/bin/python3 autocrop.py --color white --tolerance 15
+.venv/bin/python3 autocrop.py --color white --tolerance 50
+```
+
+### Adjust alpha threshold (for images with transparency)
+
+Pixels with alpha below this value are treated as transparent (and cropped).
+
+```bash
+.venv/bin/python3 autocrop.py --alpha-threshold 25
+```
+
+### Custom input/output directories
+
+```bash
+.venv/bin/python3 autocrop.py --input /path/to/images --output /path/to/results
+```
+
+## How it works
+
+1. If the image has an alpha channel with meaningful transparency → finds the bounding box of non-transparent pixels
+2. Otherwise → samples the four corners to detect the background color, then finds the bounding box of pixels that differ from it
+3. `--color` overrides auto-detection and forces a specific background color
+4. Crops to the detected bounding box, with optional padding
+5. Saves as PNG
+
+Original images are never modified. Output is always a new file in the output directory.
+
+## Supported formats
+
+Input: PNG, JPG, JPEG, BMP, WebP, TIFF
+
+Output: always PNG

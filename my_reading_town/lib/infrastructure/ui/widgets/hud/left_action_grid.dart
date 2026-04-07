@@ -91,24 +91,62 @@ class LeftActionGrid extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              key: backpackButtonKey,
-              child: _ActionButton(
-                icon: Icons.backpack,
-                color: AppTheme.mediumMint,
-                size: btnSize,
-                onTap: onBackpackTap,
-              ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SizedBox(
+                  key: backpackButtonKey,
+                  child: _ActionButton(
+                    icon: Icons.backpack,
+                    color: AppTheme.mediumMint,
+                    size: btnSize,
+                    onTap: onBackpackTap,
+                  ),
+                ),
+                if (context.watch<VillageProvider>().hasNewBackpackItems)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppTheme.coinGold,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             SizedBox(width: gap),
-            SizedBox(
-              key: minigamesButtonKey,
-              child: _ActionButton(
-                icon: Icons.sports_esports,
-                color: AppTheme.darkSkyBlue,
-                size: btnSize,
-                onTap: onMinigamesTap,
-              ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SizedBox(
+                  key: minigamesButtonKey,
+                  child: _ActionButton(
+                    icon: Icons.sports_esports,
+                    color: AppTheme.darkSkyBlue,
+                    size: btnSize,
+                    onTap: onMinigamesTap,
+                  ),
+                ),
+                if (context.watch<VillageProvider>().hasAnyMinigameAvailable)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppTheme.coinGold,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

@@ -24,23 +24,23 @@ const int tourTotalSteps = 20;
 const List<_StepKind> _stepKinds = [
   _StepKind.villagerChat, // 0: welcome
   _StepKind.villagerChat, // 1: resources
-  _StepKind.highlight,    // 2: missions spotlight
+  _StepKind.highlight, // 2: missions spotlight
   _StepKind.villagerChat, // 3: missions explain
-  _StepKind.highlight,    // 4: build spotlight
+  _StepKind.highlight, // 4: build spotlight
   _StepKind.villagerChat, // 5: build explain
-  _StepKind.highlight,    // 6: reading spotlight
+  _StepKind.highlight, // 6: reading spotlight
   _StepKind.villagerChat, // 7: reading explain
-  _StepKind.highlight,    // 8: backpack spotlight
+  _StepKind.highlight, // 8: backpack spotlight
   _StepKind.villagerChat, // 9: backpack explain
-  _StepKind.highlight,    // 10: minigames spotlight
+  _StepKind.highlight, // 10: minigames spotlight
   _StepKind.villagerChat, // 11: minigames explain
-  _StepKind.highlight,    // 12: photo spotlight
+  _StepKind.highlight, // 12: photo spotlight
   _StepKind.villagerChat, // 13: photo explain
-  _StepKind.highlight,    // 14: stats spotlight
+  _StepKind.highlight, // 14: stats spotlight
   _StepKind.villagerChat, // 15: stats explain
-  _StepKind.highlight,    // 16: settings spotlight
+  _StepKind.highlight, // 16: settings spotlight
   _StepKind.villagerChat, // 17: settings explain
-  _StepKind.input,        // 18: username + town name form
+  _StepKind.input, // 18: username + town name form
   _StepKind.villagerChat, // 19: farewell
 ];
 
@@ -198,7 +198,8 @@ class _TourOverlayState extends State<TourOverlay>
       case 17:
         return t('tour_settings_explain');
       case 19:
-        return t('tour_farewell').replaceAll('{name}', _submittedUsername ?? '');
+        return t('tour_farewell')
+            .replaceAll('{name}', _submittedUsername ?? '');
       default:
         return '';
     }
@@ -314,7 +315,7 @@ class _TourOverlayState extends State<TourOverlay>
           Positioned(
             left: isLandscape ? villagerSize * 1.0 : villagerSize * 0.38,
             right: isLandscape ? null : 12,
-            bottom: bottomPadding + villagerSize * (isLandscape ? 0.78 : 1.32),
+            bottom: bottomPadding + villagerSize * (isLandscape ? 0.6 : 1.32),
             child: SlideTransition(
               position: _slideAnim,
               child: ConstrainedBox(
@@ -456,8 +457,7 @@ class _TourOverlayState extends State<TourOverlay>
         ? bottomPadding + 16.0
         : keyboardInset + bottomPadding + peekSize + 8.0;
 
-    final availableHeight =
-        size.height - topPadding - 12.0 - bottomReserve;
+    final availableHeight = size.height - topPadding - 12.0 - bottomReserve;
 
     return Stack(
       children: [
@@ -478,8 +478,8 @@ class _TourOverlayState extends State<TourOverlay>
             ),
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(minHeight: availableHeight.clamp(0.0, double.infinity)),
+                constraints: BoxConstraints(
+                    minHeight: availableHeight.clamp(0.0, double.infinity)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -696,8 +696,7 @@ class _InputField extends StatelessWidget {
           const SizedBox(height: 5),
           Row(
             children: [
-              Icon(Icons.info_outline_rounded,
-                  size: 12, color: AppTheme.pink),
+              Icon(Icons.info_outline_rounded, size: 12, color: AppTheme.pink),
               const SizedBox(width: 4),
               Text(
                 errorText!,
@@ -817,7 +816,7 @@ class _TourModalChatOverlayState extends State<TourModalChatOverlay>
           Positioned(
             left: isLandscape ? villagerSize * 1.0 : villagerSize * 0.38,
             right: isLandscape ? null : 12,
-            bottom: bottomPadding + villagerSize * (isLandscape ? 0.78 : 1.32),
+            bottom: bottomPadding + villagerSize * (isLandscape ? 0.6 : 1.32),
             child: SlideTransition(
               position: _slideAnim,
               child: ConstrainedBox(
@@ -991,8 +990,7 @@ class _ChatBubble extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: AppTheme.lavender.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(12),

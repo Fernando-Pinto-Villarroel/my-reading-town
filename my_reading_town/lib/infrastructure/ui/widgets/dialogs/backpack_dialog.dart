@@ -20,7 +20,9 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           padding: const EdgeInsets.all(20),
-          constraints: const BoxConstraints(maxHeight: 500),
+          constraints: BoxConstraints(
+            maxHeight: landscape ? 500 : 700,
+          ),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.circular(24),
@@ -30,7 +32,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
             children: [
               Row(
                 children: [
-                  Icon(Icons.backpack, size: 24, color: AppTheme.peach),
+                  Icon(Icons.backpack, size: 24, color: AppTheme.darkOrange),
                   const SizedBox(width: 8),
                   Text(langProvider.translate('backpack'),
                       style: TextStyle(
@@ -140,6 +142,32 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                           }
                         },
                       ),
+                      const SizedBox(height: 8),
+                      _ItemTile(
+                        assetPath: 'assets/images/glasses_item.png',
+                        name: langProvider.translate('magic_glasses'),
+                        description: village.isGlassesActive
+                            ? langProvider.translate('already_active')
+                            : langProvider.translate('glasses_desc'),
+                        quantity: village.itemQuantity('glasses'),
+                        color: AppTheme.darkMint,
+                        alreadyActive: village.isGlassesActive,
+                        onUse: () async {
+                          Navigator.pop(ctx);
+                          final success = await village.useGlassesItem();
+                          if (success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    langProvider.translate('glasses_snack'),
+                                    style: TextStyle(color: AppTheme.darkText)),
+                                backgroundColor: AppTheme.mint,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -178,6 +206,11 @@ class _ActivePowerupTile extends StatelessWidget {
         name = langProvider.translate('extra_constructor');
         assetPath = 'assets/images/hammer_item.png';
         color = AppTheme.coinGold;
+        break;
+      case 'glasses_reading':
+        name = langProvider.translate('reading_boost');
+        assetPath = 'assets/images/glasses_item.png';
+        color = AppTheme.mint;
         break;
       default:
         name = powerup.type;

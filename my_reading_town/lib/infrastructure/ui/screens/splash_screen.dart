@@ -9,6 +9,7 @@ import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/adapters/repositories/villager_favorites.dart';
 import 'package:my_reading_town/application/services/notification_service.dart';
 import 'package:my_reading_town/infrastructure/di/service_locator.dart';
+import 'package:my_reading_town/infrastructure/persistence/database_helper.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/game_screen.dart';
@@ -47,10 +48,30 @@ class _SplashScreenState extends State<SplashScreen> {
     if (mounted) setState(() => _progress = value);
   }
 
+  Future<List<Map<String, String>>> _loadNotificationMessages(
+      String locale) async {
+    try {
+      final data = await rootBundle
+          .loadString('assets/messages/$locale/notification_messages.json');
+      final json = jsonDecode(data) as Map<String, dynamic>;
+      final list = json['messages'] as List;
+      return list
+          .map((e) => {
+                'title': e['title'] as String,
+                'body': e['body'] as String,
+              })
+          .toList();
+    } catch (_) {
+      return [
+        {'title': 'Time to read!', 'body': 'Your village is waiting for you!'}
+      ];
+    }
+  }
+
   Future<void> _loadTips(String locale) async {
     try {
       final data = await rootBundle
-          .loadString('assets/messages/reading_tips_$locale.json');
+          .loadString('assets/messages/$locale/reading_tips.json');
       final json = jsonDecode(data) as Map<String, dynamic>;
       final tips = List<String>.from(json['tips'] as List);
       tips.shuffle();
@@ -97,9 +118,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
       try {
         final notif = sl<NotificationService>();
-        await notif.scheduleDailyReminder(
-          title: languageProvider.translate('notification_daily_title'),
-          body: languageProvider.translate('notification_daily_body'),
+        final db = DatabaseHelper();
+        final settings = await db.getNotificationSettings();
+        final daysStr = settings['days_enabled'] as String;
+        final activeDays =
+            daysStr.split('').map((c) => c == '1').toList();
+        final startHour = settings['start_hour'] as int;
+        final endHour = settings['end_hour'] as int;
+        final perDay = settings['per_day'] as int;
+        final messages = await _loadNotificationMessages(locale);
+        await notif.scheduleNotifications(
+          activeDays: activeDays,
+          startHour: startHour,
+          endHour: endHour,
+          notificationsPerDay: perDay,
+          messages: messages,
         );
       } catch (_) {}
 

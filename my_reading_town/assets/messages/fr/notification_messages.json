@@ -1,0 +1,52 @@
+{
+  "messages": [
+    {
+      "title": "L'heure de lire ! 📚",
+      "body": "Votre village vous attend ! Ouvrez un livre et gagnez des ressources pour votre ville."
+    },
+    {
+      "title": "Vos villageois vous manquent !",
+      "body": "Quelques pages par jour éloignent l'ennui. Venez lire et faites grandir votre village !"
+    },
+    {
+      "title": "Moment lecture ! ✨",
+      "body": "Chaque page lue rapporte des pièces, du bois et du métal. Votre village a besoin de vous !"
+    },
+    {
+      "title": "Alerte rat de bibliothèque ! 🐛",
+      "body": "Saviez-vous que lire 20 minutes par jour équivaut à 1,8 million de mots par an ? En avant !"
+    },
+    {
+      "title": "Votre ville grandit !",
+      "body": "Continuez à lire pour débloquer de nouveaux bâtiments et rendre vos villageois heureux !"
+    },
+    {
+      "title": "Une page par jour ! 📖",
+      "body": "Même une seule page compte. Enregistrez votre session de lecture et gagnez des récompenses !"
+    },
+    {
+      "title": "Série de lecture en cours !",
+      "body": "Ne brisez pas votre habitude ! Reprenez là où vous en étiez et lisez un peu aujourd'hui."
+    },
+    {
+      "title": "L'heure des histoires ! 🌟",
+      "body": "De grandes histoires vous attendent. Lisez aujourd'hui et regardez votre village fleurir !"
+    },
+    {
+      "title": "Les villageois heureux ont besoin de livres !",
+      "body": "Vos villageois adorent quand vous lisez ! Enregistrez des pages et boostez leur bonheur."
+    },
+    {
+      "title": "Rappel de lecture 🌸",
+      "body": "Faites une pause cosy avec votre livre. Quelques pages maintenant peuvent améliorer votre journée !"
+    },
+    {
+      "title": "Mission possible ! 🎯",
+      "body": "Vous êtes si proche de vos objectifs de lecture ! Enregistrez des pages pour compléter vos missions."
+    },
+    {
+      "title": "Le savoir c'est le pouvoir ! 💪",
+      "body": "Les livres vous rendent plus sage et votre village plus fort. Qu'attendez-vous ?"
+    }
+  ]
+}

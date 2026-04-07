@@ -7,11 +7,12 @@ class MinigameRules {
   };
 
   // Reward probabilities for completing a minigame.
-  // gems: 45%, book: 25%, sandwich: 25%, hammer: 5%
-  static const double _gemsThreshold = 0.45;
-  static const double _bookThreshold = 0.70;
-  static const double _sandwichThreshold = 0.95;
-  // hammer fills the remaining 5%
+  // gems: 43%, book: 24%, sandwich: 23%, hammer: 7%, glasses: 3%
+  static const double _gemsThreshold = 0.43;
+  static const double _bookThreshold = 0.67;
+  static const double _sandwichThreshold = 0.90;
+  static const double _hammerThreshold = 0.97;
+  // glasses fills the remaining 3%
 
   static const int gemsRewardAmount = 5;
 
@@ -20,7 +21,8 @@ class MinigameRules {
     if (roll < _gemsThreshold) return 'gems';
     if (roll < _bookThreshold) return 'book';
     if (roll < _sandwichThreshold) return 'sandwich';
-    return 'hammer';
+    if (roll < _hammerThreshold) return 'hammer';
+    return 'glasses';
   }
 }
 

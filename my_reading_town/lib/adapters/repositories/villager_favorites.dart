@@ -14,7 +14,7 @@ class VillagerFavorites {
   static Future<void> load() async {
     if (_loaded) return;
     final jsonStr = await rootBundle
-        .loadString('assets/data/$_locale/villager_favorites.json');
+        .loadString('assets/messages/$_locale/villager_favorites.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     _favorites = (data['favorites'] as List)
         .map((e) => {

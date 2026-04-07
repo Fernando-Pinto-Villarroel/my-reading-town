@@ -41,6 +41,11 @@ class MinigameWinScreen extends StatelessWidget {
         rewardAsset = 'assets/images/hammer_item.png';
         rewardColor = AppTheme.coinGold;
         break;
+      case 'glasses':
+        rewardText = 'x1 ${context.t('magic_glasses')}!';
+        rewardAsset = 'assets/images/glasses_item.png';
+        rewardColor = AppTheme.mint;
+        break;
       default:
         rewardText = context.t('claim_reward');
         rewardAsset = 'assets/images/gem.png';

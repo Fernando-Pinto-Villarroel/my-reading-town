@@ -1,5 +1,3 @@
-import 'dart:math';
-
 class ReadingRules {
   static const int dailyPageLimit = 200;
   static const int coinsPerPage = 3;
@@ -12,7 +10,6 @@ class ReadingRules {
     required int actualPagesLogged,
     required bool isBookNowCompleted,
     required bool wasAlreadyCompleted,
-    required Random random,
   }) {
     if (actualPagesLogged <= 0) {
       return {'coins': 0, 'gems': 0, 'wood': 0, 'metal': 0, 'exp': 0};
@@ -20,19 +17,8 @@ class ReadingRules {
 
     int coinsEarned = actualPagesLogged * coinsPerPage;
     int gemsEarned = 0;
-    int woodEarned = 0;
-    int metalEarned = 0;
-
-    if (actualPagesLogged >= 10) {
-      woodEarned = actualPagesLogged * woodPerPage;
-      metalEarned = actualPagesLogged * metalPerPage;
-    } else {
-      if (random.nextBool()) {
-        woodEarned = actualPagesLogged * woodPerPage;
-      } else {
-        metalEarned = actualPagesLogged * metalPerPage;
-      }
-    }
+    int woodEarned = actualPagesLogged * woodPerPage;
+    int metalEarned = actualPagesLogged * metalPerPage;
 
     if (isBookNowCompleted && !wasAlreadyCompleted) {
       coinsEarned += bookCompletionCoinBonus;

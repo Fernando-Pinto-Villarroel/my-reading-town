@@ -146,9 +146,9 @@ class BookProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> logPages(int bookId, int pages,
-      {int? timeTakenMinutes, DateTime? sessionDate}) async {
+      {int? timeTakenMinutes, DateTime? sessionDate, double resourceMultiplier = 1.0}) async {
     final result = await _readingSvc.logPages(bookId, pages, _books,
-        timeTakenMinutes: timeTakenMinutes, sessionDate: sessionDate);
+        timeTakenMinutes: timeTakenMinutes, sessionDate: sessionDate, resourceMultiplier: resourceMultiplier);
 
     final bookIndex = _books.indexWhere((b) => b.id == bookId);
     if (bookIndex != -1) {

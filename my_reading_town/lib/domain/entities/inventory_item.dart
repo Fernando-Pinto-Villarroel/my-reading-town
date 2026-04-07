@@ -17,6 +17,8 @@ class InventoryItem {
         return 'Constructor Sandwich';
       case 'hammer':
         return 'Constructor Hammer';
+      case 'glasses':
+        return 'Magic Glasses';
       default:
         return type;
     }
@@ -30,6 +32,8 @@ class InventoryItem {
         return 'Speed up all constructions by 2x for 1 hour!';
       case 'hammer':
         return 'Gain an extra constructor slot for 24 hours!';
+      case 'glasses':
+        return 'Earn 1.5x resources from reading for 1 hour!';
       default:
         return '';
     }
@@ -43,6 +47,8 @@ class InventoryItem {
         return 'sandwich_item.png';
       case 'hammer':
         return 'hammer_item.png';
+      case 'glasses':
+        return 'glasses_item.png';
       default:
         return 'gem.png';
     }

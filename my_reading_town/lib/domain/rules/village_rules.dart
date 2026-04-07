@@ -1,15 +1,15 @@
 import 'dart:math';
 
 class VillageRules {
-  static const int coinsPerPage = 3;
-  static const int woodPerPage = 2;
-  static const int metalPerPage = 1;
-  static const int bookCompletionGemBonus = 20;
+  static const int coinsPerPage = 4;
+  static const int woodPerPage = 3;
+  static const int metalPerPage = 2;
+  static const int bookCompletionGemBonus = 15;
   static const int bookCompletionCoinBonus = 50;
-  static const int startingCoins = 100;
+  static const int startingCoins = 60;
   static const int startingGems = 5;
-  static const int startingWood = 30;
-  static const int startingMetal = 15;
+  static const int startingWood = 40;
+  static const int startingMetal = 10;
 
   static const int maxBuildingLevel = 3;
   static const int sadHappinessThreshold = 80;
@@ -340,5 +340,4 @@ class VillageRules {
     if (level <= 1) return '$type.png';
     return '${type}_lv$level.png';
   }
-
 }

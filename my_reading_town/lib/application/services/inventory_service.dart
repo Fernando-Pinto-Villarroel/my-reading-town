@@ -67,6 +67,12 @@ class InventoryService {
   bool isHammerActive(List<ActivePowerup> powerups) =>
       powerups.any((p) => p.type == 'hammer_constructor' && p.isActive);
 
+  bool isGlassesActive(List<ActivePowerup> powerups) =>
+      powerups.any((p) => p.type == 'glasses_reading' && p.isActive);
+
+  double readingResourceMultiplier(List<ActivePowerup> powerups) =>
+      isGlassesActive(powerups) ? 1.5 : 1.0;
+
   double constructionSpeedMultiplier(List<ActivePowerup> powerups) =>
       isSpeedBoostActive(powerups) ? 2.0 : 1.0;
 
@@ -141,6 +147,30 @@ class InventoryService {
       type: 'hammer_constructor',
       activatedAt: DateTime.now().toIso8601String(),
       durationHours: 24,
+    );
+    final id = await _invRepo.insertPowerup(powerup.toMap());
+    powerups.add(ActivePowerup(
+      id: id,
+      type: powerup.type,
+      activatedAt: powerup.activatedAt,
+      durationHours: powerup.durationHours,
+    ));
+    return true;
+  }
+
+  Future<bool> useGlassesItem(
+      List<InventoryItem> items, List<ActivePowerup> powerups) async {
+    if (itemQuantity('glasses', items) <= 0) return false;
+    if (isGlassesActive(powerups)) return false;
+
+    await _invRepo.removeInventoryItem('glasses');
+    final idx = items.indexWhere((i) => i.type == 'glasses');
+    if (idx != -1) items[idx].quantity--;
+
+    final powerup = ActivePowerup(
+      type: 'glasses_reading',
+      activatedAt: DateTime.now().toIso8601String(),
+      durationHours: 1,
     );
     final id = await _invRepo.insertPowerup(powerup.toMap());
     powerups.add(ActivePowerup(

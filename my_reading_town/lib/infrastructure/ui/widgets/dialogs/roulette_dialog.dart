@@ -22,6 +22,7 @@ const List<Color> _circusColors = [
   Color(0xFFC62828), // crimson
   Color(0xFF283593), // indigo
   Color(0xFF558B2F), // olive green
+  Color(0xFF6A1B9A), // cyan teal
 ];
 
 class _RouletteReward {
@@ -42,54 +43,81 @@ class _RouletteReward {
 
 final List<_RouletteReward> _rewards = [
   _RouletteReward(
-    key: 'coins_50', type: 'coins', amount: 50,
+    key: 'coins_50',
+    type: 'coins',
+    amount: 50,
     assetPath: 'assets/images/coin.png',
     iconBuilder: (s) => ResourceIcon.coin(size: s),
   ),
   _RouletteReward(
-    key: 'gems_5', type: 'gems', amount: 5,
+    key: 'gems_5',
+    type: 'gems',
+    amount: 5,
     assetPath: 'assets/images/gem.png',
     iconBuilder: (s) => ResourceIcon.gem(size: s),
   ),
   _RouletteReward(
-    key: 'coins_100', type: 'coins', amount: 100,
+    key: 'coins_100',
+    type: 'coins',
+    amount: 100,
     assetPath: 'assets/images/coin.png',
     iconBuilder: (s) => ResourceIcon.coin(size: s),
   ),
   _RouletteReward(
-    key: 'wood_30', type: 'wood', amount: 30,
+    key: 'wood_30',
+    type: 'wood',
+    amount: 30,
     assetPath: 'assets/images/wood.png',
     iconBuilder: (s) => ResourceIcon.wood(size: s),
   ),
   _RouletteReward(
-    key: 'sandwich', type: 'sandwich',
+    key: 'sandwich',
+    type: 'sandwich',
     assetPath: 'assets/images/sandwich_item.png',
-    iconBuilder: (s) => Image.asset('assets/images/sandwich_item.png', width: s, height: s),
+    iconBuilder: (s) =>
+        Image.asset('assets/images/sandwich_item.png', width: s, height: s),
   ),
   _RouletteReward(
-    key: 'coins_300', type: 'coins', amount: 300,
+    key: 'coins_300',
+    type: 'coins',
+    amount: 300,
     assetPath: 'assets/images/coin.png',
     iconBuilder: (s) => ResourceIcon.coin(size: s),
   ),
   _RouletteReward(
-    key: 'metal_15', type: 'metal', amount: 15,
+    key: 'metal_15',
+    type: 'metal',
+    amount: 15,
     assetPath: 'assets/images/metal.png',
     iconBuilder: (s) => ResourceIcon.metal(size: s),
   ),
   _RouletteReward(
-    key: 'gems_15', type: 'gems', amount: 15,
+    key: 'gems_15',
+    type: 'gems',
+    amount: 15,
     assetPath: 'assets/images/gem.png',
     iconBuilder: (s) => ResourceIcon.gem(size: s),
   ),
   _RouletteReward(
-    key: 'hammer', type: 'hammer',
+    key: 'hammer',
+    type: 'hammer',
     assetPath: 'assets/images/hammer_item.png',
-    iconBuilder: (s) => Image.asset('assets/images/hammer_item.png', width: s, height: s),
+    iconBuilder: (s) =>
+        Image.asset('assets/images/hammer_item.png', width: s, height: s),
   ),
   _RouletteReward(
-    key: 'book', type: 'book',
+    key: 'book',
+    type: 'book',
     assetPath: 'assets/images/book_item.png',
-    iconBuilder: (s) => Image.asset('assets/images/book_item.png', width: s, height: s),
+    iconBuilder: (s) =>
+        Image.asset('assets/images/book_item.png', width: s, height: s),
+  ),
+  _RouletteReward(
+    key: 'glasses',
+    type: 'glasses',
+    assetPath: 'assets/images/glasses_item.png',
+    iconBuilder: (s) =>
+        Image.asset('assets/images/glasses_item.png', width: s, height: s),
   ),
 ];
 
@@ -117,7 +145,7 @@ class _RouletteDialogState extends State<_RouletteDialog>
   double _currentAngle = 0.0;
   final Random _random = Random();
 
-  final List<ui.Image?> _segmentImages = List.filled(10, null);
+  final List<ui.Image?> _segmentImages = List.filled(11, null);
   bool _imagesLoaded = false;
 
   @override
@@ -137,7 +165,6 @@ class _RouletteDialogState extends State<_RouletteDialog>
         final codec = await ui.instantiateImageCodec(
           data.buffer.asUint8List(),
           targetWidth: 64,
-          targetHeight: 64,
         );
         final frame = await codec.getNextFrame();
         if (mounted) _segmentImages[i] = frame.image;
@@ -382,10 +409,9 @@ class _RouletteDialogState extends State<_RouletteDialog>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      (!_isSpinning && !_showingReward && canAfford)
-                          ? _spin
-                          : null,
+                  onPressed: (!_isSpinning && !_showingReward && canAfford)
+                      ? _spin
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         isFree ? AppTheme.coinGold : AppTheme.gemPurple,
@@ -449,8 +475,7 @@ class _RouletteRewardPopupState extends State<_RouletteRewardPopup>
     super.initState();
     _animCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
-    _scaleAnim =
-        CurvedAnimation(parent: _animCtrl, curve: Curves.bounceOut);
+    _scaleAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.bounceOut);
     _confettiCtrl = ConfettiController(duration: const Duration(seconds: 2));
     _animCtrl.forward();
     _confettiCtrl.play();
@@ -485,6 +510,8 @@ class _RouletteRewardPopupState extends State<_RouletteRewardPopup>
         return lang.translate('constructor_hammer');
       case 'book':
         return lang.translate('happiness_book');
+      case 'glasses':
+        return lang.translate('magic_glasses');
     }
     return r.type;
   }
@@ -505,8 +532,11 @@ class _RouletteRewardPopupState extends State<_RouletteRewardPopup>
               numberOfParticles: 25,
               gravity: 0.25,
               colors: [
-                AppTheme.pink, AppTheme.lavender, AppTheme.mint,
-                AppTheme.coinGold, AppTheme.peach,
+                AppTheme.pink,
+                AppTheme.lavender,
+                AppTheme.mint,
+                AppTheme.coinGold,
+                AppTheme.peach,
               ],
             ),
           ),
@@ -603,8 +633,8 @@ class _PointerPainter extends CustomPainter {
     // Triangle pointing DOWN: apex at bottom-centre, base at top
     final path = Path()
       ..moveTo(size.width / 2, size.height) // tip  (bottom)
-      ..lineTo(0, 0)                         // top-left
-      ..lineTo(size.width, 0)               // top-right
+      ..lineTo(0, 0) // top-left
+      ..lineTo(size.width, 0) // top-right
       ..close();
 
     canvas.drawPath(path, fillPaint);
@@ -658,7 +688,8 @@ class _WheelPainter extends CustomPainter {
       final angle = i * segmentAngle - pi / 2;
       canvas.drawLine(
         center,
-        Offset(center.dx + radius * cos(angle), center.dy + radius * sin(angle)),
+        Offset(
+            center.dx + radius * cos(angle), center.dy + radius * sin(angle)),
         dividerPaint,
       );
     }
@@ -690,15 +721,20 @@ class _WheelPainter extends CustomPainter {
       // Rotate so image/text reads radially outward
       canvas.rotate(midAngle + pi / 2);
 
-      // Asset image — toward the rim
+      // Asset image — toward the rim, drawn at natural aspect ratio
       final img = images[i];
       if (img != null) {
-        final src = Rect.fromLTWH(
-            0, 0, img.width.toDouble(), img.height.toDouble());
+        const maxDim = 34.0;
+        final imgW = img.width.toDouble();
+        final imgH = img.height.toDouble();
+        final scale = (imgW >= imgH) ? maxDim / imgW : maxDim / imgH;
+        final drawW = imgW * scale;
+        final drawH = imgH * scale;
+        final src = Rect.fromLTWH(0, 0, imgW, imgH);
         final dst = Rect.fromCenter(
           center: const Offset(0, -18),
-          width: 36,
-          height: 36,
+          width: drawW,
+          height: drawH,
         );
         canvas.drawImageRect(
             img, src, dst, Paint()..filterQuality = FilterQuality.medium);
@@ -722,10 +758,14 @@ class _WheelPainter extends CustomPainter {
   void _drawOutlinedText(
       Canvas canvas, String text, Offset center, double fontSize) {
     const offsets = [
-      Offset(-1.5, -1.5), Offset(1.5, -1.5),
-      Offset(-1.5, 1.5),  Offset(1.5, 1.5),
-      Offset(0, -1.5),    Offset(0, 1.5),
-      Offset(-1.5, 0),    Offset(1.5, 0),
+      Offset(-1.5, -1.5),
+      Offset(1.5, -1.5),
+      Offset(-1.5, 1.5),
+      Offset(1.5, 1.5),
+      Offset(0, -1.5),
+      Offset(0, 1.5),
+      Offset(-1.5, 0),
+      Offset(1.5, 0),
     ];
 
     TextPainter make(Color color) {
@@ -746,8 +786,8 @@ class _WheelPainter extends CustomPainter {
 
     final outline = make(Colors.black);
     for (final off in offsets) {
-      outline.paint(canvas,
-          center + off - Offset(outline.width / 2, outline.height / 2));
+      outline.paint(
+          canvas, center + off - Offset(outline.width / 2, outline.height / 2));
     }
     final fill = make(Colors.white);
     fill.paint(canvas, center - Offset(fill.width / 2, fill.height / 2));

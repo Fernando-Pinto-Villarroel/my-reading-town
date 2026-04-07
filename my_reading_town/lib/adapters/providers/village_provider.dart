@@ -11,6 +11,7 @@ import 'package:my_reading_town/application/services/inventory_service.dart';
 import 'package:my_reading_town/application/services/mission_service.dart';
 import 'package:my_reading_town/application/services/player_service.dart';
 import 'package:my_reading_town/domain/rules/roulette_rules.dart';
+import 'package:my_reading_town/domain/rules/minigame_rules.dart';
 
 class VillageProvider extends ChangeNotifier {
   final VillageRepository _repo;
@@ -49,6 +50,7 @@ class VillageProvider extends ChangeNotifier {
   String _language = 'en';
   bool _tutorialCompleted = false;
   String? _rouletteLastFreeSpin;
+  bool _hasNewBackpackItems = false;
 
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
@@ -83,6 +85,14 @@ class VillageProvider extends ChangeNotifier {
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
+  bool get hasNewBackpackItems => _hasNewBackpackItems;
+
+  void clearNewBackpackItems() {
+    if (!_hasNewBackpackItems) return;
+    _hasNewBackpackItems = false;
+    notifyListeners();
+  }
+
   List<InventoryItem> get inventoryItems => _inventoryItems;
   List<ActivePowerup> get activePowerups => _activePowerups;
   List<MinigameCooldown> get minigameCooldowns => _minigameCooldowns;
@@ -103,6 +113,9 @@ class VillageProvider extends ChangeNotifier {
   double get constructionSpeedMultiplier =>
       _inventorySvc.constructionSpeedMultiplier(_activePowerups);
   bool get isHammerActive => _inventorySvc.isHammerActive(_activePowerups);
+  bool get isGlassesActive => _inventorySvc.isGlassesActive(_activePowerups);
+  double get readingResourceMultiplier =>
+      _inventorySvc.readingResourceMultiplier(_activePowerups);
   int get villageHappiness => _villagerSvc.villageHappiness(_villagers);
 
   bool villagerHasHappinessBoost(int villagerId) =>
@@ -116,6 +129,19 @@ class VillageProvider extends ChangeNotifier {
 
   Duration minigameCooldownRemaining(String minigameId) =>
       _inventorySvc.minigameCooldownRemaining(minigameId, _minigameCooldowns);
+
+  bool get hasAnyMinigameAvailable => MinigameRules.configs.keys
+      .any((id) => !isMinigameOnCooldown(id));
+
+  bool _prevMinigameAvailable = false;
+
+  void tickCooldowns() {
+    final current = hasAnyMinigameAvailable;
+    if (current != _prevMinigameAvailable) {
+      _prevMinigameAvailable = current;
+      notifyListeners();
+    }
+  }
 
   List<String> get missingBuildingTypes => _villagerSvc.missingBuildingTypes(
       _villagers, _placedBuildings, _roadTiles);
@@ -308,7 +334,9 @@ class VillageProvider extends ChangeNotifier {
       case 'book':
       case 'sandwich':
       case 'hammer':
+      case 'glasses':
         await addItemToInventory(type);
+        _hasNewBackpackItems = true;
         break;
     }
   }
@@ -584,6 +612,13 @@ class VillageProvider extends ChangeNotifier {
     return result;
   }
 
+  Future<bool> useGlassesItem() async {
+    final result =
+        await _inventorySvc.useGlassesItem(_inventoryItems, _activePowerups);
+    if (result) notifyListeners();
+    return result;
+  }
+
   Future<void> setMinigameCooldown(String minigameId, int cooldownHours) async {
     await _inventorySvc.setMinigameCooldown(
         minigameId, cooldownHours, _minigameCooldowns);
@@ -592,7 +627,11 @@ class VillageProvider extends ChangeNotifier {
 
   Future<String> grantMinigameReward() async {
     final rewardType = await _inventorySvc.grantMinigameReward(_inventoryItems);
-    if (rewardType == 'gems') _gems += 5;
+    if (rewardType == 'gems') {
+      _gems += 5;
+    } else {
+      _hasNewBackpackItems = true;
+    }
     notifyListeners();
     return rewardType;
   }

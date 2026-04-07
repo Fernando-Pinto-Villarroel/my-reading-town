@@ -43,18 +43,56 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                       fontSize: 12,
                       color: AppTheme.darkText.withValues(alpha: 0.5))),
               SizedBox(height: 12),
-              TextField(
-                controller: pagesController,
-                decoration: InputDecoration(
-                  labelText:
-                      '${langProvider.translate('pages_read_label')} $remainingPages)',
-                  hintText: langProvider.translate('pages_read_hint'),
-                  errorText: pagesError,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                keyboardType: TextInputType.number,
-                autofocus: true,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: pagesController,
+                      decoration: InputDecoration(
+                        labelText:
+                            '${langProvider.translate('pages_read_label')} $remainingPages)',
+                        hintText: langProvider.translate('pages_read_hint'),
+                        errorText: pagesError,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Tooltip(
+                    message: langProvider.translate('calculator_tooltip'),
+                    child: InkWell(
+                      onTap: () async {
+                        final result = await _showPageCalculatorModal(
+                          dialogCtx,
+                          langProvider,
+                          book.pagesRead,
+                          book.totalPages,
+                        );
+                        if (result != null) {
+                          pagesController.text = result.toString();
+                          setDialogState(() => pagesError = null);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        width: 50,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: AppTheme.lavender.withValues(alpha: 0.15),
+                          border: Border.all(
+                              color: AppTheme.lavender.withValues(alpha: 0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.calculate_rounded,
+                            color: AppTheme.lavender, size: 26),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 12),
               TextField(
@@ -221,7 +259,8 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 Navigator.pop(dialogCtx);
 
                 final rewards = await bookProvider.logPages(bookId, pagesToLog,
-                    timeTakenMinutes: timeMins, sessionDate: selectedDate);
+                    timeTakenMinutes: timeMins, sessionDate: selectedDate,
+                    resourceMultiplier: villageProvider.readingResourceMultiplier);
                 final coinsEarned = rewards['coins'] as int;
                 final gemsEarned = rewards['gems'] as int;
                 final woodEarned = rewards['wood'] as int;
@@ -260,6 +299,114 @@ void showLogPagesDialog(BuildContext context, int bookId) {
                 }
               },
               child: Text(langProvider.translate('log_button')),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<int?> _showPageCalculatorModal(
+  BuildContext context,
+  LanguageProvider langProvider,
+  int pagesAlreadyRead,
+  int totalPages,
+) {
+  final currentPageController = TextEditingController();
+  return showDialog<int>(
+    context: context,
+    builder: (ctx) {
+      String? calcError;
+      return StatefulBuilder(
+        builder: (ctx, setCalcState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppTheme.cream,
+          title: Row(
+            children: [
+              Icon(Icons.calculate_rounded, color: AppTheme.lavender, size: 24),
+              SizedBox(width: 8),
+              Text(
+                langProvider.translate('calculator_title'),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.darkText),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                langProvider.translate('calculator_subtitle')
+                    .replaceAll('{read}', '$pagesAlreadyRead')
+                    .replaceAll('{total}', '$totalPages'),
+                style: TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.darkText.withValues(alpha: 0.65)),
+              ),
+              SizedBox(height: 14),
+              TextField(
+                controller: currentPageController,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: langProvider.translate('calculator_page_label'),
+                  hintText: '${pagesAlreadyRead + 1}',
+                  errorText: calcError,
+                  border:
+                      OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: AppTheme.lavender.withValues(alpha: 0.5)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.lavender),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(langProvider.translate('cancel'),
+                  style: TextStyle(color: AppTheme.darkText.withValues(alpha: 0.6))),
+            ),
+            ElevatedButton.icon(
+              icon: Icon(Icons.check_rounded, size: 18),
+              label: Text(langProvider.translate('calculator_calculate')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.lavender,
+                foregroundColor: AppTheme.darkText,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                final currentPage =
+                    int.tryParse(currentPageController.text.trim());
+                if (currentPage == null || currentPage <= 0) {
+                  setCalcState(() => calcError =
+                      langProvider.translate('calculator_error_invalid'));
+                  return;
+                }
+                if (currentPage <= pagesAlreadyRead) {
+                  setCalcState(() => calcError =
+                      langProvider.translate('calculator_error_already_read'));
+                  return;
+                }
+                if (currentPage > totalPages) {
+                  setCalcState(() => calcError =
+                      langProvider.translate('calculator_error_exceeds_total'));
+                  return;
+                }
+                Navigator.pop(ctx, currentPage - pagesAlreadyRead);
+              },
             ),
           ],
         ),

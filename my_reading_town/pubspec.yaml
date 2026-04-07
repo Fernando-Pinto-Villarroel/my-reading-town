@@ -38,12 +38,11 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/data/en/
-    - assets/data/es/
-    - assets/data/fr/
-    - assets/data/it/
-    - assets/data/pt/
-    - assets/messages/
+    - assets/messages/en/
+    - assets/messages/es/
+    - assets/messages/fr/
+    - assets/messages/it/
+    - assets/messages/pt/
 
 flutter_launcher_icons:
   android: "launcher_icon"

@@ -127,7 +127,7 @@ class ReadingService {
   }
 
   Future<Map<String, dynamic>> logPages(int bookId, int pages, List<Book> books,
-      {int? timeTakenMinutes, DateTime? sessionDate}) async {
+      {int? timeTakenMinutes, DateTime? sessionDate, double resourceMultiplier = 1.0}) async {
     final bookIndex = books.indexWhere((b) => b.id == bookId);
     if (bookIndex == -1) throw Exception('Book not found');
 
@@ -149,23 +149,14 @@ class ReadingService {
     final rewardablePages =
         (newPagesRead - book.maxRewardedPages).clamp(0, actualPagesLogged);
 
-    final random = Random();
-    int coinsEarned = rewardablePages * VillageRules.coinsPerPage;
+    int coinsEarned = (rewardablePages * VillageRules.coinsPerPage * resourceMultiplier).round();
     int gemsEarned = 0;
     int woodEarned = 0;
     int metalEarned = 0;
 
     if (rewardablePages > 0) {
-      if (rewardablePages >= 10) {
-        woodEarned = rewardablePages * VillageRules.woodPerPage;
-        metalEarned = rewardablePages * VillageRules.metalPerPage;
-      } else {
-        if (random.nextBool()) {
-          woodEarned = rewardablePages * VillageRules.woodPerPage;
-        } else {
-          metalEarned = rewardablePages * VillageRules.metalPerPage;
-        }
-      }
+      woodEarned = (rewardablePages * VillageRules.woodPerPage * resourceMultiplier).round();
+      metalEarned = (rewardablePages * VillageRules.metalPerPage * resourceMultiplier).round();
     }
 
     bool bookCompleted = newPagesRead >= book.totalPages;

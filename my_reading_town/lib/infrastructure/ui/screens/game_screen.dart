@@ -205,6 +205,7 @@ class _GameScreenState extends State<GameScreen>
   void _checkConstructions() async {
     if (!mounted) return;
     final village = _villageProvider;
+    village.tickCooldowns();
     final completed = await village.checkAndCompleteConstructions();
     for (var building in completed) {
       if (!_notifiedCompletions.contains(building.id)) {
@@ -506,6 +507,7 @@ class _GameScreenState extends State<GameScreen>
                     if (_tourStep == 8) {
                       setState(() => _tourStep = 9);
                     } else {
+                      _villageProvider.clearNewBackpackItems();
                       showBackpackDialog(context, _villageProvider);
                     }
                   },

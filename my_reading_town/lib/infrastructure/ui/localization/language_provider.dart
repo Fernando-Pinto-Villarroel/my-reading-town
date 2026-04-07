@@ -33,7 +33,7 @@ class LanguageProvider extends ChangeNotifier {
 
   Future<void> _loadTranslations(String locale) async {
     final jsonString =
-        await rootBundle.loadString('assets/messages/$locale.json');
+        await rootBundle.loadString('assets/messages/$locale/$locale.json');
     final Map<String, dynamic> jsonMap = json.decode(jsonString);
     _translations =
         jsonMap.map((key, value) => MapEntry(key, value.toString()));

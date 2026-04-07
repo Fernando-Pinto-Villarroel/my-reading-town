@@ -54,7 +54,7 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
       locale = 'en';
     }
     final jsonStr =
-        await rootBundle.loadString('assets/data/$locale/guess_author.json');
+        await rootBundle.loadString('assets/messages/$locale/guess_author.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     setState(() {
       _questions = List<Map<String, dynamic>>.from(data['questions']);

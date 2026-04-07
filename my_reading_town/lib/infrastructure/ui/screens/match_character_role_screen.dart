@@ -55,7 +55,7 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
       locale = 'en';
     }
     final jsonStr = await rootBundle
-        .loadString('assets/data/$locale/match_character_role.json');
+        .loadString('assets/messages/$locale/match_character_role.json');
     final data = json.decode(jsonStr) as Map<String, dynamic>;
     setState(() {
       _questions = List<Map<String, dynamic>>.from(data['questions']);

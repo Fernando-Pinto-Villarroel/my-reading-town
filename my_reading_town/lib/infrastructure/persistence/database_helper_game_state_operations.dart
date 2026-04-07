@@ -109,4 +109,33 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
     final db = await database;
     await db.update('game_state', {'roulette_last_free_spin': isoDate}, where: 'id = 1');
   }
+
+  Future<Map<String, dynamic>> getNotificationSettings() async {
+    final state = await getGameState();
+    return {
+      'days_enabled': state['notif_days_enabled'] as String? ?? '1111111',
+      'start_hour': state['notif_start_hour'] as int? ?? 8,
+      'end_hour': state['notif_end_hour'] as int? ?? 22,
+      'per_day': state['notif_per_day'] as int? ?? 2,
+    };
+  }
+
+  Future<void> saveNotificationSettings({
+    required String daysEnabled,
+    required int startHour,
+    required int endHour,
+    required int perDay,
+  }) async {
+    final db = await database;
+    await db.update(
+      'game_state',
+      {
+        'notif_days_enabled': daysEnabled,
+        'notif_start_hour': startHour,
+        'notif_end_hour': endHour,
+        'notif_per_day': perDay,
+      },
+      where: 'id = 1',
+    );
+  }
 }

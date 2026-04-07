@@ -30,18 +30,9 @@ class DatabaseHelper {
     }
     return await openDatabase(
       path,
-      version: 5,
+      version: 1,
       onCreate: _createTables,
-      onUpgrade: _onUpgrade,
     );
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 5) {
-      await db.execute('ALTER TABLE books ADD COLUMN rating INTEGER');
-      await db.execute(
-          'ALTER TABLE game_state ADD COLUMN roulette_last_free_spin TEXT');
-    }
   }
 
   Future<void> _createTables(Database db, int version) async {
@@ -162,7 +153,11 @@ class DatabaseHelper {
         town_name TEXT NOT NULL DEFAULT 'My Village',
         language TEXT NOT NULL DEFAULT 'en',
         tutorial_completed INTEGER NOT NULL DEFAULT 0,
-        roulette_last_free_spin TEXT
+        roulette_last_free_spin TEXT,
+        notif_days_enabled TEXT NOT NULL DEFAULT '1111111',
+        notif_start_hour INTEGER NOT NULL DEFAULT 8,
+        notif_end_hour INTEGER NOT NULL DEFAULT 22,
+        notif_per_day INTEGER NOT NULL DEFAULT 2
       )
     ''');
 
@@ -200,7 +195,7 @@ class DatabaseHelper {
       )
     ''');
 
-    for (final type in ['book', 'sandwich', 'hammer']) {
+    for (final type in ['book', 'sandwich', 'hammer', 'glasses']) {
       await db.insert('inventory_items', {'type': type, 'quantity': 0});
     }
 
