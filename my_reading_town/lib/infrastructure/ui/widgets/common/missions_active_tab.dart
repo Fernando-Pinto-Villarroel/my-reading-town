@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/domain/entities/mission.dart';
@@ -326,16 +327,7 @@ class ClaimButton extends StatelessWidget {
         if (success) {
           onClaimed();
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${context.t('reward_claimed_prefix')} ${mission.reward}',
-                  style: TextStyle(color: AppTheme.darkText),
-                ),
-                backgroundColor: AppTheme.mint,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            showSuccessToast(context, '${context.t('reward_claimed_prefix')} ${mission.reward}');
           }
         }
       },

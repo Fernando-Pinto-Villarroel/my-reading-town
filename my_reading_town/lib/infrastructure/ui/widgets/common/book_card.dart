@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -675,10 +676,7 @@ class _SessionRow extends StatelessWidget {
                     } else if (dialogCtx.mounted) {
                       Navigator.pop(dialogCtx);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(
-                              '${langProvider.translate('error_prefix')}$msg')),
-                        );
+                        showErrorToast(context, '${langProvider.translate('error_prefix')}$msg');
                       }
                     }
                   }
@@ -715,11 +713,7 @@ class _SessionRow extends StatelessWidget {
                 await bookProvider.deleteSession(session.id!, bookId);
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            '${langProvider.translate('error_prefix')}${e.toString()}')),
-                  );
+                  showErrorToast(context, '${langProvider.translate('error_prefix')}${e.toString()}');
                 }
               }
             },

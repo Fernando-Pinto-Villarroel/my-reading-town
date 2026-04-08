@@ -78,11 +78,7 @@ mixin _GameTapHandlers on State<GameScreen> {
       final existingBuilding = village.getBuildingAt(tileX, tileY);
       if (existingBuilding != null &&
           existingBuilding.id != _movingBuildingId) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(langProvider.translate('tile_already_occupied'),
-                style: TextStyle(color: AppTheme.darkText)),
-            backgroundColor: AppTheme.peach,
-            behavior: SnackBarBehavior.floating));
+        showWarningToast(context, langProvider.translate('tile_already_occupied'));
         return;
       }
       _moveBuilding(tileX, tileY);
@@ -103,11 +99,7 @@ mixin _GameTapHandlers on State<GameScreen> {
       final th = VillageRules.buildingTileHeight(_selectedBuildingType!);
       final placement = village.findValidPlacement(tileX, tileY, tw, th);
       if (placement == null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(langProvider.translate('cannot_place_here'),
-                style: TextStyle(color: AppTheme.darkText)),
-            backgroundColor: AppTheme.peach,
-            behavior: SnackBarBehavior.floating));
+        showWarningToast(context, langProvider.translate('cannot_place_here'));
         return;
       }
       _placeBuilding(placement.x, placement.y);
@@ -120,12 +112,7 @@ mixin _GameTapHandlers on State<GameScreen> {
         _movingBuildingId = building.id;
         _selectedBuildingType = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              '${langProvider.translate('tap_tile_to_move_prefix')} ${building.name}',
-              style: TextStyle(color: AppTheme.darkText)),
-          backgroundColor: AppTheme.mint,
-          behavior: SnackBarBehavior.floating));
+      showInfoToast(context, '${langProvider.translate('tap_tile_to_move_prefix')} ${building.name}');
     }
   }
 
@@ -139,21 +126,12 @@ mixin _GameTapHandlers on State<GameScreen> {
 
     if (!isDecoration &&
         !village.canPlaceBuildingType(_selectedBuildingType!)) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(langProvider.translate('building_limit_reached'),
-              style: TextStyle(color: AppTheme.darkText)),
-          backgroundColor: AppTheme.peach,
-          behavior: SnackBarBehavior.floating));
+      showWarningToast(context, langProvider.translate('building_limit_reached'));
       return;
     }
 
     if (!village.canStartConstruction) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              '${langProvider.translate('all_constructors_busy')} (${village.busyConstructors}/${village.maxConstructors})',
-              style: TextStyle(color: AppTheme.darkText)),
-          backgroundColor: AppTheme.peach,
-          behavior: SnackBarBehavior.floating));
+      showWarningToast(context, '${langProvider.translate('all_constructors_busy')} (${village.busyConstructors}/${village.maxConstructors})');
       return;
     }
 
@@ -166,12 +144,7 @@ mixin _GameTapHandlers on State<GameScreen> {
         village.gems < gemCost ||
         village.wood < woodCost ||
         village.metal < metalCost) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              langProvider.translate('not_enough_resources_read_more'),
-              style: TextStyle(color: AppTheme.darkText)),
-          backgroundColor: AppTheme.pink,
-          behavior: SnackBarBehavior.floating));
+      showWarningToast(context, langProvider.translate('not_enough_resources_read_more'));
       return;
     }
 
@@ -220,20 +193,14 @@ mixin _GameTapHandlers on State<GameScreen> {
   void _moveBuilding(int tileX, int tileY) async {
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
     final village = _villageProvider;
-    final messenger = ScaffoldMessenger.of(context);
     final success =
         await village.moveBuilding(_movingBuildingId!, tileX, tileY);
     if (!mounted) return;
     if (success) {
-      messenger.clearSnackBars();
       setState(() => _movingBuildingId = null);
       _syncGameState();
     } else {
-      messenger.showSnackBar(SnackBar(
-          content: Text(langProvider.translate('cannot_move_here'),
-              style: TextStyle(color: AppTheme.darkText)),
-          backgroundColor: AppTheme.peach,
-          behavior: SnackBarBehavior.floating));
+      showWarningToast(context, langProvider.translate('cannot_move_here'));
     }
   }
 }

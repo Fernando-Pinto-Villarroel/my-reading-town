@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/domain/entities/inventory_item.dart';
@@ -103,16 +104,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                           Navigator.pop(ctx);
                           final success = await village.useSandwichItem();
                           if (success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    langProvider
-                                        .translate('speed_doubled_snack'),
-                                    style: TextStyle(color: AppTheme.darkText)),
-                                backgroundColor: AppTheme.mint,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            showSuccessToast(context, langProvider.translate('speed_doubled_snack'));
                           }
                         },
                       ),
@@ -130,15 +122,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                           Navigator.pop(ctx);
                           final success = await village.useHammerItem();
                           if (success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    langProvider.translate('extra_slot_snack'),
-                                    style: TextStyle(color: AppTheme.darkText)),
-                                backgroundColor: AppTheme.mint,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            showSuccessToast(context, langProvider.translate('extra_slot_snack'));
                           }
                         },
                       ),
@@ -156,15 +140,7 @@ void showBackpackDialog(BuildContext context, VillageProvider village) {
                           Navigator.pop(ctx);
                           final success = await village.useGlassesItem();
                           if (success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    langProvider.translate('glasses_snack'),
-                                    style: TextStyle(color: AppTheme.darkText)),
-                                backgroundColor: AppTheme.mint,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            showSuccessToast(context, langProvider.translate('glasses_snack'));
                           }
                         },
                       ),

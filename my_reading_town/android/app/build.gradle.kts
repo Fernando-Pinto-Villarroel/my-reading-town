@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ferchostudiosdev.my_reading_town"
+    namespace = "com.ferchostudios_dev.my_reading_town"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.ferchostudiosdev.my_reading_town"
+        applicationId = "com.ferchostudios_dev.my_reading_town"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

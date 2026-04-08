@@ -9,7 +9,6 @@ import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/splash_screen.dart';
 import 'package:my_reading_town/application/services/notification_service.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initServiceLocator();

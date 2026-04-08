@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -239,26 +240,7 @@ void showSettingsDialog(BuildContext context, VillageProvider village) {
                       } on FormatException catch (e) {
                         if (!ctx.mounted) return;
                         final msg = _importErrorMessage(ctx, e.message);
-                        ScaffoldMessenger.of(ctx).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.error_outline,
-                                    color: Colors.white, size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                    child: Text(msg,
-                                        style: const TextStyle(
-                                            color: Colors.white))),
-                              ],
-                            ),
-                            backgroundColor: const Color(0xFFFF6B6B),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 4),
-                          ),
-                        );
+                        showAppToast(ctx, msg, backgroundColor: const Color(0xFFE53935), icon: Icons.error_outline, duration: const Duration(seconds: 4));
                       } catch (_) {}
                     },
                   ),
@@ -449,16 +431,7 @@ class _NotificationSettingsSectionState
         messages: messages,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.t('notification_saved')),
-            backgroundColor: AppTheme.darkMint,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        showSuccessToast(context, context.t('notification_saved'));
       }
     } catch (_) {}
     if (mounted) setState(() => _saving = false);

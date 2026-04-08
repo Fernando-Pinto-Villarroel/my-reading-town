@@ -11,6 +11,7 @@ class LeftActionGrid extends StatelessWidget {
   final VoidCallback onBackpackTap;
   final VoidCallback onMinigamesTap;
   final VoidCallback onRouletteTap;
+  final VoidCallback onStoreTap;
   final GlobalKey? missionsButtonKey;
   final GlobalKey? buildButtonKey;
   final GlobalKey? backpackButtonKey;
@@ -25,6 +26,7 @@ class LeftActionGrid extends StatelessWidget {
     required this.onBackpackTap,
     required this.onMinigamesTap,
     required this.onRouletteTap,
+    required this.onStoreTap,
     this.missionsButtonKey,
     this.buildButtonKey,
     this.backpackButtonKey,
@@ -151,29 +153,41 @@ class LeftActionGrid extends StatelessWidget {
           ],
         ),
         SizedBox(height: gap),
-        Stack(
-          clipBehavior: Clip.none,
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _ActionButton(
-              icon: Icons.casino,
-              color: const Color(0xFFE040A0),
-              size: btnSize,
-              onTap: onRouletteTap,
-            ),
-            if (context.watch<VillageProvider>().canSpinRouletteForFree)
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: AppTheme.coinGold,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                _ActionButton(
+                  icon: Icons.casino,
+                  color: const Color(0xFFE040A0),
+                  size: btnSize,
+                  onTap: onRouletteTap,
                 ),
-              ),
+                if (context.watch<VillageProvider>().canSpinRouletteForFree)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppTheme.coinGold,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(width: gap),
+            _ActionButton(
+              icon: Icons.storefront,
+              color: const Color(0xFF26C6DA),
+              size: btnSize,
+              onTap: onStoreTap,
+            ),
           ],
         ),
       ],

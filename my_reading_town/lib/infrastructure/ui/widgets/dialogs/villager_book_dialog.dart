@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
@@ -76,16 +77,7 @@ void showSelectVillagerForBook(BuildContext context, VillageProvider village) {
                               Navigator.pop(ctx);
                               final success = await village.useBookItem(v.id!);
                               if (success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        '${v.name} ${langProvider.translate('happiness_book_active')}',
-                                        style: TextStyle(
-                                            color: AppTheme.darkText)),
-                                    backgroundColor: AppTheme.mint,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                showSuccessToast(context, '${v.name} ${langProvider.translate('happiness_book_active')}');
                               }
                             },
                     );
