@@ -79,6 +79,8 @@ extension DatabaseHelperInventoryOperations on DatabaseHelper {
     bool? isCompleted,
     bool? isClaimed,
     String? activatedAt,
+    int? pagesAtActivation,
+    int? booksAtActivation,
   }) async {
     final db = await database;
     final existing = await db.query('mission_progress',
@@ -89,12 +91,16 @@ extension DatabaseHelperInventoryOperations on DatabaseHelper {
         'is_completed': (isCompleted ?? false) ? 1 : 0,
         'is_claimed': (isClaimed ?? false) ? 1 : 0,
         'activated_at': activatedAt,
+        'pages_at_activation': pagesAtActivation,
+        'books_at_activation': booksAtActivation,
       });
     } else {
       final updates = <String, dynamic>{};
       if (isCompleted != null) updates['is_completed'] = isCompleted ? 1 : 0;
       if (isClaimed != null) updates['is_claimed'] = isClaimed ? 1 : 0;
       if (activatedAt != null) updates['activated_at'] = activatedAt;
+      if (pagesAtActivation != null) updates['pages_at_activation'] = pagesAtActivation;
+      if (booksAtActivation != null) updates['books_at_activation'] = booksAtActivation;
       if (updates.isNotEmpty) {
         await db.update('mission_progress', updates,
             where: 'mission_id = ?', whereArgs: [missionId]);

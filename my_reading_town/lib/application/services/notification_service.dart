@@ -7,11 +7,26 @@ class NotificationService {
   static const int _dailyBaseId = 1000;
   static const int _maxDailySlots = 70;
   static const int _constructionBaseId = 2000;
+  static const int _minigameBaseId = 3000;
+  static const int _rouletteId = 4000;
+  static const int _eventBaseId = 5000;
+  static const int _eventNotifsPerEvent = 3;
 
   static const String _dailyChannelId = 'daily_reminder';
   static const String _dailyChannelName = 'Daily Reading Reminder';
   static const String _constructionChannelId = 'construction';
   static const String _constructionChannelName = 'Construction Updates';
+  static const String _minigameChannelId = 'minigame_available';
+  static const String _minigameChannelName = 'Minigame Available';
+  static const String _rouletteChannelId = 'roulette_spin';
+  static const String _rouletteChannelName = 'Roulette Spin';
+  static const String _eventChannelId = 'event_reminder';
+  static const String _eventChannelName = 'Event Reminders';
+
+  static const Map<String, int> _minigameNotifIds = {
+    'guess_author': _minigameBaseId,
+    'match_character_role': _minigameBaseId + 1,
+  };
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -147,5 +162,106 @@ class NotificationService {
   Future<void> cancelConstructionNotification(int buildingId) async {
     if (!_initialized) return;
     await _plugin.cancel(id: _constructionBaseId + buildingId);
+  }
+
+  Future<void> scheduleMinigameAvailable({
+    required String minigameId,
+    required Duration remaining,
+    required String title,
+    required String body,
+  }) async {
+    if (!_initialized) return;
+    final notifId = _minigameNotifIds[minigameId];
+    if (notifId == null) return;
+    await _plugin.cancel(id: notifId);
+    if (remaining <= Duration.zero) return;
+    final scheduledDate =
+        _fromDeviceMs(DateTime.now().add(remaining).millisecondsSinceEpoch);
+    await _plugin.zonedSchedule(
+      id: notifId,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          _minigameChannelId,
+          _minigameChannelName,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/launcher_icon',
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleRouletteFreeSpin({
+    required Duration remaining,
+    required String title,
+    required String body,
+  }) async {
+    if (!_initialized) return;
+    await _plugin.cancel(id: _rouletteId);
+    if (remaining <= Duration.zero) return;
+    final scheduledDate =
+        _fromDeviceMs(DateTime.now().add(remaining).millisecondsSinceEpoch);
+    await _plugin.zonedSchedule(
+      id: _rouletteId,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          _rouletteChannelId,
+          _rouletteChannelName,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/launcher_icon',
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleEventReminders({
+    required int eventIndex,
+    required List<({DateTime scheduledAt, String title, String body})> notifications,
+  }) async {
+    if (!_initialized) return;
+    final base = _eventBaseId + eventIndex * _eventNotifsPerEvent;
+    for (int i = 0; i < _eventNotifsPerEvent; i++) {
+      await _plugin.cancel(id: base + i);
+    }
+    final now = DateTime.now();
+    int slot = 0;
+    for (final n in notifications) {
+      if (slot >= _eventNotifsPerEvent) break;
+      if (!n.scheduledAt.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: base + slot,
+        title: n.title,
+        body: n.body,
+        scheduledDate: _fromDeviceMs(n.scheduledAt.millisecondsSinceEpoch),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _eventChannelId,
+            _eventChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: '@mipmap/launcher_icon',
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+      slot++;
+    }
+  }
+
+  Future<void> cancelEventReminders(int eventIndex) async {
+    if (!_initialized) return;
+    final base = _eventBaseId + eventIndex * _eventNotifsPerEvent;
+    for (int i = 0; i < _eventNotifsPerEvent; i++) {
+      await _plugin.cancel(id: base + i);
+    }
   }
 }

@@ -138,4 +138,26 @@ extension DatabaseHelperGameStateOperations on DatabaseHelper {
       where: 'id = 1',
     );
   }
+
+  Future<List<String>> getUnlockedSpeciesIds() async {
+    final db = await database;
+    final rows = await db.query('species_unlocks');
+    return rows.map((r) => r['species_id'] as String).toList();
+  }
+
+  Future<void> unlockSpecies(String speciesId) async {
+    final db = await database;
+    await db.insert(
+      'species_unlocks',
+      {'species_id': speciesId, 'unlocked_at': DateTime.now().toIso8601String()},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<bool> isSpeciesUnlocked(String speciesId) async {
+    final db = await database;
+    final rows = await db.query('species_unlocks',
+        where: 'species_id = ?', whereArgs: [speciesId]);
+    return rows.isNotEmpty;
+  }
 }

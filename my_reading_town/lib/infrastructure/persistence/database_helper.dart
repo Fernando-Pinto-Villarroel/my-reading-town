@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:my_reading_town/app_constants.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
+import 'package:my_reading_town/domain/rules/species_rules.dart';
 
 part 'database_helper_book_operations.dart';
 part 'database_helper_building_operations.dart';
@@ -191,7 +192,29 @@ class DatabaseHelper {
         mission_id TEXT PRIMARY KEY,
         is_completed INTEGER NOT NULL DEFAULT 0,
         is_claimed INTEGER NOT NULL DEFAULT 0,
-        activated_at TEXT
+        activated_at TEXT,
+        pages_at_activation INTEGER,
+        books_at_activation INTEGER
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE species_unlocks (
+        species_id TEXT PRIMARY KEY,
+        unlocked_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE pending_villager_choices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        house_id INTEGER NOT NULL,
+        species1 TEXT NOT NULL,
+        species2 TEXT NOT NULL,
+        species3 TEXT NOT NULL,
+        name1 TEXT NOT NULL,
+        name2 TEXT NOT NULL,
+        name3 TEXT NOT NULL
       )
     ''');
 
@@ -201,10 +224,10 @@ class DatabaseHelper {
 
     await db.insert('resources', {
       'id': 1,
-      'coins': AppConstants.testMode ? 9999 : VillageRules.startingCoins,
-      'gems': AppConstants.testMode ? 9999 : VillageRules.startingGems,
-      'wood': AppConstants.testMode ? 9999 : VillageRules.startingWood,
-      'metal': AppConstants.testMode ? 9999 : VillageRules.startingMetal,
+      'coins': AppConstants.testMode ? 99999 : VillageRules.startingCoins,
+      'gems': AppConstants.testMode ? 99999 : VillageRules.startingGems,
+      'wood': AppConstants.testMode ? 99999 : VillageRules.startingWood,
+      'metal': AppConstants.testMode ? 99999 : VillageRules.startingMetal,
     });
 
     await db.insert('game_state', {
@@ -259,8 +282,20 @@ class DatabaseHelper {
       'is_constructed': 1,
     });
 
+    final now = DateTime.now().toIso8601String();
+    for (final id in SpeciesRules.starterSpecies) {
+      await db.insert(
+          'species_unlocks',
+          {
+            'species_id': id,
+            'unlocked_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+
     final random = Random();
-    final species = VillageRules.villagerSpecies[random.nextInt(3)];
+    final starterList = SpeciesRules.starterSpecies;
+    final species = starterList[random.nextInt(starterList.length)];
     final name = VillageRules
         .villagerNames[random.nextInt(VillageRules.villagerNames.length)];
     await db.insert('villagers', {

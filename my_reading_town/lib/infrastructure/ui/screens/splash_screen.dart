@@ -8,6 +8,7 @@ import 'package:my_reading_town/adapters/providers/tag_provider.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/adapters/repositories/villager_favorites.dart';
 import 'package:my_reading_town/application/services/notification_service.dart';
+import 'package:my_reading_town/domain/rules/holiday_rules.dart';
 import 'package:my_reading_town/infrastructure/di/service_locator.dart';
 import 'package:my_reading_town/infrastructure/persistence/database_helper.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
@@ -65,6 +66,48 @@ class _SplashScreenState extends State<SplashScreen> {
       return [
         {'title': 'Time to read!', 'body': 'Your village is waiting for you!'}
       ];
+    }
+  }
+
+  Future<void> _scheduleEventReminders(
+      NotificationService notif, String locale) async {
+    final lang = context.read<LanguageProvider>();
+    final now = DateTime.now();
+    for (int i = 0; i < HolidayRules.allEvents.length; i++) {
+      final event = HolidayRules.allEvents[i];
+      final eventName = lang.translate('branch_${event.id}');
+      final start = DateTime(now.year, event.startMonth, event.startDay);
+      final end = DateTime(now.year, event.endMonth, event.endDay, 23, 59, 59);
+      if (end.isBefore(now)) continue;
+
+      final notifs = <({DateTime scheduledAt, String title, String body})>[];
+
+      final startNotif = start.isAfter(now) ? start : now.add(const Duration(hours: 1));
+      notifs.add((
+        scheduledAt: startNotif,
+        title: lang.translate('notif_event_start_title').replaceAll('{event}', eventName),
+        body: lang.translate('notif_event_start_body').replaceAll('{event}', eventName),
+      ));
+
+      final mid = start.add(Duration(milliseconds: end.difference(start).inMilliseconds ~/ 2));
+      if (mid.isAfter(now)) {
+        notifs.add((
+          scheduledAt: mid,
+          title: lang.translate('notif_event_mid_title').replaceAll('{event}', eventName),
+          body: lang.translate('notif_event_mid_body').replaceAll('{event}', eventName),
+        ));
+      }
+
+      final endingWarning = end.subtract(const Duration(days: 3));
+      if (endingWarning.isAfter(now)) {
+        notifs.add((
+          scheduledAt: endingWarning,
+          title: lang.translate('notif_event_ending_title').replaceAll('{event}', eventName),
+          body: lang.translate('notif_event_ending_body').replaceAll('{event}', eventName),
+        ));
+      }
+
+      await notif.scheduleEventReminders(eventIndex: i, notifications: notifs);
     }
   }
 
@@ -134,6 +177,7 @@ class _SplashScreenState extends State<SplashScreen> {
           notificationsPerDay: perDay,
           messages: messages,
         );
+        await _scheduleEventReminders(notif, locale);
       } catch (_) {}
 
       await _setProgress(1.0);

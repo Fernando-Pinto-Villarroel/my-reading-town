@@ -1,6 +1,7 @@
 import 'dart:math';
+import 'package:my_reading_town/app_constants.dart';
 
-enum StoreItemType { resource, powerup, gems, pack }
+enum StoreItemType { resource, powerup, gems, pack, species }
 
 enum ResourceType { coins, wood, metal }
 
@@ -248,19 +249,23 @@ class StoreRules {
     _DiscountEvent? active;
     DateTime? endsAt;
 
-    for (final event in _events) {
-      final start = DateTime(now.year, event.startMonth, event.startDay);
-      final end = DateTime(now.year, event.endMonth, event.endDay, 23, 59, 59);
-      if (now.isAfter(start) && now.isBefore(end)) {
-        active = event;
-        endsAt = end;
-        break;
+    if (AppConstants.testMode) {
+      active = _events.last;
+      endsAt = now.add(const Duration(days: 1));
+    } else {
+      for (final event in _events) {
+        final start = DateTime(now.year, event.startMonth, event.startDay);
+        final end = DateTime(now.year, event.endMonth, event.endDay, 23, 59, 59);
+        if (now.isAfter(start) && now.isBefore(end)) {
+          active = event;
+          endsAt = end;
+          break;
+        }
       }
+      if (active == null) return {};
     }
 
-    if (active == null) return {};
-
-    final rng = Random(now.day + now.month * 31);
+    final rng = Random(active.startMonth * 100 + active.startDay);
     final result = <String, DiscountInfo>{};
 
     for (final item in gemsItems) {

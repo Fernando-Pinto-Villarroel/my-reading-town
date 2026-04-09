@@ -224,6 +224,26 @@ All packs are **Consumable** (can be repurchased).
 
 **Important:** The `productId` values here must exactly match the `productId` fields in `StoreRules.packs` in `lib/domain/rules/store_rules.dart`.
 
+### Step 4.4 — Register Species Products (Non-Consumable)
+
+Species purchases are **Non-Consumable** (bought once; owning a species is permanent).
+
+| Product ID             | Name          | Rarity        | Price   |
+|------------------------|---------------|---------------|---------|
+| `species_polar_bear`   | Polar Bear    | Rare          | $1.99   |
+| `species_panda_bear`   | Panda Bear    | Extraordinary | $4.99   |
+| `species_monkey`       | Monkey        | Legendary     | $9.99   |
+| `species_lion`         | Lion          | Godly         | $19.99  |
+
+For each product:
+1. Set **Product ID** exactly as shown (must match the `id` field in `SpeciesRules.allSpecies` in `lib/domain/rules/species_rules.dart`).
+2. Set **Type** to **"Non-consumable"** (species cannot be bought twice — the app hides already-owned species from the store tab).
+3. Set **Status** to **Active**.
+4. Set the price.
+5. Click **Save**.
+
+**Important:** The `productId` values here must exactly match the `realPrice`-backed species IDs in `SpeciesRules.allSpecies` in `lib/domain/rules/species_rules.dart`.
+
 ---
 
 ## PART 5 — Testing Before Going Live
@@ -352,7 +372,7 @@ Add new in-app product IDs in Play Console **before** releasing the app version 
 - [ ] Complete store listing (screenshots, description, icon)
 - [ ] Complete content rating questionnaire
 - [ ] Add privacy policy URL
-- [ ] Register all 11 in-app products (6 gem packs + 5 regular packs)
+- [ ] Register all 15 in-app products (6 gem packs + 5 regular packs + 4 species)
 - [ ] Upload AAB to Internal Testing track
 - [ ] Test purchases with license testers
 - [ ] Set `playStore = true` in `app_constants.dart`

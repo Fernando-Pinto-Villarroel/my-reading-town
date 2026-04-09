@@ -103,6 +103,14 @@ class StoreService extends ChangeNotifier {
     return _launchPurchase(pack.productId);
   }
 
+  Future<StorePurchaseResult> purchaseSpecies(String productId) async {
+    if (!AppConstants.playStore) {
+      return const StorePurchaseResult(state: StorePurchaseState.success);
+    }
+
+    return _launchPurchase(productId);
+  }
+
   Future<StorePurchaseResult> _launchPurchase(String productId) async {
     if (!_available) {
       return const StorePurchaseResult(

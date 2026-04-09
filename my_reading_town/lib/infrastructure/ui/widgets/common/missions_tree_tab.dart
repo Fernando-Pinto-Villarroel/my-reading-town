@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
 import 'package:my_reading_town/domain/entities/mission.dart';
 import 'package:my_reading_town/domain/entities/mission_data.dart';
+import 'package:my_reading_town/domain/rules/holiday_rules.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/missions_active_tab.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart';
+
 
 class MissionTreeTab extends StatelessWidget {
   final int totalPagesRead;
@@ -21,17 +23,24 @@ class MissionTreeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final village = context.watch<VillageProvider>();
 
+    final now = DateTime.now();
+
     return SingleChildScrollView(
       child: Column(
         children: [
           for (final branch in MissionBranch.values) ...[
-            BranchTreeCard(
-              branch: branch,
-              village: village,
-              totalPagesRead: totalPagesRead,
-              completedBooks: completedBooks,
-            ),
-            const SizedBox(height: 12),
+            if (HolidayRules.isHolidayBranch(branch) &&
+                !(HolidayRules.eventForBranch(branch)?.isActive(now) ?? false))
+              const SizedBox.shrink()
+            else ...[
+              BranchTreeCard(
+                branch: branch,
+                village: village,
+                totalPagesRead: totalPagesRead,
+                completedBooks: completedBooks,
+              ),
+              const SizedBox(height: 12),
+            ],
           ],
         ],
       ),
@@ -59,6 +68,21 @@ class BranchTreeCard extends StatefulWidget {
 
 class _BranchTreeCardState extends State<BranchTreeCard> {
   bool _expanded = false;
+
+  String _lockedDescription(
+      BuildContext context, MissionBranch branch, List<MissionBranch> deps) {
+    final event = HolidayRules.eventForBranch(branch);
+    if (event != null) {
+      return context.t(
+        'event_available_in_${event.id}',
+        fallback: MissionData.branchDescription(branch),
+      );
+    }
+    if (deps.isNotEmpty) {
+      return '${context.t('unlock_requirement_prefix')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(' and ')} ${context.t('unlock_requirement_suffix')}';
+    }
+    return MissionData.branchDescription(branch);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,13 +151,24 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
                             color: isUnlocked ? AppTheme.darkText : Colors.grey,
                           ),
                         ),
-                        if (!isUnlocked && deps.isNotEmpty)
-                          Text(
-                            '${context.t('requires')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(', ')}',
-                            style: TextStyle(
-                                fontSize: 11, color: Colors.grey.shade500),
-                          ),
-                        if (isUnlocked)
+                        if (!isUnlocked) ...[
+                          if (HolidayRules.isHolidayBranch(widget.branch))
+                            Text(
+                              context.t(
+                                'event_available_in_${HolidayRules.eventForBranch(widget.branch)?.id ?? ''}',
+                                fallback: MissionData.branchDescription(widget.branch),
+                              ),
+                              style: TextStyle(
+                                  fontSize: 11, color: Colors.grey.shade500),
+                            )
+                          else if (deps.isNotEmpty)
+                            Text(
+                              '${context.t('requires')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(', ')}',
+                              style: TextStyle(
+                                  fontSize: 11, color: Colors.grey.shade500),
+                            ),
+                        ],
+                        if (isUnlocked) ...[
                           Text(
                             '$claimedCount / ${missions.length} ${context.t('completed')}',
                             style: TextStyle(
@@ -141,6 +176,11 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
                                 color:
                                     AppTheme.darkText.withValues(alpha: 0.5)),
                           ),
+                          if (HolidayRules.isHolidayBranch(widget.branch)) ...[
+                            const SizedBox(height: 2),
+                            EventCountdownBadge(branch: widget.branch, color: color),
+                          ],
+                        ],
                       ],
                     ),
                   ),
@@ -201,7 +241,7 @@ class _BranchTreeCardState extends State<BranchTreeCard> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                '${context.t('unlock_requirement_prefix')} ${deps.map((b) => context.t('branch_${b.name.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]!.toLowerCase()}')}', fallback: MissionData.branchDisplayName(b))).join(' and ')} ${context.t('unlock_requirement_suffix')}',
+                _lockedDescription(context, widget.branch, deps),
                 style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,

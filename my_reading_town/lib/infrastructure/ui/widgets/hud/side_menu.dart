@@ -8,6 +8,7 @@ class SideMenu extends StatelessWidget {
   final VoidCallback onStatsTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onPhotoTap;
+  final VoidCallback onSpeciesBookTap;
   final GlobalKey? readingButtonKey;
   final GlobalKey? photoButtonKey;
   final GlobalKey? statsButtonKey;
@@ -21,6 +22,7 @@ class SideMenu extends StatelessWidget {
     required this.onStatsTap,
     required this.onSettingsTap,
     required this.onPhotoTap,
+    required this.onSpeciesBookTap,
     this.readingButtonKey,
     this.photoButtonKey,
     this.statsButtonKey,
@@ -49,6 +51,12 @@ class SideMenu extends StatelessWidget {
               isActive: false,
               onTap: onPhotoTap,
             ),
+          ),
+          SizedBox(height: 6),
+          SideMenuButton(
+            icon: Icons.collections_bookmark,
+            isActive: false,
+            onTap: onSpeciesBookTap,
           ),
           SizedBox(height: 6),
           SizedBox(

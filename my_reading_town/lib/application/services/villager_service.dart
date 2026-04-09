@@ -114,19 +114,48 @@ class VillagerService {
     }
   }
 
+  List<String> generateSpeciesOptions(List<String> availableSpecies,
+      {int seed = 0}) {
+    final random = Random(seed);
+    final pool = availableSpecies.isNotEmpty
+        ? availableSpecies
+        : VillageRules.villagerSpecies;
+    if (pool.length <= 3) {
+      final result = List<String>.from(pool);
+      while (result.length < 3) {
+        result.add(pool[random.nextInt(pool.length)]);
+      }
+      result.shuffle(random);
+      return result;
+    }
+    final shuffled = List<String>.from(pool)..shuffle(random);
+    return shuffled.take(3).toList();
+  }
+
   Future<List<Villager>> reconcileVillagers(List<Villager> villagers,
-      List<PlacedBuilding> buildings, Set<String> roadTiles) async {
-    final capacity = _buildingService.totalHouseCapacity(buildings, roadTiles);
-    final random = Random();
+      List<PlacedBuilding> buildings, Set<String> roadTiles,
+      {List<String>? unlockedSpeciesIds,
+      Map<int, int>? pendingChoiceCountByHouse}) async {
     final houses = buildings
         .where((b) =>
             b.type == 'house' &&
-            _buildingService.effectiveBuildingLevel(b) > 0 &&
-            _buildingService.isBuildingRoadConnected(b, roadTiles))
+            _buildingService.effectiveBuildingLevel(b) > 0)
         .toList();
 
+    final availableSpecies =
+        (unlockedSpeciesIds != null && unlockedSpeciesIds.isNotEmpty)
+            ? unlockedSpeciesIds
+            : VillageRules.villagerSpecies;
+
+    final totalCapacity = houses.fold<int>(
+        0,
+        (sum, h) => sum +
+            VillageRules.villagersPerHouse(
+                _buildingService.effectiveBuildingLevel(h)));
+
+    final random = Random();
     final newVillagers = <Villager>[];
-    while (villagers.length + newVillagers.length < capacity) {
+    while (villagers.length + newVillagers.length < totalCapacity) {
       PlacedBuilding? targetHouse;
       for (var house in houses) {
         final cap = VillageRules.villagersPerHouse(
@@ -134,7 +163,8 @@ class VillagerService {
         final current = (villagers + newVillagers)
             .where((v) => v.houseId == house.id)
             .length;
-        if (current < cap) {
+        final pendingCount = pendingChoiceCountByHouse?[house.id!] ?? 0;
+        if (current + pendingCount < cap) {
           targetHouse = house;
           break;
         }
@@ -143,7 +173,7 @@ class VillagerService {
 
       final seed = random.nextInt(10000);
       final name = VillageRules.randomVillagerName(seed);
-      final species = VillageRules.randomVillagerSpecies(seed ~/ 3);
+      final species = availableSpecies[seed % availableSpecies.length];
       final id = await _repo.insertVillager(name, species, targetHouse.id!);
       newVillagers.add(Villager(
           id: id,

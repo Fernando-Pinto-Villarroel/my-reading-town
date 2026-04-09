@@ -14,6 +14,9 @@ class MissionData {
     ..._advancedConstructionBranch,
     ..._villagerBranch,
     ..._bookTrackingBranch,
+    ..._halloweenBranch,
+    ..._christmasBranch,
+    ..._easterBranch,
   ];
 
   static final List<Mission> _basicConstructionBranch = [
@@ -299,6 +302,189 @@ class MissionData {
     ),
   ];
 
+  static const List<Mission> _halloweenBranch = [
+    Mission(
+      id: 'hw_enter',
+      title: 'Enter the App',
+      description: 'Open the app during the Halloween event.',
+      branch: MissionBranch.halloween,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.enterAppDuringEvent,
+      reward: MissionReward(exp: 10, coins: 50),
+      orderInBranch: 0,
+    ),
+    Mission(
+      id: 'hw_happy_5',
+      title: 'Make 5 Villagers Happy',
+      description: 'Get 5 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.halloween,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 5,
+      reward: MissionReward(exp: 20, gems: 3),
+      orderInBranch: 1,
+    ),
+    Mission(
+      id: 'hw_pages_500',
+      title: 'Read 500 Pages',
+      description: 'Log 500 total pages read.',
+      branch: MissionBranch.halloween,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.totalPagesRead,
+      targetCount: 500,
+      reward: MissionReward(exp: 30, speciesId: 'polar_bear'),
+      orderInBranch: 2,
+    ),
+  ];
+
+  static const List<Mission> _christmasBranch = [
+    Mission(
+      id: 'xmas_enter',
+      title: 'Enter the App',
+      description: 'Open the app during the Christmas event.',
+      branch: MissionBranch.christmas,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.enterAppDuringEvent,
+      reward: MissionReward(exp: 10, coins: 50),
+      orderInBranch: 0,
+    ),
+    Mission(
+      id: 'xmas_happy_3',
+      title: 'Make 3 Villagers Happy',
+      description: 'Get 3 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.christmas,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 3,
+      reward: MissionReward(exp: 15, gems: 2),
+      orderInBranch: 1,
+    ),
+    Mission(
+      id: 'xmas_books_1',
+      title: 'Finish a Book',
+      description: 'Complete reading 1 book.',
+      branch: MissionBranch.christmas,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.booksCompleted,
+      targetCount: 1,
+      reward: MissionReward(exp: 20, gems: 3),
+      orderInBranch: 2,
+    ),
+    Mission(
+      id: 'xmas_pages_1000',
+      title: 'Read 1,000 Pages',
+      description: 'Log 1,000 total pages read.',
+      branch: MissionBranch.christmas,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.totalPagesRead,
+      targetCount: 1000,
+      reward: MissionReward(exp: 25, gems: 5),
+      orderInBranch: 3,
+    ),
+    Mission(
+      id: 'xmas_happy_10',
+      title: 'Make 10 Villagers Happy',
+      description: 'Get 10 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.christmas,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 10,
+      reward: MissionReward(exp: 40, speciesId: 'panda_bear'),
+      orderInBranch: 4,
+    ),
+  ];
+
+  static const List<Mission> _easterBranch = [
+    Mission(
+      id: 'easter_enter',
+      title: 'Enter the App',
+      description: 'Open the app during the Easter event.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.enterAppDuringEvent,
+      reward: MissionReward(exp: 10, coins: 50),
+      orderInBranch: 0,
+    ),
+    Mission(
+      id: 'easter_bunny_happy_3',
+      title: 'Make 3 Bunny Villagers Happy',
+      description: 'Get 3 rabbit villagers to 100% happiness at the same time.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerSpeciesHappiness,
+      speciesType: 'rabbit',
+      targetCount: 3,
+      reward: MissionReward(exp: 15, gems: 2),
+      orderInBranch: 1,
+    ),
+    Mission(
+      id: 'easter_happy_5',
+      title: 'Make 5 Villagers Happy',
+      description: 'Get 5 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 5,
+      reward: MissionReward(exp: 20, gems: 3),
+      orderInBranch: 2,
+    ),
+    Mission(
+      id: 'easter_pages_300',
+      title: 'Read 300 Pages',
+      description: 'Log 300 total pages read.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.totalPagesRead,
+      targetCount: 300,
+      reward: MissionReward(exp: 20, gems: 3),
+      orderInBranch: 3,
+    ),
+    Mission(
+      id: 'easter_books_2',
+      title: 'Finish 2 Books',
+      description: 'Complete reading 2 books.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.booksCompleted,
+      targetCount: 2,
+      reward: MissionReward(exp: 25, gems: 5),
+      orderInBranch: 4,
+    ),
+    Mission(
+      id: 'easter_happy_8',
+      title: 'Make 8 Villagers Happy',
+      description: 'Get 8 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 8,
+      reward: MissionReward(exp: 25, gems: 5),
+      orderInBranch: 5,
+    ),
+    Mission(
+      id: 'easter_pages_1000',
+      title: 'Read 1,000 Pages',
+      description: 'Log 1,000 total pages read.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.totalPagesRead,
+      targetCount: 1000,
+      reward: MissionReward(exp: 30, gems: 5),
+      orderInBranch: 6,
+    ),
+    Mission(
+      id: 'easter_happy_12',
+      title: 'Make 12 Villagers Happy',
+      description: 'Get 12 villagers to 100% happiness at the same time.',
+      branch: MissionBranch.easter,
+      checkType: MissionCheckType.am,
+      conditionType: MissionConditionType.villagerHappiness,
+      targetCount: 12,
+      reward: MissionReward(exp: 50, speciesId: 'monkey'),
+      orderInBranch: 7,
+    ),
+  ];
+
   static String _buildingDisplayName(String type) {
     switch (type) {
       case 'house': return 'House';
@@ -332,6 +518,9 @@ class MissionData {
       case MissionBranch.advancedConstruction: return 'Advanced Construction';
       case MissionBranch.villager: return 'Villager';
       case MissionBranch.bookTracking: return 'Book Tracking';
+      case MissionBranch.halloween: return 'Halloween';
+      case MissionBranch.christmas: return 'Christmas';
+      case MissionBranch.easter: return 'Easter';
     }
   }
 
@@ -341,6 +530,9 @@ class MissionData {
       case MissionBranch.advancedConstruction: return 'Expand your village with multiple buildings';
       case MissionBranch.villager: return 'Keep your villagers happy';
       case MissionBranch.bookTracking: return 'Track your reading journey';
+      case MissionBranch.halloween: return 'Spooky seasonal event — October only!';
+      case MissionBranch.christmas: return 'Festive seasonal event — December only!';
+      case MissionBranch.easter: return 'Spring seasonal event — April only!';
     }
   }
 

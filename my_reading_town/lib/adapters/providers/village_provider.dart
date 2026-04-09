@@ -1,9 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:my_reading_town/domain/entities/placed_building.dart';
 import 'package:my_reading_town/domain/entities/villager.dart';
 import 'package:my_reading_town/domain/entities/inventory_item.dart';
 import 'package:my_reading_town/domain/entities/mission.dart';
 import 'package:my_reading_town/domain/entities/mission_data.dart';
+import 'package:my_reading_town/domain/entities/pending_villager_choice.dart';
 import 'package:my_reading_town/domain/ports/village_repository.dart';
 import 'package:my_reading_town/application/services/building_service.dart';
 import 'package:my_reading_town/application/services/villager_service.dart';
@@ -12,6 +14,8 @@ import 'package:my_reading_town/application/services/mission_service.dart';
 import 'package:my_reading_town/application/services/player_service.dart';
 import 'package:my_reading_town/domain/rules/roulette_rules.dart';
 import 'package:my_reading_town/domain/rules/minigame_rules.dart';
+import 'package:my_reading_town/domain/rules/species_rules.dart';
+import 'package:my_reading_town/domain/rules/village_rules.dart';
 
 class VillageProvider extends ChangeNotifier {
   final VillageRepository _repo;
@@ -51,9 +55,16 @@ class VillageProvider extends ChangeNotifier {
   bool _tutorialCompleted = false;
   String? _rouletteLastFreeSpin;
   bool _hasNewBackpackItems = false;
+  int _lastTotalPagesRead = 0;
+  int _lastCompletedBooks = 0;
+  List<String> _unlockedSpeciesIds = [];
+  String? _pendingNewSpeciesId;
+  List<PendingVillagerChoice> _pendingVillagerChoices = [];
 
   List<PlacedBuilding> get placedBuildings => _placedBuildings;
   List<Villager> get villagers => _villagers;
+  List<PendingVillagerChoice> get pendingVillagerChoices =>
+      _pendingVillagerChoices;
   int get coins => _coins;
   int get gems => _gems;
   int get wood => _wood;
@@ -86,11 +97,22 @@ class VillageProvider extends ChangeNotifier {
   }
 
   bool get hasNewBackpackItems => _hasNewBackpackItems;
+  List<String> get unlockedSpeciesIds => _unlockedSpeciesIds;
+  String? get pendingNewSpeciesId => _pendingNewSpeciesId;
+
+  bool isSpeciesUnlocked(String speciesId) =>
+      _unlockedSpeciesIds.contains(speciesId);
 
   void clearNewBackpackItems() {
     if (!_hasNewBackpackItems) return;
     _hasNewBackpackItems = false;
     notifyListeners();
+  }
+
+  String? consumePendingNewSpecies() {
+    final id = _pendingNewSpeciesId;
+    _pendingNewSpeciesId = null;
+    return id;
   }
 
   List<InventoryItem> get inventoryItems => _inventoryItems;
@@ -211,6 +233,7 @@ class VillageProvider extends ChangeNotifier {
       {int? totalPagesRead, int? completedBooks}) {
     return _missionSvc.getMissionProgressValues(
       mission,
+      _missionProgress[mission.id],
       _placedBuildings,
       _villagers,
       _activePowerups,
@@ -284,9 +307,22 @@ class VillageProvider extends ChangeNotifier {
     _activePowerups = await _inventorySvc.loadActivePowerups();
     _minigameCooldowns = await _inventorySvc.loadMinigameCooldowns();
     _missionProgress = await _missionSvc.loadMissionProgress();
+    _unlockedSpeciesIds = await _repo.getUnlockedSpeciesIds();
+
+    final choiceMaps = await _repo.getPendingVillagerChoices();
+    _pendingVillagerChoices =
+        choiceMaps.map((m) => PendingVillagerChoice.fromMap(m)).toList();
+
+    final pendingCountByHouse = <int, int>{};
+    for (final c in _pendingVillagerChoices) {
+      pendingCountByHouse[c.houseId] =
+          (pendingCountByHouse[c.houseId] ?? 0) + 1;
+    }
 
     _villagers = await _villagerSvc.reconcileVillagers(
-        _villagers, _placedBuildings, _roadTiles);
+        _villagers, _placedBuildings, _roadTiles,
+        unlockedSpeciesIds: _unlockedSpeciesIds,
+        pendingChoiceCountByHouse: pendingCountByHouse);
     _villagerSvc.updateVillagerHappiness(
         _villagers, _placedBuildings, _roadTiles, _activePowerups);
     notifyListeners();
@@ -340,6 +376,34 @@ class VillageProvider extends ChangeNotifier {
         break;
     }
   }
+
+  Future<({bool isDuplicate, String speciesId, String speciesNameKey})?>
+      applySpeciesBonus(String speciesId) async {
+    final alreadyOwned = _unlockedSpeciesIds.contains(speciesId);
+    if (alreadyOwned) {
+      await addResources(gems: SpeciesRules.duplicateSpeciesGemCompensation);
+    } else {
+      await _repo.unlockSpecies(speciesId);
+      _unlockedSpeciesIds = await _repo.getUnlockedSpeciesIds();
+    }
+    final speciesData = SpeciesRules.findById(speciesId);
+    notifyListeners();
+    return (
+      isDuplicate: alreadyOwned,
+      speciesId: speciesId,
+      speciesNameKey: speciesData?.nameKey ?? speciesId,
+    );
+  }
+
+  Future<void> unlockSpeciesFromStore(String speciesId) async {
+    if (_unlockedSpeciesIds.contains(speciesId)) return;
+    await _repo.unlockSpecies(speciesId);
+    _unlockedSpeciesIds = await _repo.getUnlockedSpeciesIds();
+    notifyListeners();
+  }
+
+  List<VillagerSpeciesData> get storeSpeciesAvailable =>
+      SpeciesRules.getAvailableForStore(_unlockedSpeciesIds);
 
   Future<void> addResources(
       {int coins = 0, int gems = 0, int wood = 0, int metal = 0}) async {
@@ -420,14 +484,61 @@ class VillageProvider extends ChangeNotifier {
     if (completed.isNotEmpty) {
       for (final b in completed) {
         await addExp(_buildingSvc.getExpForConstruction(b));
+        await _createPendingChoicesForHouse(b);
+      }
+      final pendingCountByHouse = <int, int>{};
+      for (final c in _pendingVillagerChoices) {
+        pendingCountByHouse[c.houseId] =
+            (pendingCountByHouse[c.houseId] ?? 0) + 1;
       }
       _villagers = await _villagerSvc.reconcileVillagers(
-          _villagers, _placedBuildings, _roadTiles);
+          _villagers, _placedBuildings, _roadTiles,
+          unlockedSpeciesIds: _unlockedSpeciesIds,
+          pendingChoiceCountByHouse: pendingCountByHouse);
       _villagerSvc.updateVillagerHappiness(
           _villagers, _placedBuildings, _roadTiles, _activePowerups);
       notifyListeners();
     }
     return completed;
+  }
+
+  Future<void> _createPendingChoicesForHouse(PlacedBuilding building) async {
+    if (building.type != 'house') return;
+    if (building.id == null) return;
+
+    final level = _buildingSvc.effectiveBuildingLevel(building);
+    if (level <= 0) return;
+    final cap = VillageRules.villagersPerHouse(level);
+    final currentInHouse =
+        _villagers.where((v) => v.houseId == building.id).length;
+    final pendingForHouse =
+        _pendingVillagerChoices.where((c) => c.houseId == building.id).length;
+    final newSlots = cap - currentInHouse - pendingForHouse;
+
+    final availableSpecies =
+        _unlockedSpeciesIds.isNotEmpty ? _unlockedSpeciesIds : VillageRules.villagerSpecies;
+
+    for (int i = 0; i < newSlots; i++) {
+      final seed = DateTime.now().millisecondsSinceEpoch + i * 31337;
+      final random = Random(seed);
+      final options =
+          _villagerSvc.generateSpeciesOptions(availableSpecies, seed: seed);
+      final n1 = VillageRules.randomVillagerName(random.nextInt(10000));
+      final n2 = VillageRules.randomVillagerName(random.nextInt(10000));
+      final n3 = VillageRules.randomVillagerName(random.nextInt(10000));
+      final choiceId = await _repo.insertPendingVillagerChoice(
+          building.id!, options[0], options[1], options[2], n1, n2, n3);
+      _pendingVillagerChoices.add(PendingVillagerChoice(
+        id: choiceId,
+        houseId: building.id!,
+        species1: options[0],
+        species2: options[1],
+        species3: options[2],
+        name1: n1,
+        name2: n2,
+        name3: n3,
+      ));
+    }
   }
 
   Future<bool> upgradeBuilding(int buildingId) async {
@@ -470,8 +581,19 @@ class VillageProvider extends ChangeNotifier {
     final villagerMaps = await _repo.getVillagers();
     _villagers = villagerMaps.map((m) => Villager.fromMap(m)).toList();
 
+    final completedBuilding =
+        _placedBuildings.firstWhere((b) => b.id == buildingId);
+    await _createPendingChoicesForHouse(completedBuilding);
+
+    final pendingCountByHouse = <int, int>{};
+    for (final c in _pendingVillagerChoices) {
+      pendingCountByHouse[c.houseId] =
+          (pendingCountByHouse[c.houseId] ?? 0) + 1;
+    }
     _villagers = await _villagerSvc.reconcileVillagers(
-        _villagers, _placedBuildings, _roadTiles);
+        _villagers, _placedBuildings, _roadTiles,
+        unlockedSpeciesIds: _unlockedSpeciesIds,
+        pendingChoiceCountByHouse: pendingCountByHouse);
     _villagerSvc.updateVillagerHappiness(
         _villagers, _placedBuildings, _roadTiles, _activePowerups);
     await refreshResources();
@@ -499,8 +621,15 @@ class VillageProvider extends ChangeNotifier {
       _placedBuildings =
           placedMaps.map((m) => PlacedBuilding.fromMap(m)).toList();
     }
+    final pendingCountByHouse = <int, int>{};
+    for (final c in _pendingVillagerChoices) {
+      pendingCountByHouse[c.houseId] =
+          (pendingCountByHouse[c.houseId] ?? 0) + 1;
+    }
     _villagers = await _villagerSvc.reconcileVillagers(
-        _villagers, _placedBuildings, _roadTiles);
+        _villagers, _placedBuildings, _roadTiles,
+        unlockedSpeciesIds: _unlockedSpeciesIds,
+        pendingChoiceCountByHouse: pendingCountByHouse);
     _villagerSvc.updateVillagerHappiness(
         _villagers, _placedBuildings, _roadTiles, _activePowerups);
     notifyListeners();
@@ -557,9 +686,29 @@ class VillageProvider extends ChangeNotifier {
       _playerLevel = result.leveledUpTo!;
       _gems += result.gemReward;
       _pendingLevelUp = result.leveledUpTo;
+      if (result.newSpeciesId != null) {
+        _unlockedSpeciesIds = await _repo.getUnlockedSpeciesIds();
+        _pendingNewSpeciesId = result.newSpeciesId;
+      }
     }
     notifyListeners();
     return result.leveledUpTo;
+  }
+
+  Future<void> confirmVillagerChoice(
+      int choiceId, int houseId, String species, String name) async {
+    final villagerId = await _repo.insertVillager(name, species, houseId);
+    _villagers.add(Villager(
+        id: villagerId,
+        name: name,
+        species: species,
+        happiness: 50,
+        houseId: houseId));
+    _pendingVillagerChoices.removeWhere((c) => c.id == choiceId);
+    await _repo.deletePendingVillagerChoice(choiceId);
+    _villagerSvc.updateVillagerHappiness(
+        _villagers, _placedBuildings, _roadTiles, _activePowerups);
+    notifyListeners();
   }
 
   Future<void> renameVillager(int villagerId, String newName) async {
@@ -646,6 +795,8 @@ class VillageProvider extends ChangeNotifier {
   // --- Mission operations ---
 
   Future<void> checkMissions({int? totalPagesRead, int? completedBooks}) async {
+    if (totalPagesRead != null) _lastTotalPagesRead = totalPagesRead;
+    if (completedBooks != null) _lastCompletedBooks = completedBooks;
     await _missionSvc.checkMissions(
       progress: _missionProgress,
       buildings: _placedBuildings,
@@ -658,14 +809,18 @@ class VillageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> claimMissionReward(String missionId) async {
+  Future<({bool success, bool isDuplicate, String? speciesId, String? speciesNameKey})>
+      claimMissionReward(String missionId) async {
+    const empty = (success: false, isDuplicate: false, speciesId: null, speciesNameKey: null);
     final mission = MissionData.getMissionById(missionId);
-    if (mission == null) return false;
+    if (mission == null) return empty;
 
     final reward = mission.reward;
-    final result =
-        await _missionSvc.claimMissionReward(missionId, _missionProgress);
-    if (!result) return false;
+    final result = await _missionSvc.claimMissionReward(
+        missionId, _missionProgress,
+        totalPagesRead: _lastTotalPagesRead,
+        completedBooks: _lastCompletedBooks);
+    if (!result) return empty;
 
     if (reward.exp > 0) await addExp(reward.exp);
     if (reward.coins > 0) _coins += reward.coins;
@@ -673,8 +828,19 @@ class VillageProvider extends ChangeNotifier {
 
     if (missionId == 'vl_book_happy') _bookItemUsedSinceActive = false;
 
+    if (reward.speciesId != null) {
+      final speciesResult = await applySpeciesBonus(reward.speciesId!);
+      notifyListeners();
+      return (
+        success: true,
+        isDuplicate: speciesResult?.isDuplicate ?? false,
+        speciesId: speciesResult?.speciesId,
+        speciesNameKey: speciesResult?.speciesNameKey,
+      );
+    }
+
     notifyListeners();
-    return true;
+    return (success: true, isDuplicate: false, speciesId: null, speciesNameKey: null);
   }
 
   void _notifyBookItemUsed() {

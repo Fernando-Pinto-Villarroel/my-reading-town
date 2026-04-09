@@ -175,19 +175,19 @@ Same characters as the normal villagers but in a sleeping pose. Used when night 
 ### cat_villager_sleeping.png
 
 ```
-i want this same cat but sleeping, keep the same look, aesthetic, colors, and design identity, the cat should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, a soft tiny snore expression, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical
+i want this same cat but sleeping, keep the same look, aesthetic, colors, and design identity, the cat should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
 ```
 
 ### dog_villager_sleeping.png
 
 ```
-i want this same dog but sleeping, keep the same look, aesthetic, colors, and design identity, the dog should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, a soft tiny snore expression, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical
+i want this same dog but sleeping, keep the same look, aesthetic, colors, and design identity, the dog should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
 ```
 
 ### rabbit_villager_sleeping.png
 
 ```
-i want this same rabbit but sleeping, keep the same look, aesthetic, colors, and design identity, the rabbit should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, a soft tiny snore expression, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical
+i want this same rabbit but sleeping, keep the same look, aesthetic, colors, and design identity, the rabbit should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
 ```
 
 ---
@@ -1031,4 +1031,517 @@ TECHNICAL:
 - 2D illustrated style, clean kawaii outlines, smooth gradient fills, crisp daytime shading — NOT 3D render, NOT photo-realistic
 - Characters must be expressive, mid-action, full of personality — the scene should feel like it was caught in the middle of a fun moment
 - Mood: excitement of a new day, the joy of learning, playful morning energy — like showing up to your favorite place
+```
+
+---
+
+## New Species Villagers (128x168px, transparent background)
+
+All new species follow the same kawaii rules as existing villagers: front view, standing upright on two legs, full body visible, chubby proportions, simple dot eyes, tiny cute mouth, pastel color palette, clean outlines, white background, 2D mobile game sprite style.
+
+---
+
+### koala_villager.png (Happy — default state)
+
+```
+cute kawaii koala villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+
+adorable chubby koala
+round chubby body
+short little legs
+small paws
+large fluffy round ears with soft inner-ear detail
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft grey and dusty lavender tones
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### koala_villager_sad.png
+
+```
+i want this same koala but with a sad expression, the only change is to make it sad, keep the look, the aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, same colors, lightning, etc but to make it sad
+```
+
+### koala_villager_sleeping.png
+
+```
+i want this same koala but sleeping, keep the same look, aesthetic, colors, and design identity, the koala should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, open mouth, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### raccoon_villager.png (Happy — default state)
+
+```
+cute kawaii raccoon villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+
+adorable chubby raccoon
+round chubby body
+short little legs
+small paws
+fluffy striped ringed tail visible at side
+distinctive dark mask marking around eyes (simplified kawaii style)
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft grey with warm cream belly and pastel dark mask
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes) with subtle mask around them
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### raccoon_villager_sad.png
+
+```
+i want this same raccoon but with a sad expression, the only change is to make it sad, keep the look, the aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, same colors, lightning, etc but to make it sad
+```
+
+### raccoon_villager_sleeping.png
+
+```
+i want this same raccoon but sleeping, keep the same look, aesthetic, colors, and design identity, the raccoon should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### elephant_villager.png (Happy — default state)
+
+```
+cute kawaii elephant villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+
+adorable chubby elephant
+round chubby body
+short little legs
+small paws/feet
+large round floppy ears
+short cute trunk pointing slightly downward
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft pastel blue-grey tones
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### elephant_villager_sad.png
+
+```
+i want this same elephant but with a sad expression, the only change is to make it sad, keep the look, the aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, same colors, lightning, etc but to make it sad
+```
+
+### elephant_villager_sleeping.png
+
+```
+i want this same elephant but sleeping, keep the same look, aesthetic, colors, and design identity, the elephant should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### grizzly_bear_villager.png (Happy — default state)
+
+```
+cute kawaii grizzly bear villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+
+adorable chubby bear
+round chubby body
+short little legs
+small paws
+small round ears at top of head
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — warm pastel brown and honey tones
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### grizzly_bear_villager_sad.png
+
+```
+i want this same grizzly bear but with a sad expression, the only change is to make it sad, keep the look, the simple aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, keep the eyes design simple, same colors, lightning, etc but to make it sad
+```
+
+### grizzly_bear_villager_sleeping.png
+
+```
+i want this same grizzly bear but sleeping, keep the same look, aesthetic, colors, and design identity, the bear should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, open mouth, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### pig_villager.png (Happy — default state)
+
+```
+cute kawaii pig villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+
+adorable chubby pig
+round chubby body
+short little legs
+small trotters/paws
+small round ears at top of head
+cute little round snout (simplified, not protruding much)
+tiny curly tail visible at side
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft pastel pink and peach tones
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### pig_villager_sad.png
+
+```
+i want this same pig but with a sad expression, the only change is to make it sad, keep the look, the aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, same colors, lightning, etc but to make it sad
+```
+
+### pig_villager_sleeping.png
+
+```
+i want this same pig but sleeping, keep the same look, aesthetic, colors, and design identity, the pig should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### hamster_villager.png (Happy — default state)
+
+```
+cute kawaii hamster villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+
+adorable chubby hamster
+very round chubby body (rounder than other villagers)
+short tiny legs
+small paws
+small round ears at top of head
+slightly puffed cheeks (characteristic hamster look, simplified kawaii style)
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — warm pastel cream, sandy beige and soft orange accents
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### hamster_villager_sad.png
+
+```
+i want this same hamster but with a sad expression, the only change is to make it sad, keep the look, the aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, same colors, lightning, etc but to make it sad
+```
+
+### hamster_villager_sleeping.png
+
+```
+i want this same hamster but sleeping, keep the same look, aesthetic, colors, and design identity, the hamster should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### polar_bear_villager.png (Happy — default state)
+
+```
+cute kawaii polar bear villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+no shadows underneath or anywhere
+
+adorable chubby white polar bear
+round chubby body
+short little legs
+small paws
+small round ears at top of head
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — pure white with subtle cool blue-white shadow accents and a soft icy blue nose
+clean simple outlines
+simple shapes
+simple feet, not human-like feet
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background (use a very light grey outline to separate the white character from the white background)
+simple and adorable character design
+```
+
+### polar_bear_villager_sad.png
+
+```
+i want this same polar bear but with a sad expression, the only change is to make it sad, keep the look, the simple aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, keep the eyes design simple, same colors, lightning, etc but to make it sad
+```
+
+### polar_bear_villager_sleeping.png
+
+```
+i want this same polar bear but sleeping, keep the same look, aesthetic, colors, and design identity, the polar bear should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, open mouth, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### panda_bear_villager.png (Happy — default state)
+
+```
+cute kawaii panda bear villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+
+adorable chubby panda
+round chubby body
+short little legs
+small paws
+small round ears at top of head (black ears)
+classic panda black-and-white coloring in simplified kawaii style (black patches around eyes, black ears, black arms/legs, white body)
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft white body with charcoal-black markings, slightly desaturated for pastel softness
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes) with soft black patches around them
+tiny cute smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### panda_bear_villager_sad.png
+
+```
+i want this same panda bear but with a sad expression, the only change is to make it sad, keep the look, the simple aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, keep the eyes design simple, same colors, lightning, etc but to make it sad
+```
+
+### panda_bear_villager_sleeping.png
+
+```
+i want this same panda but sleeping, keep the same look, aesthetic, colors, and design identity, the panda should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### monkey_villager.png (Happy — default state)
+
+```
+cute kawaii monkey villager character sprite
+
+front view character
+full body visible
+looking directly forward
+same posture and proportions style as the reference villagers
+
+adorable chubby monkey
+very round chubby body
+short little arms and legs
+small rounded ears on the sides of the head
+small curly tail visible behind the body
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — soft pastel warm brown with a creamy peach belly and face patch
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute smile
+super cute chubby proportions
+small cute rounded nose
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### monkey_villager_sad.png
+
+```
+i want this same monkey but with a sad expression, the only change is to make it sad, keep the look, the simple aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, keep the eyes design simple, same colors, lightning, etc but to make it sad
+```
+
+### monkey_villager_sleeping.png
+
+```
+i want this same monkey but sleeping, keep the same look, aesthetic, colors, and design identity, the monkey should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), slightly curled or leaning with head tilted to one side, same pastel colors and kawaii style, open mouth, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
+```
+
+---
+
+### lion_villager.png (Happy — default state)
+
+```
+cute kawaii lion villager character sprite
+
+front view character
+standing upright on two legs
+full body visible
+looking directly forward
+same posture from the reference assets of other villagers
+
+adorable chubby lion
+round chubby body
+short little legs
+small paws
+fluffy round mane framing the face (simplified kawaii style, not overly complex)
+small cute ears poking above the mane
+tiny tuft tail tip visible at side
+very simple design
+minimal details
+
+kawaii style
+pastel color palette — warm pastel golden-yellow and cream with a slightly deeper warm gold mane
+clean simple outlines
+simple shapes
+
+face with very simple eyes (small black dot eyes)
+tiny cute proud smile
+super cute chubby proportions
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable character design
+```
+
+### lion_villager_sad.png
+
+```
+i want this same lion but with a sad expression, the only change is to make it sad, keep the look, the simple aesthetic, keep the design, everything must remain the same, only recreate the image with high fidelity but to make it sad, keep the eyes design simple, same colors, lightning, etc but to make it sad
+```
+
+### lion_villager_sleeping.png
+
+```
+i want this same lion but sleeping, keep the same look, aesthetic, colors, and design identity, the lion should be in a cute sleeping pose: eyes closed with small curved eyelashes (not dot eyes), sitting or slightly curled with head tilted to one side, same pastel colors and kawaii style, same body proportions and outlines, same lighting and art style, only the sleeping pose and closed eyes change — everything else remains identical, NO "zzz" snoring expression needed.
 ```

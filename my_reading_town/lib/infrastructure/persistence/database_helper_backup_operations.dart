@@ -16,6 +16,7 @@ extension DatabaseHelperBackupOperations on DatabaseHelper {
     'minigame_cooldowns',
     'active_powerups',
     'mission_progress',
+    'species_unlocks',
   ];
 
   Future<Map<String, dynamic>> exportAllTables() async {

@@ -169,6 +169,12 @@ class VillageGame extends FlameGame {
     for (var vc in _villagerComponents) {
       vc.roadTiles = _roadTilesList;
     }
+    for (final entry in _buildingComponents.entries) {
+      final b = _buildingsById[entry.key];
+      if (b != null) {
+        entry.value.isRoadConnected = _isBuildingRoadConnected(b, _roadTiles);
+      }
+    }
   }
 
   void updateUnlockedChunks(Set<String> chunks) {
@@ -234,6 +240,32 @@ class VillageGame extends FlameGame {
     }
   }
 
+  bool _isBuildingRoadConnected(PlacedBuilding b, Set<String> roads) {
+    for (int dx = 0; dx < b.tileWidth; dx++) {
+      for (int dy = 0; dy < b.tileHeight; dy++) {
+        final tx = b.tileX + dx;
+        final ty = b.tileY + dy;
+        for (final d in [
+          [-1, 0],
+          [1, 0],
+          [0, -1],
+          [0, 1]
+        ]) {
+          final nx = tx + d[0];
+          final ny = ty + d[1];
+          if (nx >= b.tileX &&
+              nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY &&
+              ny < b.tileY + b.tileHeight) {
+            continue;
+          }
+          if (roads.contains('$nx,$ny')) return true;
+        }
+      }
+    }
+    return false;
+  }
+
   void updatePlacedBuildings(List<PlacedBuilding> buildings) {
     final currentIds =
         buildings.where((b) => b.id != null).map((b) => b.id!).toSet();
@@ -265,12 +297,14 @@ class VillageGame extends FlameGame {
         comp.updateBuilding(building);
         comp.position = worldPos;
         comp.size = compSize;
+        comp.isRoadConnected = _isBuildingRoadConnected(building, _roadTiles);
       } else {
         final comp = BuildingComponent(
           building: building,
           position: worldPos,
           size: compSize,
         );
+        comp.isRoadConnected = _isBuildingRoadConnected(building, _roadTiles);
         _buildingComponents[building.id!] = comp;
         world.add(comp);
       }
@@ -335,14 +369,34 @@ class VillageGame extends FlameGame {
           if (v.houseId != null) {
             spawnTile = houseRoadTiles[v.houseId];
           }
-          spawnTile ??= _roadTilesList[i % _roadTilesList.length];
-          final parts = spawnTile.split(',');
-          spawnPos = Vector2(
-            int.parse(parts[0]) * UiConstants.tilePixelSize +
-                UiConstants.tilePixelSize / 2,
-            int.parse(parts[1]) * UiConstants.tilePixelSize +
-                UiConstants.tilePixelSize / 2,
-          );
+          if (spawnTile != null) {
+            final parts = spawnTile.split(',');
+            spawnPos = Vector2(
+              int.parse(parts[0]) * UiConstants.tilePixelSize +
+                  UiConstants.tilePixelSize / 2,
+              int.parse(parts[1]) * UiConstants.tilePixelSize +
+                  UiConstants.tilePixelSize / 2,
+            );
+          } else if (v.houseId != null &&
+              _buildingsById.containsKey(v.houseId)) {
+            final house = _buildingsById[v.houseId!]!;
+            final slot = _villagerComponents
+                .where((c) => c.villager.houseId == v.houseId)
+                .length;
+            spawnPos = Vector2(
+              (house.tileX + 0.5 + slot * 0.5) * UiConstants.tilePixelSize,
+              (house.tileY + house.tileHeight) * UiConstants.tilePixelSize,
+            );
+          } else {
+            spawnPos = Vector2(
+              int.parse(_roadTilesList[i % _roadTilesList.length].split(',')[0]) *
+                      UiConstants.tilePixelSize +
+                  UiConstants.tilePixelSize / 2,
+              int.parse(_roadTilesList[i % _roadTilesList.length].split(',')[1]) *
+                      UiConstants.tilePixelSize +
+                  UiConstants.tilePixelSize / 2,
+            );
+          }
         }
 
         final comp = VillagerComponent(

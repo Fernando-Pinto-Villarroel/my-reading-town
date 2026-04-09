@@ -182,7 +182,7 @@ class BuildingService {
       List<PlacedBuilding> buildings, Set<String> roadTiles) {
     int total = 0;
     for (var b in buildings) {
-      if (b.type == 'house' && isBuildingRoadConnected(b, roadTiles)) {
+      if (b.type == 'house') {
         final effectiveLevel = effectiveBuildingLevel(b);
         if (effectiveLevel > 0) {
           total += VillageRules.villagersPerHouse(effectiveLevel);

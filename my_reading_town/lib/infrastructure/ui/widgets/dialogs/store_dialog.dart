@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_reading_town/app_constants.dart';
 import 'package:my_reading_town/domain/rules/store_rules.dart';
+import 'package:my_reading_town/domain/rules/species_rules.dart';
 import 'package:my_reading_town/application/services/store_service.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/config/app_theme.dart';
@@ -31,7 +32,7 @@ class _StoreDialogState extends State<_StoreDialog>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _discounts = StoreRules.computeDiscounts();
     _storeService = StoreService();
     _storeService.initialize();
@@ -91,6 +92,9 @@ class _StoreDialogState extends State<_StoreDialog>
                   _PacksTab(
                       lang: lang,
                       discounts: _discounts,
+                      storeService: _storeService),
+                  _SpeciesTab(
+                      lang: lang,
                       storeService: _storeService),
                 ],
               ),
@@ -229,6 +233,10 @@ class _StoreTabBar extends StatelessWidget {
               ],
             ),
             text: lang.translate('store_tab_packs'),
+          ),
+          Tab(
+            icon: Icon(Icons.pets, size: 18),
+            text: lang.translate('store_tab_species'),
           ),
         ],
       ),
@@ -1127,7 +1135,7 @@ class _DiscountBannerState extends State<_DiscountBanner> {
     final h = d.inHours;
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
-    if (h > 0) return '${h}h ${m.toString().padLeft(2, '0')}m';
+    if (h > 0) return '${h}h ${m.toString().padLeft(2, '0')}m ${s.toString().padLeft(2, '0')}s';
     return '${m.toString().padLeft(2, '0')}m ${s.toString().padLeft(2, '0')}s';
   }
 
@@ -1342,6 +1350,257 @@ class _SimulationNotice extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SpeciesTab extends StatelessWidget {
+  final LanguageProvider lang;
+  final StoreService storeService;
+
+  const _SpeciesTab({required this.lang, required this.storeService});
+
+  Color _rarityColor(VillagerRarity rarity) {
+    switch (rarity) {
+      case VillagerRarity.common: return const Color(0xFF9E9E9E);
+      case VillagerRarity.rare: return const Color(0xFF2196F3);
+      case VillagerRarity.extraordinary: return const Color(0xFF9C27B0);
+      case VillagerRarity.legendary: return const Color(0xFFFF9800);
+      case VillagerRarity.godly: return const Color(0xFFF44336);
+    }
+  }
+
+  Future<void> _purchase(
+      BuildContext context, VillagerSpeciesData species) async {
+    final village = context.read<VillageProvider>();
+    if (village.isSpeciesUnlocked(species.id)) return;
+
+    if (!AppConstants.playStore) {
+      await village.unlockSpeciesFromStore(species.id);
+      if (context.mounted) {
+        _showSimulatedPurchase(
+          context,
+          lang,
+          lang.translate('store_species_unlock_success'),
+        );
+      }
+      return;
+    }
+
+    final productId = SpeciesRules.productIdForSpecies(species.id);
+    final result = await storeService.purchaseSpecies(productId);
+    if (!context.mounted) return;
+    if (result.state == StorePurchaseState.success) {
+      await village.unlockSpeciesFromStore(species.id);
+      if (context.mounted) {
+        showSuccessToast(context, lang.translate('store_species_unlock_success'));
+      }
+    } else if (result.state == StorePurchaseState.error) {
+      _showError(context, lang, result.errorMessage);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final village = context.watch<VillageProvider>();
+    final available = village.storeSpeciesAvailable;
+
+    if (available.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.celebration, size: 48, color: AppTheme.coinGold),
+              SizedBox(height: 12),
+              Text(
+                lang.translate('store_species_no_available'),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkText,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.lavender.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppTheme.lavender),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.refresh, size: 16, color: AppTheme.darkLavender),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _nextRefreshText(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.darkLavender,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16),
+          ...available.map((species) => Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: _SpeciesStoreCard(
+                  species: species,
+                  lang: lang,
+                  rarityColor: _rarityColor(species.rarity),
+                  onTap: () => _purchase(context, species),
+                ),
+              )),
+          if (!AppConstants.playStore) _SimulationNotice(lang: lang),
+        ],
+      ),
+    );
+  }
+
+  String _nextRefreshText() {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final diff = tomorrow.difference(now);
+    final h = diff.inHours;
+    final m = diff.inMinutes % 60;
+    return lang.translate('store_species_refresh')
+        .replaceAll('{time}', '${h}h ${m.toString().padLeft(2, '0')}m');
+  }
+}
+
+class _SpeciesStoreCard extends StatelessWidget {
+  final VillagerSpeciesData species;
+  final LanguageProvider lang;
+  final Color rarityColor;
+  final VoidCallback onTap;
+
+  const _SpeciesStoreCard({
+    required this.species,
+    required this.lang,
+    required this.rarityColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: rarityColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: rarityColor, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: rarityColor.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: rarityColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/${species.id}_villager.png',
+                  width: 48,
+                  height: 48,
+                  filterQuality: FilterQuality.medium,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.pets,
+                    size: 32,
+                    color: rarityColor,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lang.translate(species.nameKey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkText,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: rarityColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: rarityColor, width: 1),
+                    ),
+                    child: Text(
+                      lang.translate(SpeciesRules.rarityKey(species.rarity)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: rarityColor,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    lang.translate(species.descriptionKey),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.darkText.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: rarityColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                lang.translate('store_species_buy')
+                    .replaceAll('{price}', '\$${species.realPrice?.toStringAsFixed(2) ?? '0.00'}'),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

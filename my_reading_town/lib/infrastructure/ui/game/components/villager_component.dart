@@ -167,14 +167,29 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
 
     if (validNeighbors.isEmpty) {
       if (roadTiles.isNotEmpty) {
-        final randomRoad = roadTiles[_random.nextInt(roadTiles.length)];
-        final parts = randomRoad.split(',');
-        _targetPosition = Vector2(
-          int.parse(parts[0]) * UiConstants.tilePixelSize +
-              UiConstants.tilePixelSize / 2,
-          int.parse(parts[1]) * UiConstants.tilePixelSize +
-              UiConstants.tilePixelSize / 2,
-        );
+        String? nearest;
+        double minDist = double.infinity;
+        for (final tile in roadTiles) {
+          final parts = tile.split(',');
+          final tx = int.parse(parts[0]);
+          final ty = int.parse(parts[1]);
+          final dx = (tx - currentTileX).toDouble();
+          final dy = (ty - currentTileY).toDouble();
+          final dist = dx * dx + dy * dy;
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = tile;
+          }
+        }
+        if (nearest != null) {
+          final parts = nearest.split(',');
+          _targetPosition = Vector2(
+            int.parse(parts[0]) * UiConstants.tilePixelSize +
+                UiConstants.tilePixelSize / 2,
+            int.parse(parts[1]) * UiConstants.tilePixelSize +
+                UiConstants.tilePixelSize / 2,
+          );
+        }
       }
       return;
     }

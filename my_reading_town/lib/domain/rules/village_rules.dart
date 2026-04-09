@@ -164,6 +164,8 @@ class VillageRules {
 
   static const List<String> villagerSpecies = ['cat', 'dog', 'rabbit'];
 
+  static const List<int> speciesUnlockLevels = [5, 10, 15, 20, 25, 30];
+
   static String randomVillagerName(int seed) {
     return villagerNames[seed % villagerNames.length];
   }

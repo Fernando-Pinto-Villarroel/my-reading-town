@@ -9,5 +9,5 @@ abstract class InventoryRepository {
   Future<int> insertPowerup(Map<String, dynamic> powerup);
   Future<void> deleteExpiredPowerups();
   Future<List<Map<String, dynamic>>> getMissionProgress();
-  Future<void> upsertMissionProgress(String missionId, {bool? isCompleted, bool? isClaimed, String? activatedAt});
+  Future<void> upsertMissionProgress(String missionId, {bool? isCompleted, bool? isClaimed, String? activatedAt, int? pagesAtActivation, int? booksAtActivation});
 }

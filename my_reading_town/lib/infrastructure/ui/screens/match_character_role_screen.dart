@@ -11,6 +11,7 @@ import 'package:my_reading_town/infrastructure/ui/widgets/common/match_character
 import 'package:my_reading_town/infrastructure/ui/widgets/popups/minigame_win_screen.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
+import 'package:my_reading_town/application/services/notification_service.dart';
 import 'package:my_reading_town/infrastructure/di/service_locator.dart';
 
 class MatchCharacterRoleScreen extends StatefulWidget {
@@ -122,6 +123,16 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
     final village = context.read<VillageProvider>();
     final rewardType = await village.grantMinigameReward();
     await village.setMinigameCooldown(_minigameId, _config.cooldownHours);
+    if (mounted) {
+      final lang = context.read<LanguageProvider>();
+      final name = lang.translate('match_character_role');
+      sl<NotificationService>().scheduleMinigameAvailable(
+        minigameId: _minigameId,
+        remaining: Duration(hours: _config.cooldownHours),
+        title: lang.translate('notif_minigame_ready_title'),
+        body: lang.translate('notif_minigame_ready_body').replaceAll('{name}', name),
+      );
+    }
     setState(() {
       _hasWon = true;
       _rewardType = rewardType;

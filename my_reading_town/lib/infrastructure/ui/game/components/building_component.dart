@@ -7,6 +7,7 @@ import '../village_game.dart';
 
 class BuildingComponent extends PositionComponent {
   PlacedBuilding building;
+  bool isRoadConnected = true;
 
   Sprite? _builtSprite;
   Sprite? _constructionSprite;
@@ -16,6 +17,7 @@ class BuildingComponent extends PositionComponent {
   double _pulseScale = 1.0;
   bool _justUpgraded = false;
   Duration effectiveRemaining = Duration.zero;
+
 
   BuildingComponent({
     required this.building,
@@ -65,6 +67,22 @@ class BuildingComponent extends PositionComponent {
       _pulseTimer += dt;
       _pulseScale = 1.0 + 0.01 * sin(_pulseTimer * 2);
     }
+  }
+
+  void _renderWarningGlow(Canvas canvas, double offsetX, double offsetY,
+      double spriteW, double spriteH) {
+    final centerX = offsetX + spriteW / 2;
+    final centerY = offsetY + spriteH / 2;
+    final glowRadius = (spriteW + spriteH) * 0.6;
+    final alpha = (0.35 + 0.3 * sin(_pulseTimer * 2.5)).clamp(0.0, 1.0);
+    final glowColor = Color.fromRGBO(255, 214, 0, alpha);
+    final edgeColor = Color.fromRGBO(255, 214, 0, 0);
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [glowColor, edgeColor],
+      ).createShader(Rect.fromCircle(
+          center: Offset(centerX, centerY), radius: glowRadius));
+    canvas.drawCircle(Offset(centerX, centerY), glowRadius, paint);
   }
 
   static const _glowTypes = {
@@ -127,6 +145,11 @@ class BuildingComponent extends PositionComponent {
 
     final offsetX = (size.x - spriteW) / 2;
     final offsetY = size.y - spriteH;
+
+    if (!isRoadConnected && building.isConstructed &&
+        !building.isDecoration && building.type != 'house') {
+      _renderWarningGlow(canvas, offsetX, offsetY, spriteW, spriteH);
+    }
 
     final isNight = (findGame() as VillageGame?)?.isNightMode ?? false;
     if (isNight && building.isConstructed) {

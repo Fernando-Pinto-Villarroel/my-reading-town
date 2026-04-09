@@ -117,4 +117,29 @@ class SqliteVillageRepository implements VillageRepository {
   @override
   Future<void> setRouletteLastFreeSpin(String isoDate) =>
       _db.setRouletteLastFreeSpin(isoDate);
+
+  @override
+  Future<List<String>> getUnlockedSpeciesIds() => _db.getUnlockedSpeciesIds();
+
+  @override
+  Future<void> unlockSpecies(String speciesId) => _db.unlockSpecies(speciesId);
+
+  @override
+  Future<bool> isSpeciesUnlocked(String speciesId) =>
+      _db.isSpeciesUnlocked(speciesId);
+
+  @override
+  Future<List<Map<String, dynamic>>> getPendingVillagerChoices() =>
+      _db.getPendingVillagerChoices();
+
+  @override
+  Future<int> insertPendingVillagerChoice(int houseId, String species1,
+          String species2, String species3, String name1, String name2,
+          String name3) =>
+      _db.insertPendingVillagerChoice(
+          houseId, species1, species2, species3, name1, name2, name3);
+
+  @override
+  Future<void> deletePendingVillagerChoice(int id) =>
+      _db.deletePendingVillagerChoice(id);
 }

@@ -91,4 +91,30 @@ extension DatabaseHelperBuildingOperations on DatabaseHelper {
         'unlocked_chunks', {'chunk_x': chunkX, 'chunk_y': chunkY},
         conflictAlgorithm: ConflictAlgorithm.ignore);
   }
+
+  Future<List<Map<String, dynamic>>> getPendingVillagerChoices() async {
+    final db = await database;
+    return db.query('pending_villager_choices');
+  }
+
+  Future<int> insertPendingVillagerChoice(int houseId, String species1,
+      String species2, String species3, String name1, String name2,
+      String name3) async {
+    final db = await database;
+    return db.insert('pending_villager_choices', {
+      'house_id': houseId,
+      'species1': species1,
+      'species2': species2,
+      'species3': species3,
+      'name1': name1,
+      'name2': name2,
+      'name3': name3,
+    });
+  }
+
+  Future<void> deletePendingVillagerChoice(int id) async {
+    final db = await database;
+    await db.delete('pending_villager_choices',
+        where: 'id = ?', whereArgs: [id]);
+  }
 }

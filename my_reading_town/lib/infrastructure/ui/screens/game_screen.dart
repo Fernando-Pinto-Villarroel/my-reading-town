@@ -40,7 +40,10 @@ import 'package:my_reading_town/infrastructure/ui/widgets/common/tap_through_int
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/village_photo_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/roulette_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/store_dialog.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/species_book_dialog.dart';
+import 'package:my_reading_town/domain/rules/species_rules.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/sheets/villager_sheets.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/villager_choice_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/tour/tour_overlay.dart';
 import 'package:my_reading_town/app_constants.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/app_toast.dart';
@@ -76,6 +79,7 @@ class _GameScreenState extends State<GameScreen>
   int _lastSandwichCount = 0;
   bool _menuOpen = false;
   bool _resourceHudExpanded = true;
+  bool _villagerChoiceDialogShowing = false;
   bool _isCapturing = false;
   final GlobalKey _gameRepaintKey = GlobalKey();
   @override
@@ -149,6 +153,9 @@ class _GameScreenState extends State<GameScreen>
     );
     _syncGameState();
     _villageProvider.checkMissions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _checkPendingVillagerChoices();
+    });
     if (!_tourInitialized) {
       _tourInitialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -219,6 +226,30 @@ class _GameScreenState extends State<GameScreen>
       _syncGameState();
       await village.checkMissions();
     }
+    if (mounted) _checkPendingVillagerChoices();
+  }
+
+  @override
+  void _checkPendingVillagerChoices() {
+    if (!mounted || _villagerChoiceDialogShowing) return;
+    final village = _villageProvider;
+    if (village.pendingVillagerChoices.isEmpty) return;
+
+    final choice = village.pendingVillagerChoices.first;
+    final lang = sl<LanguageProvider>();
+
+    _villagerChoiceDialogShowing = true;
+    showVillagerChoiceDialog(
+      context,
+      choice: choice,
+      village: village,
+      lang: lang,
+      onComplete: () {
+        _villagerChoiceDialogShowing = false;
+        _syncGameState();
+        if (mounted) _checkPendingVillagerChoices();
+      },
+    );
   }
 
   void _checkLevelUp() {
@@ -229,9 +260,25 @@ class _GameScreenState extends State<GameScreen>
         barrierColor: Colors.transparent,
         barrierDismissible: true,
         builder: (ctx) => LevelUpPopup(
-            newLevel: newLevel, onDismiss: () => Navigator.pop(ctx)),
+            newLevel: newLevel, onDismiss: () {
+          Navigator.pop(ctx);
+          _checkNewSpecies();
+        }),
       );
     }
+  }
+
+  void _checkNewSpecies() {
+    final speciesId = _villageProvider.consumePendingNewSpecies();
+    if (speciesId == null || !mounted) return;
+    final speciesData = SpeciesRules.findById(speciesId);
+    if (speciesData == null) return;
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _NewSpeciesPopup(speciesData: speciesData, lang: lang),
+    );
   }
 
   void _onConstructionComplete(PlacedBuilding building) =>
@@ -576,6 +623,7 @@ class _GameScreenState extends State<GameScreen>
                       showSettingsDialog(context, _villageProvider);
                     }
                   },
+                  onSpeciesBookTap: () => showSpeciesBookDialog(context),
                 ),
               ],
             ),
@@ -710,6 +758,122 @@ class _GameScreenState extends State<GameScreen>
                           : AppTheme.darkText)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NewSpeciesPopup extends StatelessWidget {
+  final VillagerSpeciesData speciesData;
+  final LanguageProvider lang;
+
+  const _NewSpeciesPopup({required this.speciesData, required this.lang});
+
+  Color get _rarityColor {
+    switch (speciesData.rarity) {
+      case VillagerRarity.common: return const Color(0xFF78909C);
+      case VillagerRarity.rare: return const Color(0xFF1E88E5);
+      case VillagerRarity.extraordinary: return const Color(0xFF8E24AA);
+      case VillagerRarity.legendary: return const Color(0xFFEF6C00);
+      case VillagerRarity.godly: return const Color(0xFFE53935);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _rarityColor;
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: AppTheme.softWhite,
+      child: Padding(
+        padding: EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              lang.translate('species_new'),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 2.5),
+              ),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/${speciesData.id}_villager.png',
+                  width: 70,
+                  height: 70,
+                  filterQuality: FilterQuality.medium,
+                  errorBuilder: (_, __, ___) =>
+                      Icon(Icons.pets, size: 44, color: color),
+                ),
+              ),
+            ),
+            SizedBox(height: 14),
+            Text(
+              lang.translate(speciesData.nameKey),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.darkText,
+              ),
+            ),
+            SizedBox(height: 6),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color, width: 1.5),
+              ),
+              child: Text(
+                lang.translate(SpeciesRules.rarityKey(speciesData.rarity)),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              lang.translate(speciesData.descriptionKey),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.darkText.withValues(alpha: 0.7),
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: Text(
+                  lang.translate('done'),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

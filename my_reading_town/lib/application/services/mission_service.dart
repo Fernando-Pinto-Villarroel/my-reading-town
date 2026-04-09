@@ -5,6 +5,7 @@ import 'package:my_reading_town/domain/entities/mission.dart';
 import 'package:my_reading_town/domain/entities/mission_data.dart';
 import 'package:my_reading_town/domain/ports/inventory_repository.dart';
 import 'package:my_reading_town/domain/ports/village_repository.dart';
+import 'package:my_reading_town/domain/rules/holiday_rules.dart';
 
 class MissionService {
   final InventoryRepository _invRepo;
@@ -21,6 +22,13 @@ class MissionService {
 
   bool isBranchUnlocked(
       MissionBranch branch, Map<String, MissionProgress> progress) {
+    if (HolidayRules.isHolidayBranch(branch)) {
+      final event = HolidayRules.eventForBranch(branch);
+      if (event == null) return false;
+      if (event.isActive(DateTime.now())) return true;
+      return MissionData.getMissionsForBranch(branch)
+          .any((m) => progress.containsKey(m.id));
+    }
     final deps = MissionData.branchDependencies(branch);
     for (final dep in deps) {
       if (!isBranchFullyCompleted(dep, progress)) return false;
@@ -65,13 +73,30 @@ class MissionService {
     return progress[mission.id]!;
   }
 
+  bool _isEventReadingMission(Mission mission) {
+    return HolidayRules.isHolidayBranch(mission.branch) &&
+        (mission.conditionType == MissionConditionType.totalPagesRead ||
+            mission.conditionType == MissionConditionType.booksCompleted);
+  }
+
   Future<void> _ensureMissionActivated(
-      Mission mission, Map<String, MissionProgress> progress) async {
+      Mission mission, Map<String, MissionProgress> progress,
+      {int? totalPagesRead, int? completedBooks}) async {
     final p = _getOrCreateProgress(mission, progress);
     if (p.activatedAt == null) {
       p.activatedAt = DateTime.now().toIso8601String();
+      int? pagesBaseline;
+      int? booksBaseline;
+      if (_isEventReadingMission(mission)) {
+        pagesBaseline = totalPagesRead ?? 0;
+        booksBaseline = completedBooks ?? 0;
+        p.pagesAtActivation = pagesBaseline;
+        p.booksAtActivation = booksBaseline;
+      }
       await _invRepo.upsertMissionProgress(mission.id,
-          activatedAt: p.activatedAt);
+          activatedAt: p.activatedAt,
+          pagesAtActivation: pagesBaseline,
+          booksAtActivation: booksBaseline);
     }
   }
 
@@ -91,9 +116,10 @@ class MissionService {
       final p = _getOrCreateProgress(mission, progress);
       if (p.isCompleted) continue;
 
-      await _ensureMissionActivated(mission, progress);
+      await _ensureMissionActivated(mission, progress,
+          totalPagesRead: totalPagesRead, completedBooks: completedBooks);
 
-      final isComplete = _checkMissionCondition(mission, buildings, villagers,
+      final isComplete = _checkMissionCondition(mission, p, buildings, villagers,
           activePowerups, bookItemUsedSinceActive,
           totalPagesRead: totalPagesRead, completedBooks: completedBooks);
       if (isComplete) {
@@ -105,12 +131,17 @@ class MissionService {
 
   bool _checkMissionCondition(
       Mission mission,
+      MissionProgress missionProgress,
       List<PlacedBuilding> buildings,
       List<Villager> villagers,
       List<ActivePowerup> activePowerups,
       bool bookItemUsedSinceActive,
       {int? totalPagesRead,
       int? completedBooks}) {
+    if (_isEventReadingMission(mission)) {
+      totalPagesRead = (totalPagesRead ?? 0) - (missionProgress.pagesAtActivation ?? 0);
+      completedBooks = (completedBooks ?? 0) - (missionProgress.booksAtActivation ?? 0);
+    }
     switch (mission.conditionType) {
       case MissionConditionType.buyBuilding:
         return buildings
@@ -150,17 +181,32 @@ class MissionService {
 
       case MissionConditionType.booksCompleted:
         return (completedBooks ?? 0) >= (mission.targetCount ?? 1);
+
+      case MissionConditionType.enterAppDuringEvent:
+        return true;
+
+      case MissionConditionType.villagerSpeciesHappiness:
+        final happyCount = villagers
+            .where((v) =>
+                v.species == mission.speciesType && v.happiness >= 100)
+            .length;
+        return happyCount >= (mission.targetCount ?? 1);
     }
   }
 
   ({int current, int target}) getMissionProgressValues(
       Mission mission,
+      MissionProgress? missionProgress,
       List<PlacedBuilding> buildings,
       List<Villager> villagers,
       List<ActivePowerup> activePowerups,
       bool bookItemUsedSinceActive,
       {int? totalPagesRead,
       int? completedBooks}) {
+    if (_isEventReadingMission(mission) && missionProgress != null) {
+      totalPagesRead = ((totalPagesRead ?? 0) - (missionProgress.pagesAtActivation ?? 0)).clamp(0, 999999);
+      completedBooks = ((completedBooks ?? 0) - (missionProgress.booksAtActivation ?? 0)).clamp(0, 999999);
+    }
     final target = mission.targetCount ?? 1;
     int current = 0;
 
@@ -215,11 +261,22 @@ class MissionService {
       case MissionConditionType.booksCompleted:
         current = completedBooks ?? 0;
         return (current: current.clamp(0, target), target: target);
+
+      case MissionConditionType.enterAppDuringEvent:
+        return (current: 1, target: 1);
+
+      case MissionConditionType.villagerSpeciesHappiness:
+        current = villagers
+            .where((v) =>
+                v.species == mission.speciesType && v.happiness >= 100)
+            .length;
+        return (current: current.clamp(0, target), target: target);
     }
   }
 
   Future<bool> claimMissionReward(
-      String missionId, Map<String, MissionProgress> progress) async {
+      String missionId, Map<String, MissionProgress> progress,
+      {int? totalPagesRead, int? completedBooks}) async {
     final mission = MissionData.getMissionById(missionId);
     if (mission == null) return false;
 
@@ -236,7 +293,8 @@ class MissionService {
 
     final nextMission = getActiveMission(mission.branch, progress);
     if (nextMission != null) {
-      await _ensureMissionActivated(nextMission, progress);
+      await _ensureMissionActivated(nextMission, progress,
+          totalPagesRead: totalPagesRead, completedBooks: completedBooks);
     }
 
     return true;

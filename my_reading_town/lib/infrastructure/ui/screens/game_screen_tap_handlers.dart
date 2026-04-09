@@ -13,6 +13,7 @@ mixin _GameTapHandlers on State<GameScreen> {
   Set<int> get _notifiedCompletions;
   void _syncGameState();
   void _onExpansionSignTapped(int chunkX, int chunkY);
+  void _checkPendingVillagerChoices();
 
   void _handleTileTap(int tileX, int tileY) {
     final village = _villageProvider;
@@ -33,10 +34,16 @@ mixin _GameTapHandlers on State<GameScreen> {
     final building = village.getBuildingAt(tileX, tileY);
     if (building != null) {
       if (building.isConstructed) {
-        showBuildingInfoSheet(context,
-            building: building,
-            village: village,
-            onSyncGameState: _syncGameState);
+        if (!building.isDecoration &&
+            building.type != 'house' &&
+            !village.isBuildingRoadConnected(building)) {
+          _showBuildingNotConnectedWarning();
+        } else {
+          showBuildingInfoSheet(context,
+              building: building,
+              village: village,
+              onSyncGameState: _syncGameState);
+        }
       } else {
         showConstructingBuildingSheet(context,
             building: building, village: village, onSpeedUp: () async {
@@ -48,6 +55,7 @@ mixin _GameTapHandlers on State<GameScreen> {
             _syncGameState();
             _notifiedCompletions.add(building.id!);
             if (mounted) showConstructionCompleteDialog(context, building);
+            if (mounted) _checkPendingVillagerChoices();
           }
         }, onCancel: () async {
           Navigator.pop(context);
@@ -188,6 +196,82 @@ mixin _GameTapHandlers on State<GameScreen> {
       _flipNextBuilding = false;
     });
     _syncGameState();
+  }
+
+  void _showBuildingNotConnectedWarning() {
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+          decoration: BoxDecoration(
+            color: AppTheme.cream,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEB3B).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.warning_rounded,
+                  size: 40,
+                  color: Color(0xFFE6AC00),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                langProvider.translate('building_no_road_title',
+                    fallback: 'Not Connected!'),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkText,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                langProvider.translate('building_no_road_message',
+                    fallback:
+                        'Connect this building to a road so your villagers can visit and use it!'),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.darkText.withValues(alpha: 0.7),
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFEB3B),
+                    foregroundColor: const Color(0xFF4A3800),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    langProvider.translate('done', fallback: 'Got it!'),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _moveBuilding(int tileX, int tileY) async {

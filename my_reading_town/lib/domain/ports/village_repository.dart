@@ -29,4 +29,11 @@ abstract class VillageRepository {
   Future<void> setTutorialCompleted();
   Future<String?> getRouletteLastFreeSpin();
   Future<void> setRouletteLastFreeSpin(String isoDate);
+  Future<List<String>> getUnlockedSpeciesIds();
+  Future<void> unlockSpecies(String speciesId);
+  Future<bool> isSpeciesUnlocked(String speciesId);
+  Future<List<Map<String, dynamic>>> getPendingVillagerChoices();
+  Future<int> insertPendingVillagerChoice(int houseId, String species1,
+      String species2, String species3, String name1, String name2, String name3);
+  Future<void> deletePendingVillagerChoice(int id);
 }
