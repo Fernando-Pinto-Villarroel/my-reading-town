@@ -8,12 +8,14 @@ class BookFilterBar extends StatefulWidget {
   final BookFilter filter;
   final List<Tag> availableTags;
   final ValueChanged<BookFilter> onFilterChanged;
+  final VoidCallback? onCalculatorPressed;
 
   const BookFilterBar({
     super.key,
     required this.filter,
     required this.availableTags,
     required this.onFilterChanged,
+    this.onCalculatorPressed,
   });
 
   @override
@@ -142,6 +144,17 @@ class _BookFilterBarState extends State<BookFilterBar> {
                   _sortItem(BookSortField.author, authorLabel, Icons.person),
                 ],
               ),
+              if (widget.onCalculatorPressed != null) ...[
+                SizedBox(width: 2),
+                GestureDetector(
+                  onTap: widget.onCalculatorPressed,
+                  child: Tooltip(
+                    message: context.t('resource_calculator'),
+                    child: Icon(Icons.calculate,
+                        size: 20, color: AppTheme.mediumMint),
+                  ),
+                ),
+              ],
             ],
           ),
           if (availableTags.isNotEmpty) ...[

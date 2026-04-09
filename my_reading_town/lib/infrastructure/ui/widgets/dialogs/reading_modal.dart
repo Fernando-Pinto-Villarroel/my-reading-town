@@ -72,13 +72,6 @@ class _ReadingModalContent extends StatelessWidget {
                             color: AppTheme.darkText)),
                     Spacer(),
                     IconButton(
-                      icon: Icon(Icons.calculate,
-                          size: 22, color: AppTheme.mediumMint),
-                      tooltip: context.t('resource_calculator'),
-                      onPressed: () =>
-                          showReadingCalculatorDialog(context),
-                    ),
-                    IconButton(
                       icon:
                           Icon(Icons.label, size: 22, color: AppTheme.lavender),
                       tooltip: context.t('manage_tags'),
@@ -142,6 +135,7 @@ class _BooksTab extends StatelessWidget {
               filter: bookProvider.filter,
               availableTags: tagProvider.tags,
               onFilterChanged: (f) => bookProvider.setFilter(f),
+              onCalculatorPressed: () => showReadingCalculatorDialog(ctx),
             );
           },
         ),
