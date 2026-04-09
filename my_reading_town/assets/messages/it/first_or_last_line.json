@@ -1,0 +1,134 @@
+{
+  "questions": [
+    {
+      "line": "Chiamatemi Ismaele.",
+      "book": "Moby Dick",
+      "is_first": true
+    },
+    {
+      "line": "Era il migliore dei tempi, era il peggiore dei tempi, era l'età della saggezza, era l'età della follia.",
+      "book": "Storia di due città",
+      "is_first": true
+    },
+    {
+      "line": "Tutte le famiglie felici si assomigliano; ogni famiglia infelice è infelice a modo suo.",
+      "book": "Anna Karenina",
+      "is_first": true
+    },
+    {
+      "line": "Era una fredda e luminosa giornata d'aprile, e gli orologi battevano le tredici.",
+      "book": "1984",
+      "is_first": true
+    },
+    {
+      "line": "La signora Dalloway disse che avrebbe comprato lei stessa i fiori.",
+      "book": "La signora Dalloway",
+      "is_first": true
+    },
+    {
+      "line": "Tutti i bambini, tranne uno, crescono.",
+      "book": "Peter Pan",
+      "is_first": true
+    },
+    {
+      "line": "È una verità universalmente riconosciuta che un uomo single in possesso di una buona fortuna debba essere in cerca di una moglie.",
+      "book": "Orgoglio e pregiudizio",
+      "is_first": true
+    },
+    {
+      "line": "Negli anni più giovani e vulnerabili della mia vita mio padre mi diede un consiglio che da allora non ho smesso di rimuginare.",
+      "book": "Il grande Gatsby",
+      "is_first": true
+    },
+    {
+      "line": "Il cielo sopra il porto era del colore di una televisione sintonizzata su un canale morto.",
+      "book": "Neuromante",
+      "is_first": true
+    },
+    {
+      "line": "Era una strana estate afosa, l'estate in cui giustiziarono i Rosenberg.",
+      "book": "La campana di vetro",
+      "is_first": true
+    },
+    {
+      "line": "L'uomo in nero fuggì attraverso il deserto, e il pistolero lo seguì.",
+      "book": "La Torre Nera: L'ultimo cavaliere",
+      "is_first": true
+    },
+    {
+      "line": "Sono un uomo invisibile.",
+      "book": "Uomo invisibile",
+      "is_first": true
+    },
+    {
+      "line": "Scrivo questo seduta nell'acquaio della cucina.",
+      "book": "Cattura il castello",
+      "is_first": true
+    },
+    {
+      "line": "E così continuiamo a remare, barche controcorrente, respinti senza sosta nel passato.",
+      "book": "Il grande Gatsby",
+      "is_first": false
+    },
+    {
+      "line": "È una cosa molto, molto migliore quella che faccio ora di tutto ciò che ho mai fatto; è un riposo molto, molto più dolce quello dove vado di qualunque altro che abbia mai conosciuto.",
+      "book": "Storia di due città",
+      "is_first": false
+    },
+    {
+      "line": "Dopotutto, domani è un altro giorno.",
+      "book": "Via col vento",
+      "is_first": false
+    },
+    {
+      "line": "Amava il Grande Fratello.",
+      "book": "1984",
+      "is_first": false
+    },
+    {
+      "line": "Le creature all'esterno guardavano dal maiale all'uomo, e dall'uomo al maiale; ma era già impossibile distinguere l'uno dall'altro.",
+      "book": "La fattoria degli animali",
+      "is_first": false
+    },
+    {
+      "line": "Non raccontare mai niente a nessuno. Se lo fai, cominci a sentire la mancanza di tutti.",
+      "book": "Il giovane Holden",
+      "is_first": false
+    },
+    {
+      "line": "Poo-tee-weet?",
+      "book": "Mattatoio n. 5",
+      "is_first": false
+    },
+    {
+      "line": "Non capita spesso che qualcuno venga al mondo che sia un vero amico e un buon scrittore. Carlotta era entrambe le cose.",
+      "book": "La tela di Carlotta",
+      "is_first": false
+    },
+    {
+      "line": "Il largo era sbarrato da una massa nera di nuvole, e il tranquillo corso d'acqua che portava ai confini della terra scorreva cupo sotto un cielo coperto.",
+      "book": "Cuore di tenebra",
+      "is_first": false
+    },
+    {
+      "line": "Il vecchio stava sognando dei leoni.",
+      "book": "Il vecchio e il mare",
+      "is_first": false
+    },
+    {
+      "line": "Ma credo che devo andarmene verso il Territorio prima degli altri, perché la zia Sally vuole adottarmi e civilizzarmi, e non riesco a sopportarlo.",
+      "book": "Le avventure di Huckleberry Finn",
+      "is_first": false
+    },
+    {
+      "line": "Qualunque cosa ci fosse mancata, possedevamo insieme il prezioso, incomunicabile passato.",
+      "book": "La mia Ántonia",
+      "is_first": false
+    },
+    {
+      "line": "...perché le stirpi condannate a cento anni di solitudine non avevano una seconda opportunità sulla terra.",
+      "book": "Cent'anni di solitudine",
+      "is_first": false
+    }
+  ]
+}

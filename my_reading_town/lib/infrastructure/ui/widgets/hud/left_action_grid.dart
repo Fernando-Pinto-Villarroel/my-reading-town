@@ -16,6 +16,8 @@ class LeftActionGrid extends StatelessWidget {
   final GlobalKey? buildButtonKey;
   final GlobalKey? backpackButtonKey;
   final GlobalKey? minigamesButtonKey;
+  final GlobalKey? rouletteButtonKey;
+  final GlobalKey? storeButtonKey;
 
   const LeftActionGrid({
     super.key,
@@ -31,6 +33,8 @@ class LeftActionGrid extends StatelessWidget {
     this.buildButtonKey,
     this.backpackButtonKey,
     this.minigamesButtonKey,
+    this.rouletteButtonKey,
+    this.storeButtonKey,
   });
 
   @override
@@ -159,11 +163,14 @@ class LeftActionGrid extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                _ActionButton(
-                  icon: Icons.casino,
-                  color: const Color(0xFFE040A0),
-                  size: btnSize,
-                  onTap: onRouletteTap,
+                SizedBox(
+                  key: rouletteButtonKey,
+                  child: _ActionButton(
+                    icon: Icons.casino,
+                    color: const Color(0xFFE040A0),
+                    size: btnSize,
+                    onTap: onRouletteTap,
+                  ),
                 ),
                 if (context.watch<VillageProvider>().canSpinRouletteForFree)
                   Positioned(
@@ -182,11 +189,14 @@ class LeftActionGrid extends StatelessWidget {
               ],
             ),
             SizedBox(width: gap),
-            _ActionButton(
-              icon: Icons.storefront,
-              color: const Color(0xFF26C6DA),
-              size: btnSize,
-              onTap: onStoreTap,
+            SizedBox(
+              key: storeButtonKey,
+              child: _ActionButton(
+                icon: Icons.storefront,
+                color: const Color(0xFF26C6DA),
+                size: btnSize,
+                onTap: onStoreTap,
+              ),
             ),
           ],
         ),

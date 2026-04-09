@@ -111,12 +111,16 @@ class _TemplateListState extends State<TemplateList> {
         final maxCount = VillageRules.maxBuildingsOfTypeForPlayerLevel(
             type, widget.village.playerLevel);
 
-        final translatedName = context.t(
-          'building_name_$type',
-          fallback: template['name'] as String,
-        );
+        final minLevel = VillageRules.minLevelForBuilding(type);
+        final isLevelLocked = minLevel > widget.village.playerLevel;
+        final translatedName = isLevelLocked
+            ? '??'
+            : context.t(
+                'building_name_$type',
+                fallback: template['name'] as String,
+              );
         return GestureDetector(
-          onTap: canPlace
+          onTap: (!isLevelLocked && canPlace)
               ? () => widget.onSelect(widget.selectedType == type ? null : type)
               : null,
           child: widget.landscape
@@ -135,7 +139,9 @@ class _TemplateListState extends State<TemplateList> {
                   canAfford,
                   canPlace,
                   currentCount,
-                  maxCount)
+                  maxCount,
+                  isLevelLocked,
+                  minLevel)
               : _portraitCard(
                   context,
                   translatedName,
@@ -151,7 +157,9 @@ class _TemplateListState extends State<TemplateList> {
                   canAfford,
                   canPlace,
                   currentCount,
-                  maxCount),
+                  maxCount,
+                  isLevelLocked,
+                  minLevel),
         );
       },
     );
@@ -172,15 +180,25 @@ class _TemplateListState extends State<TemplateList> {
       bool canAfford,
       bool canPlace,
       int currentCount,
-      int maxCount) {
+      int maxCount,
+      bool isLevelLocked,
+      int minLevel) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: _cardDecoration(isSelected, isHighlighted),
+      decoration: isLevelLocked
+          ? _lockedCardDecoration()
+          : _cardDecoration(isSelected, isHighlighted),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          buildAssetPreview(type, 64, canAfford && canPlace),
+          isLevelLocked
+              ? SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: Icon(Icons.lock, size: 40, color: Colors.grey.shade400),
+                )
+              : buildAssetPreview(type, 64, canAfford && canPlace),
           SizedBox(width: 6),
           Flexible(
             child: SingleChildScrollView(
@@ -193,13 +211,27 @@ class _TemplateListState extends State<TemplateList> {
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.darkText)),
-                  _costRow(coinCost, gemCost, woodCost, metalCost, 9, 12),
-                  _timeExpRow(
-                      buildMinutes, template['exp'] as int? ?? 20, 9, 10),
-                  if (!widget.isDecorationTab) _capacityRow(type, 9, 10, context),
-                  if (!widget.isDecorationTab)
-                    _countRow(currentCount, maxCount, canPlace, 9, 10),
+                          color: isLevelLocked
+                              ? Colors.grey.shade500
+                              : AppTheme.darkText)),
+                  if (isLevelLocked)
+                    Text(
+                      context.t('unlocks_at_level',
+                          fallback: 'Unlocks at Level $minLevel').replaceAll('{level}', '$minLevel'),
+                      style: TextStyle(
+                          fontSize: 9,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w600),
+                    )
+                  else ...[
+                    _costRow(coinCost, gemCost, woodCost, metalCost, 9, 12),
+                    _timeExpRow(
+                        buildMinutes, template['exp'] as int? ?? 20, 9, 10),
+                    if (!widget.isDecorationTab)
+                      _capacityRow(type, 9, 10, context),
+                    if (!widget.isDecorationTab)
+                      _countRow(currentCount, maxCount, canPlace, 9, 10),
+                  ],
                 ],
               ),
             ),
@@ -224,37 +256,67 @@ class _TemplateListState extends State<TemplateList> {
       bool canAfford,
       bool canPlace,
       int currentCount,
-      int maxCount) {
+      int maxCount,
+      bool isLevelLocked,
+      int minLevel) {
     return Container(
       width: 140,
       margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: EdgeInsets.all(6),
-      decoration: _cardDecoration(isSelected, isHighlighted),
+      decoration: isLevelLocked
+          ? _lockedCardDecoration()
+          : _cardDecoration(isSelected, isHighlighted),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          buildAssetPreview(type, 80, canAfford && canPlace),
+          isLevelLocked
+              ? SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Icon(Icons.lock, size: 48, color: Colors.grey.shade400),
+                )
+              : buildAssetPreview(type, 80, canAfford && canPlace),
           SizedBox(height: 2),
           Text(translatedName,
               style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.darkText),
+                  color: isLevelLocked ? Colors.grey.shade500 : AppTheme.darkText),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
           SizedBox(height: 1),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: _costRow(coinCost, gemCost, woodCost, metalCost, 10, 14),
-          ),
-          _timeExpRow(buildMinutes, template['exp'] as int? ?? 20, 11, 13),
-          if (!widget.isDecorationTab) _capacityRow(type, 10, 12, context),
-          if (!widget.isDecorationTab)
-            _countRow(currentCount, maxCount, canPlace, 10, 12),
+          if (isLevelLocked)
+            Text(
+              context.t('unlocks_at_level',
+                  fallback: 'Unlocks at Level $minLevel').replaceAll('{level}', '$minLevel'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w600),
+            )
+          else ...[
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _costRow(coinCost, gemCost, woodCost, metalCost, 10, 14),
+            ),
+            _timeExpRow(buildMinutes, template['exp'] as int? ?? 20, 11, 13),
+            if (!widget.isDecorationTab) _capacityRow(type, 10, 12, context),
+            if (!widget.isDecorationTab)
+              _countRow(currentCount, maxCount, canPlace, 10, 12),
+          ],
         ],
       ),
+    );
+  }
+
+  BoxDecoration _lockedCardDecoration() {
+    return BoxDecoration(
+      color: Colors.grey.shade100,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.grey.shade300, width: 1),
     );
   }
 

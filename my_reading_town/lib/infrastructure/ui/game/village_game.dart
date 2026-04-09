@@ -14,6 +14,7 @@ import 'package:my_reading_town/domain/entities/placed_building.dart';
 import 'package:my_reading_town/domain/entities/villager.dart';
 import 'package:my_reading_town/domain/rules/village_rules.dart';
 import 'package:my_reading_town/infrastructure/ui/config/ui_constants.dart';
+import 'package:my_reading_town/app_constants.dart';
 
 class VillageGame extends FlameGame {
   final Function(int tileX, int tileY)? onTileTapped;
@@ -23,6 +24,7 @@ class VillageGame extends FlameGame {
 
   bool isConstructionMode = false;
   bool isRoadMode = false;
+  int playerLevel = 1;
   bool _isReady = false;
 
   bool _isNightMode = false;
@@ -33,11 +35,13 @@ class VillageGame extends FlameGame {
 
   late GridComponent _gridComponent;
   final Set<String> _roadTiles = {};
+  final Set<String> _walkableTiles = {};
+  final Map<String, String> _specialTiles = {};
   final Set<String> _unlockedChunks = {};
   final Map<int, BuildingComponent> _buildingComponents = {};
   final List<VillagerComponent> _villagerComponents = [];
   final Map<String, ExpansionSignComponent> _expansionSigns = {};
-  List<String> _roadTilesList = [];
+  List<String> _walkableTilesList = [];
 
   double _constructionCheckTimer = 0;
   final Map<int, PlacedBuilding> _buildingsById = {};
@@ -87,8 +91,12 @@ class VillageGame extends FlameGame {
   }
 
   void _updateNightMode() {
-    final hour = DateTime.now().hour;
-    final isNight = hour >= 19 || hour < 5;
+    final isNight = AppConstants.testMode
+        ? AppConstants.isNightTime
+        : (() {
+            final hour = DateTime.now().hour;
+            return hour >= 19 || hour < 5;
+          })();
     final wasNight = _isNightMode;
     _isNightMode = isNight;
     _nightOverlay.isNight = isNight;
@@ -157,24 +165,36 @@ class VillageGame extends FlameGame {
   void updateGridState() {
     if (!_isReady) return;
     _gridComponent.roadTiles = _roadTiles;
+    _gridComponent.specialTiles = _specialTiles;
     _gridComponent.unlockedChunks = _unlockedChunks;
     _gridComponent.showGridLines = isConstructionMode || isRoadMode;
+  }
+
+  void updateSpecialTiles(Map<String, String> tiles) {
+    _specialTiles.clear();
+    _specialTiles.addAll(tiles);
+    if (_isReady) _gridComponent.specialTiles = _specialTiles;
+  }
+
+  void updateWalkableTiles(Set<String> tiles) {
+    _walkableTiles.clear();
+    _walkableTiles.addAll(tiles);
+    _walkableTilesList = tiles.toList();
+    for (var vc in _villagerComponents) {
+      vc.roadTiles = _walkableTilesList;
+    }
+    for (final entry in _buildingComponents.entries) {
+      final b = _buildingsById[entry.key];
+      if (b != null) {
+        entry.value.isRoadConnected = _isBuildingRoadConnected(b, _walkableTiles);
+      }
+    }
   }
 
   void updateRoadTiles(Set<String> roads) {
     _roadTiles.clear();
     _roadTiles.addAll(roads);
-    _roadTilesList = roads.toList();
     if (_isReady) _gridComponent.roadTiles = _roadTiles;
-    for (var vc in _villagerComponents) {
-      vc.roadTiles = _roadTilesList;
-    }
-    for (final entry in _buildingComponents.entries) {
-      final b = _buildingsById[entry.key];
-      if (b != null) {
-        entry.value.isRoadConnected = _isBuildingRoadConnected(b, _roadTiles);
-      }
-    }
   }
 
   void updateUnlockedChunks(Set<String> chunks) {
@@ -297,14 +317,14 @@ class VillageGame extends FlameGame {
         comp.updateBuilding(building);
         comp.position = worldPos;
         comp.size = compSize;
-        comp.isRoadConnected = _isBuildingRoadConnected(building, _roadTiles);
+        comp.isRoadConnected = _isBuildingRoadConnected(building, _walkableTiles);
       } else {
         final comp = BuildingComponent(
           building: building,
           position: worldPos,
           size: compSize,
         );
-        comp.isRoadConnected = _isBuildingRoadConnected(building, _roadTiles);
+        comp.isRoadConnected = _isBuildingRoadConnected(building, _walkableTiles);
         _buildingComponents[building.id!] = comp;
         world.add(comp);
       }
@@ -316,7 +336,7 @@ class VillageGame extends FlameGame {
     List<String> missingBuildingTypes = const [],
     Map<int, String> houseRoadTiles = const {},
   }) {
-    if (_roadTilesList.isEmpty) return;
+    if (_walkableTilesList.isEmpty) return;
 
     final existingById = <int, VillagerComponent>{};
     for (final comp in _villagerComponents) {
@@ -343,12 +363,12 @@ class VillageGame extends FlameGame {
       // Calculate missing needs for this specific villager
       final villagerMissingNeeds = _villagerService != null
           ? _villagerService!.missingNeedsForVillager(
-              v, villagers, _buildingsById.values.toList(), _roadTiles)
+              v, villagers, _buildingsById.values.toList(), _walkableTiles, playerLevel)
           : missingBuildingTypes;
 
       if (v.id != null && existingById.containsKey(v.id!)) {
         existingById[v.id!]!.villager = v;
-        existingById[v.id!]!.roadTiles = _roadTilesList;
+        existingById[v.id!]!.roadTiles = _walkableTilesList;
         existingById[v.id!]!.missingBuildingTypes = villagerMissingNeeds;
       } else {
         Vector2 spawnPos;
@@ -389,10 +409,10 @@ class VillageGame extends FlameGame {
             );
           } else {
             spawnPos = Vector2(
-              int.parse(_roadTilesList[i % _roadTilesList.length].split(',')[0]) *
+              int.parse(_walkableTilesList[i % _walkableTilesList.length].split(',')[0]) *
                       UiConstants.tilePixelSize +
                   UiConstants.tilePixelSize / 2,
-              int.parse(_roadTilesList[i % _roadTilesList.length].split(',')[1]) *
+              int.parse(_walkableTilesList[i % _walkableTilesList.length].split(',')[1]) *
                       UiConstants.tilePixelSize +
                   UiConstants.tilePixelSize / 2,
             );
@@ -402,7 +422,7 @@ class VillageGame extends FlameGame {
         final comp = VillagerComponent(
           villager: v,
           position: spawnPos,
-          roadTiles: _roadTilesList,
+          roadTiles: _walkableTilesList,
           missingBuildingTypes: villagerMissingNeeds,
           onTapped: onVillagerTapped,
         );
@@ -474,12 +494,18 @@ class VillageGame extends FlameGame {
   }
 
   void handleWorldTap(Vector2 worldPos) {
+    VillagerComponent? topmost;
     for (final vc in _villagerComponents) {
       final rel = worldPos - vc.position;
       if (rel.x.abs() < vc.size.x / 2 && rel.y.abs() < vc.size.y / 2) {
-        onVillagerTapped?.call(vc.villager);
-        return;
+        if (topmost == null || vc.priority > topmost.priority) {
+          topmost = vc;
+        }
       }
+    }
+    if (topmost != null) {
+      onVillagerTapped?.call(topmost.villager);
+      return;
     }
 
     for (final sign in _expansionSigns.values) {

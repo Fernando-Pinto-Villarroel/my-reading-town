@@ -5,6 +5,8 @@ import 'package:my_reading_town/domain/rules/minigame_rules.dart';
 import 'package:my_reading_town/adapters/providers/village_provider.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/guess_author_screen.dart';
 import 'package:my_reading_town/infrastructure/ui/screens/match_character_role_screen.dart';
+import 'package:my_reading_town/infrastructure/ui/screens/first_or_last_line_screen.dart';
+import 'package:my_reading_town/infrastructure/ui/screens/book_or_not_screen.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 
@@ -25,6 +27,9 @@ void showMinigamesDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           padding: const EdgeInsets.all(20),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+          ),
           decoration: BoxDecoration(
             color: AppTheme.cream,
             borderRadius: BorderRadius.circular(24),
@@ -48,7 +53,12 @@ void showMinigamesDialog(
                       onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
               MinigameCard(
                 icon: Icons.auto_stories,
                 title: langProvider.translate('guess_the_author'),
@@ -84,10 +94,50 @@ void showMinigamesDialog(
                   ).then((_) => onReturn());
                 },
               ),
+              const SizedBox(height: 12),
+              MinigameCard(
+                icon: Icons.format_quote,
+                title: langProvider.translate('first_or_last_line'),
+                subtitle: langProvider.translate('first_or_last_line_desc'),
+                color: const Color(0xFFFFCC80),
+                darkColor: const Color(0xFFE65100),
+                minigameId: 'first_or_last_line',
+                village: village,
+                onPlay: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const FirstOrLastLineScreen()),
+                  ).then((_) => onReturn());
+                },
+              ),
+              const SizedBox(height: 12),
+              MinigameCard(
+                icon: Icons.help_outline,
+                title: langProvider.translate('book_or_not'),
+                subtitle: langProvider.translate('book_or_not_desc'),
+                color: const Color(0xFFF8BBD0),
+                darkColor: const Color(0xFFAD1457),
+                minigameId: 'book_or_not',
+                village: village,
+                onPlay: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BookOrNotScreen()),
+                  ).then((_) => onReturn());
+                },
+              ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       );
+
     },
   );
 }

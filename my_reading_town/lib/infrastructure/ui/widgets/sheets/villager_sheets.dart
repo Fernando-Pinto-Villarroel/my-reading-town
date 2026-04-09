@@ -252,6 +252,8 @@ Widget _missingNeedsBadges(
     'hospital': '🏥',
     'school': '🎒',
     'park': '🌳',
+    'restaurant': '🍽️',
+    'library': '📚',
   };
   final needLabelKeys = {
     'water_plant': 'need_water',
@@ -259,6 +261,8 @@ Widget _missingNeedsBadges(
     'hospital': 'need_hospital',
     'school': 'need_school',
     'park': 'need_park',
+    'restaurant': 'need_restaurant',
+    'library': 'need_library',
   };
   final missing = village.missingNeedsForVillager(villager);
   if (missing.isEmpty) return SizedBox.shrink();

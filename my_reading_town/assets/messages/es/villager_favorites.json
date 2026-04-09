@@ -30,7 +30,7 @@
     },
     {
       "author": "Eduardo Galeano",
-      "quote": "Lo unico que Absolute es necesario saber, es la ubicacion de la biblioteca."
+      "quote": "Lo unico que es absolutamente necesario saber, es la ubicacion de la biblioteca."
     },
     {
       "author": "Laura Esquivel",
@@ -70,6 +70,90 @@
       "author": "Lewis Carroll",
       "quote": "Los libros son los amigos mas silenciosos y constantes."
     },
-    { "author": "Roald Dahl", "quote": "Un buen libro no tiene final." }
+    { "author": "Roald Dahl", "quote": "Un buen libro no tiene final." },
+    {
+      "author": "Virginia Woolf",
+      "quote": "No puedes encontrar la paz evitando la vida."
+    },
+    {
+      "author": "Oscar Wilde",
+      "quote": "Lo que lees cuando no tienes que hacerlo determina lo que seras cuando no puedas evitarlo."
+    },
+    {
+      "author": "Franz Kafka",
+      "quote": "Un libro debe ser el hacha para el mar helado dentro de nosotros."
+    },
+    {
+      "author": "Leon Tolstoi",
+      "quote": "Toda gran literatura es una de dos historias: un hombre va en un viaje o un extrano llega al pueblo."
+    },
+    {
+      "author": "Fiodor Dostoievski",
+      "quote": "El alma se cura estando con los ninos."
+    },
+    {
+      "author": "Victor Hugo",
+      "quote": "Aprender a leer es encender un fuego."
+    },
+    {
+      "author": "Charles Dickens",
+      "quote": "Nadie es inutil en este mundo si aligera las cargas de otro."
+    },
+    {
+      "author": "William Shakespeare",
+      "quote": "Que hay en un nombre? Lo que llamamos rosa, con cualquier otro nombre oleria igual de dulce."
+    },
+    {
+      "author": "Gustave Flaubert",
+      "quote": "Lee para vivir."
+    },
+    {
+      "author": "Marcel Proust",
+      "quote": "El verdadero viaje del descubrimiento no consiste en buscar nuevos paisajes, sino en tener nuevos ojos."
+    },
+    {
+      "author": "Albert Camus",
+      "quote": "En medio del invierno, descubri que habia en mi un verano invencible."
+    },
+    {
+      "author": "Simone de Beauvoir",
+      "quote": "Soy demasiado inteligente, exigente y capaz para que alguien pueda hacerse cargo de mi por completo."
+    },
+    {
+      "author": "Maya Angelou",
+      "quote": "No hay mayor agonia que llevar dentro una historia no contada."
+    },
+    {
+      "author": "Toni Morrison",
+      "quote": "Si tienes algun poder, tu trabajo es empoderar a alguien mas."
+    },
+    {
+      "author": "Neil Gaiman",
+      "quote": "Un libro es un sueno que sostienes en tu mano."
+    },
+    {
+      "author": "C.S. Lewis",
+      "quote": "Nunca puedes conseguir una taza de te lo suficientemente grande ni un libro lo suficientemente largo."
+    },
+    {
+      "author": "Ray Bradbury",
+      "quote": "No tienes que quemar libros para destruir una cultura. Solo logra que la gente deje de leerlos."
+    },
+    {
+      "author": "George Orwell",
+      "quote": "No todos los libros estan pensados para ser leidos, solo algunos de ellos."
+    },
+    {
+      "author": "Haruki Murakami",
+      "quote": "Si solo lees los libros que todos los demas leen, solo podras pensar lo que todos los demas piensan."
+    },
+    {
+      "author": "Gabriel Garcia Marquez",
+      "quote": "Era todavia demasiado joven para saber que la memoria del corazon elimina los malos recuerdos y magnifica los buenos."
+    },
+    {
+      "author": "Jaime Saenz",
+      "quote": "Si te encuentras con la ninfa, no le digas que he llorado. Dile que en los rios me viste, lavando oro para su cofre."
+    }
   ]
 }

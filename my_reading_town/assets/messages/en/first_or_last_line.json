@@ -1,0 +1,134 @@
+{
+  "questions": [
+    {
+      "line": "Call me Ishmael.",
+      "book": "Moby-Dick",
+      "is_first": true
+    },
+    {
+      "line": "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.",
+      "book": "A Tale of Two Cities",
+      "is_first": true
+    },
+    {
+      "line": "Happy families are all alike; every unhappy family is unhappy in its own way.",
+      "book": "Anna Karenina",
+      "is_first": true
+    },
+    {
+      "line": "It was a bright cold day in April, and the clocks were striking thirteen.",
+      "book": "1984",
+      "is_first": true
+    },
+    {
+      "line": "Mrs. Dalloway said she would buy the flowers herself.",
+      "book": "Mrs. Dalloway",
+      "is_first": true
+    },
+    {
+      "line": "All children, except one, grow up.",
+      "book": "Peter Pan",
+      "is_first": true
+    },
+    {
+      "line": "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+      "book": "Pride and Prejudice",
+      "is_first": true
+    },
+    {
+      "line": "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.",
+      "book": "The Great Gatsby",
+      "is_first": true
+    },
+    {
+      "line": "The sky above the port was the color of television, tuned to a dead channel.",
+      "book": "Neuromancer",
+      "is_first": true
+    },
+    {
+      "line": "It was a queer, sultry summer, the summer they electrocuted the Rosenbergs.",
+      "book": "The Bell Jar",
+      "is_first": true
+    },
+    {
+      "line": "The man in black fled across the desert, and the gunslinger followed.",
+      "book": "The Dark Tower: The Gunslinger",
+      "is_first": true
+    },
+    {
+      "line": "I am an invisible man.",
+      "book": "Invisible Man",
+      "is_first": true
+    },
+    {
+      "line": "I write this sitting in the kitchen sink.",
+      "book": "I Capture the Castle",
+      "is_first": true
+    },
+    {
+      "line": "So we beat on, boats against the current, borne back ceaselessly into the past.",
+      "book": "The Great Gatsby",
+      "is_first": false
+    },
+    {
+      "line": "It is a far, far better thing that I do, than I have ever done; it is a far, far better rest that I go to than I have ever known.",
+      "book": "A Tale of Two Cities",
+      "is_first": false
+    },
+    {
+      "line": "After all, tomorrow is another day.",
+      "book": "Gone with the Wind",
+      "is_first": false
+    },
+    {
+      "line": "He loved Big Brother.",
+      "book": "1984",
+      "is_first": false
+    },
+    {
+      "line": "The creatures outside looked from pig to man, and from man to pig, and from pig to man again; but already it was impossible to say which was which.",
+      "book": "Animal Farm",
+      "is_first": false
+    },
+    {
+      "line": "Don't ever tell anybody anything. If you do, you start missing everybody.",
+      "book": "The Catcher in the Rye",
+      "is_first": false
+    },
+    {
+      "line": "Poo-tee-weet?",
+      "book": "Slaughterhouse-Five",
+      "is_first": false
+    },
+    {
+      "line": "It's not often that someone comes along who is a true friend and a good writer. Charlotte was both.",
+      "book": "Charlotte's Web",
+      "is_first": false
+    },
+    {
+      "line": "The offing was barred by a black bank of clouds, and the tranquil waterway leading to the uttermost ends of the earth flowed sombre under an overcast sky.",
+      "book": "Heart of Darkness",
+      "is_first": false
+    },
+    {
+      "line": "The old man was dreaming about the lions.",
+      "book": "The Old Man and the Sea",
+      "is_first": false
+    },
+    {
+      "line": "But I reckon I got to light out for the Territory ahead of the rest, because Aunt Sally she's going to adopt me and sivilize me, and I can't stand it.",
+      "book": "Adventures of Huckleberry Finn",
+      "is_first": false
+    },
+    {
+      "line": "Whatever we had missed, we possessed together the precious, the incommunicable past.",
+      "book": "My Antonia",
+      "is_first": false
+    },
+    {
+      "line": "...because races condemned to one hundred years of solitude did not have a second opportunity on earth.",
+      "book": "One Hundred Years of Solitude",
+      "is_first": false
+    }
+  ]
+}

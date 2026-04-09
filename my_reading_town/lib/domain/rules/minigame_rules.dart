@@ -4,6 +4,8 @@ class MinigameRules {
   static const Map<String, MinigameConfig> configs = {
     'guess_author': MinigameConfig(winsNeeded: 5, cooldownHours: 4),
     'match_character_role': MinigameConfig(winsNeeded: 10, cooldownHours: 5),
+    'first_or_last_line': MinigameConfig(winsNeeded: 7, cooldownHours: 4),
+    'book_or_not': MinigameConfig(winsNeeded: 6, cooldownHours: 4),
   };
 
   // Reward probabilities for completing a minigame.

@@ -1,0 +1,139 @@
+{
+  "questions": [
+    {
+      "title": "L'Ombra del Vento",
+      "is_real": true,
+      "author": "Carlos Ruiz Zafón"
+    },
+    {
+      "title": "Il Nome della Rosa",
+      "is_real": true,
+      "author": "Umberto Eco"
+    },
+    {
+      "title": "L'Atlante delle Nuvole",
+      "is_real": true,
+      "author": "David Mitchell"
+    },
+    {
+      "title": "Quel che resta del giorno",
+      "is_real": true,
+      "author": "Kazuo Ishiguro"
+    },
+    {
+      "title": "Guida galattica per gli autostoppisti",
+      "is_real": true,
+      "author": "Douglas Adams"
+    },
+    {
+      "title": "Non lasciarmi",
+      "is_real": true,
+      "author": "Kazuo Ishiguro"
+    },
+    {
+      "title": "Vita di Pi",
+      "is_real": true,
+      "author": "Yann Martel"
+    },
+    {
+      "title": "Lo strano caso del cane ucciso a mezzanotte",
+      "is_real": true,
+      "author": "Mark Haddon"
+    },
+    {
+      "title": "Fiori per Algernon",
+      "is_real": true,
+      "author": "Daniel Keyes"
+    },
+    {
+      "title": "Un gentiluomo a Mosca",
+      "is_real": true,
+      "author": "Amor Towles"
+    },
+    {
+      "title": "La Biblioteca di Mezzanotte",
+      "is_real": true,
+      "author": "Matt Haig"
+    },
+    {
+      "title": "Piranesi",
+      "is_real": true,
+      "author": "Susanna Clarke"
+    },
+    {
+      "title": "Progetto Salvataggio",
+      "is_real": true,
+      "author": "Andy Weir"
+    },
+    {
+      "title": "Il Club del giovedì",
+      "is_real": true,
+      "author": "Richard Osman"
+    },
+    {
+      "title": "Il mare senza stelle",
+      "is_real": true,
+      "author": "Erin Morgenstern"
+    },
+    {
+      "title": "Le Cronache dell'Ambra",
+      "is_real": false
+    },
+    {
+      "title": "Echi di un Mondo Dimenticato",
+      "is_real": false
+    },
+    {
+      "title": "Il Custode della Lanterna d'Argento",
+      "is_real": false
+    },
+    {
+      "title": "Sussurri della Cattedrale Oscura",
+      "is_real": false
+    },
+    {
+      "title": "Il Cartografo di Mezzanotte",
+      "is_real": false
+    },
+    {
+      "title": "Le Ombre del Regno Perduto",
+      "is_real": false
+    },
+    {
+      "title": "L'Ultimo Oracolo di Roma",
+      "is_real": false
+    },
+    {
+      "title": "Lettere da una Riva Sconosciuta",
+      "is_real": false
+    },
+    {
+      "title": "Il Mistero della Montagna di Vetro",
+      "is_real": false
+    },
+    {
+      "title": "Una Mappa delle Città Dimenticate",
+      "is_real": false
+    },
+    {
+      "title": "Le Cronache del Sole di Rame",
+      "is_real": false
+    },
+    {
+      "title": "Canti della Foresta di Ferro",
+      "is_real": false
+    },
+    {
+      "title": "La Marea Errante",
+      "is_real": false
+    },
+    {
+      "title": "Polvere e Luce di Stelle",
+      "is_real": false
+    },
+    {
+      "title": "Il Giardino di Ceramica",
+      "is_real": false
+    }
+  ]
+}

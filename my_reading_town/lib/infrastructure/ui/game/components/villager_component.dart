@@ -63,6 +63,7 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
 
   @override
   void onTapUp(TapUpEvent event) {
+    event.handled = true;
     onTapped?.call(villager);
   }
 
@@ -82,6 +83,7 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
+    priority = 200 + position.y.toInt();
     _refreshSprite();
 
     if (_isNightMode()) {
@@ -263,6 +265,8 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
     'hospital': '🏥',
     'school': '🎒',
     'park': '🌳',
+    'restaurant': '🍽️',
+    'library': '📚',
   };
 
   void _drawNeedIcon(Canvas canvas, String type, double cx, double cy) {

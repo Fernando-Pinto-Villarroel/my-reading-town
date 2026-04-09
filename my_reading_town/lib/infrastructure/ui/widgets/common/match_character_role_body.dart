@@ -248,22 +248,3 @@ class ResultFeedback extends StatelessWidget {
   }
 }
 
-class CloudDecoration extends StatelessWidget {
-  const CloudDecoration({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(6, (i) {
-          return Text(
-            i.isEven ? '☁️' : '✨',
-            style: TextStyle(fontSize: i.isEven ? 20 : 14),
-          );
-        }),
-      ),
-    );
-  }
-}

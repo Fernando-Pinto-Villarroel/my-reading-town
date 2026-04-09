@@ -13,6 +13,7 @@ class SideMenu extends StatelessWidget {
   final GlobalKey? photoButtonKey;
   final GlobalKey? statsButtonKey;
   final GlobalKey? settingsButtonKey;
+  final GlobalKey? speciesButtonKey;
 
   const SideMenu({
     super.key,
@@ -27,6 +28,7 @@ class SideMenu extends StatelessWidget {
     this.photoButtonKey,
     this.statsButtonKey,
     this.settingsButtonKey,
+    this.speciesButtonKey,
   });
 
   @override
@@ -53,10 +55,13 @@ class SideMenu extends StatelessWidget {
             ),
           ),
           SizedBox(height: 6),
-          SideMenuButton(
-            icon: Icons.collections_bookmark,
-            isActive: false,
-            onTap: onSpeciesBookTap,
+          SizedBox(
+            key: speciesButtonKey,
+            child: SideMenuButton(
+              icon: Icons.collections_bookmark,
+              isActive: false,
+              onTap: onSpeciesBookTap,
+            ),
           ),
           SizedBox(height: 6),
           SizedBox(

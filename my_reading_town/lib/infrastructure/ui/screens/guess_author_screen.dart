@@ -209,7 +209,6 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
                         ? _buildLandscapeLayout()
                         : _buildPortraitLayout(),
                   ),
-                  const CloudDecoration(),
                 ],
               );
             },
@@ -264,12 +263,15 @@ class _GuessAuthorScreenState extends State<GuessAuthorScreen> {
       children: [
         Expanded(
           flex: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: QuestionBubble(
-              villagerSprite: _villagerSprite,
-              subtitle: context.t('who_wrote_this'),
-              questionText: _currentQuestion!['book'] as String,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(8),
+              child: QuestionBubble(
+                villagerSprite: _villagerSprite,
+                subtitle: context.t('who_wrote_this'),
+                questionText: _currentQuestion!['book'] as String,
+              ),
             ),
           ),
         ),

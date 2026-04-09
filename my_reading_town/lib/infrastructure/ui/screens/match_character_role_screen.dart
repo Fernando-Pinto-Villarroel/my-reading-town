@@ -207,7 +207,6 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
                         ? _buildLandscapeLayout()
                         : _buildPortraitLayout(),
                   ),
-                  const CloudDecoration(),
                 ],
               );
             },
@@ -263,13 +262,16 @@ class _MatchCharacterRoleScreenState extends State<MatchCharacterRoleScreen> {
       children: [
         Expanded(
           flex: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: QuestionBubble(
-              villagerSprite: _villagerSprite,
-              subtitle: context.t('what_is_their_role'),
-              questionText:
-                  '${context.t('who_is')} ${_currentQuestion!['character']}?',
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(8),
+              child: QuestionBubble(
+                villagerSprite: _villagerSprite,
+                subtitle: context.t('what_is_their_role'),
+                questionText:
+                    '${context.t('who_is')} ${_currentQuestion!['character']}?',
+              ),
             ),
           ),
         ),

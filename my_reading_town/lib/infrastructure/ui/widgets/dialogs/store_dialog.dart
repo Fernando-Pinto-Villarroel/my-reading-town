@@ -148,7 +148,7 @@ class _StoreHeader extends StatelessWidget {
   }
 }
 
-class _StoreTabBar extends StatelessWidget {
+class _StoreTabBar extends StatefulWidget {
   final TabController controller;
   final LanguageProvider lang;
   final Map<String, DiscountInfo> discounts;
@@ -159,87 +159,137 @@ class _StoreTabBar extends StatelessWidget {
     required this.discounts,
   });
 
-  bool get _hasDiscounts => discounts.isNotEmpty;
+  @override
+  State<_StoreTabBar> createState() => _StoreTabBarState();
+}
+
+class _StoreTabBarState extends State<_StoreTabBar> {
+  final ScrollController _scrollController = ScrollController();
+
+  bool get _hasDiscounts => widget.discounts.isNotEmpty;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Widget _tab(Widget icon, String text) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 82, maxWidth: 82),
+      child: Tab(icon: icon, text: text),
+    );
+  }
+
+  List<Widget> _buildTabs(bool fill) {
+    Widget tab(Widget icon, String text) {
+      if (fill) return Tab(icon: icon, text: text);
+      return _tab(icon, text);
+    }
+
+    return [
+      tab(
+        const Icon(Icons.inventory_2, size: 18),
+        widget.lang.translate('store_tab_resources'),
+      ),
+      tab(
+        const Icon(Icons.auto_awesome, size: 18),
+        widget.lang.translate('store_tab_powerups'),
+      ),
+      tab(
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.diamond, size: 18),
+            if (_hasDiscounts)
+              Positioned(
+                top: -4,
+                right: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('%',
+                      style: TextStyle(
+                          fontSize: 7,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ),
+          ],
+        ),
+        widget.lang.translate('store_tab_gems'),
+      ),
+      tab(
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.card_giftcard, size: 18),
+            if (_hasDiscounts)
+              Positioned(
+                top: -4,
+                right: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('%',
+                      style: TextStyle(
+                          fontSize: 7,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ),
+          ],
+        ),
+        widget.lang.translate('store_tab_packs'),
+      ),
+      tab(
+        const Icon(Icons.pets, size: 18),
+        widget.lang.translate('store_tab_species'),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.softWhite,
-      child: TabBar(
-        controller: controller,
-        indicatorColor: AppTheme.darkPink,
-        indicatorWeight: 3,
-        labelColor: AppTheme.darkPink,
-        unselectedLabelColor: AppTheme.darkText.withValues(alpha: 0.5),
-        labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: TextStyle(fontSize: 11),
-        tabs: [
-          Tab(
-            icon: Icon(Icons.inventory_2, size: 18),
-            text: lang.translate('store_tab_resources'),
-          ),
-          Tab(
-            icon: Icon(Icons.auto_awesome, size: 18),
-            text: lang.translate('store_tab_powerups'),
-          ),
-          Tab(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(Icons.diamond, size: 18),
-                if (_hasDiscounts)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text('%',
-                          style: TextStyle(
-                              fontSize: 7,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    ),
+    const tabCount = 5;
+    const minTabWidth = 82.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fill = constraints.maxWidth >= tabCount * minTabWidth;
+        final tabBar = TabBar(
+          controller: widget.controller,
+          isScrollable: !fill,
+          tabAlignment: fill ? TabAlignment.fill : TabAlignment.start,
+          indicatorColor: AppTheme.darkPink,
+          indicatorWeight: 3,
+          labelColor: AppTheme.darkPink,
+          unselectedLabelColor: AppTheme.darkText.withValues(alpha: 0.5),
+          labelStyle:
+              const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          tabs: _buildTabs(fill),
+        );
+        return Container(
+          color: AppTheme.softWhite,
+          child: fill
+              ? tabBar
+              : PrimaryScrollController(
+                  controller: _scrollController,
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    child: tabBar,
                   ),
-              ],
-            ),
-            text: lang.translate('store_tab_gems'),
-          ),
-          Tab(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(Icons.card_giftcard, size: 18),
-                if (_hasDiscounts)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text('%',
-                          style: TextStyle(
-                              fontSize: 7,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-              ],
-            ),
-            text: lang.translate('store_tab_packs'),
-          ),
-          Tab(
-            icon: Icon(Icons.pets, size: 18),
-            text: lang.translate('store_tab_species'),
-          ),
-        ],
-      ),
+                ),
+        );
+      },
     );
   }
 }
@@ -767,20 +817,16 @@ class _PacksTab extends StatelessWidget {
       gems: pack.gems,
     );
     if (pack.bookPowerups > 0) {
-      await village.addItemToInventory('book_happiness',
-          amount: pack.bookPowerups);
+      await village.addItemToInventory('book', amount: pack.bookPowerups);
     }
     if (pack.sandwichPowerups > 0) {
-      await village.addItemToInventory('sandwich_speed',
-          amount: pack.sandwichPowerups);
+      await village.addItemToInventory('sandwich', amount: pack.sandwichPowerups);
     }
     if (pack.hammerPowerups > 0) {
-      await village.addItemToInventory('hammer_constructor',
-          amount: pack.hammerPowerups);
+      await village.addItemToInventory('hammer', amount: pack.hammerPowerups);
     }
     if (pack.glassesPowerups > 0) {
-      await village.addItemToInventory('glasses_reading',
-          amount: pack.glassesPowerups);
+      await village.addItemToInventory('glasses', amount: pack.glassesPowerups);
     }
   }
 }

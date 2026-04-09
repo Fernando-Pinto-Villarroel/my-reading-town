@@ -12,6 +12,7 @@ import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/log_pages_dial
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/reading_calendar_tab.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/common/shared_utils.dart';
 import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/tag_manager_dialog.dart';
+import 'package:my_reading_town/infrastructure/ui/widgets/dialogs/reading_calculator_dialog.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/context_ext.dart';
 import 'package:my_reading_town/infrastructure/ui/localization/language_provider.dart';
 
@@ -70,6 +71,13 @@ class _ReadingModalContent extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             color: AppTheme.darkText)),
                     Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.calculate,
+                          size: 22, color: AppTheme.mediumMint),
+                      tooltip: context.t('resource_calculator'),
+                      onPressed: () =>
+                          showReadingCalculatorDialog(context),
+                    ),
                     IconButton(
                       icon:
                           Icon(Icons.label, size: 22, color: AppTheme.lavender),

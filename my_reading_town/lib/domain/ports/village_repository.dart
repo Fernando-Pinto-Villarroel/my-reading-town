@@ -11,6 +11,9 @@ abstract class VillageRepository {
   Future<void> insertRoadTile(int x, int y);
   Future<void> deleteRoadTile(int x, int y);
   Future<List<Map<String, dynamic>>> getRoadTiles();
+  Future<List<Map<String, dynamic>>> getSpecialTiles();
+  Future<void> upsertSpecialTile(int x, int y, String type);
+  Future<void> deleteSpecialTile(int x, int y);
   Future<List<Map<String, dynamic>>> getUnlockedChunks();
   Future<void> insertUnlockedChunk(int chunkX, int chunkY);
   Future<Map<String, dynamic>> getResources();

@@ -506,6 +506,69 @@ white background
 simple and adorable building design
 ```
 
+### restaurant.png
+
+```
+cute kawaii restaurant building sprite
+
+2D top-down view
+simple geometric shapes
+chubby proportions
+
+kawaii style
+pastel color palette
+soft pastel colors
+clean simple outlines
+simple shapes
+
+restaurant features:
+- cozy building with a cute awning or canopy (pastel stripes or solid color)
+- small menu board or chalkboard sign outside
+- big cheerful window showing silhouettes of cute round tables inside
+- a tiny chimney or kitchen vent on the roof
+- warm pastel tones (peach, cream, light orange) to feel cozy and inviting
+- friendly and welcoming appearance
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable building design
+```
+
+### library.png
+
+```
+cute kawaii library building sprite
+
+2D top-down view
+simple geometric shapes
+chubby proportions
+
+kawaii style
+pastel color palette
+soft pastel colors
+clean simple outlines
+simple shapes
+
+library features:
+- cozy building with a gabled or rounded roof
+- big cute window with silhouettes of bookshelves inside
+- a small sign or banner with a book icon (no text needed)
+- maybe a small reading nook or bench near the entrance
+- soft pastel tones (lavender, mint, light blue) to feel calm and studious
+- a tiny open book symbol on the door or facade
+- friendly and inviting appearance
+
+2D mobile game sprite
+top-down idle game village builder style
+high readability at small size
+
+white background
+simple and adorable building design
+```
+
 ---
 
 ## Buildings - Level 2 (192x192px, transparent background)
@@ -548,6 +611,18 @@ i want this same water tower but upgraded to level 2, take the level 1 water tow
 i want this same power station but upgraded to level 2, take the level 1 power station as reference and make it bigger and more detailed, keep the same look, aesthetic, colors, and design identity, make the building larger, add a second smokestack, a solar panel on the roof, same kawaii art style, same colors, same lightning, everything must remain consistent but upgraded
 ```
 
+### restaurant_lv2.png
+
+```
+i want this same restaurant but upgraded to level 2, take the level 1 restaurant as reference and make it bigger and more detailed, keep the same look, aesthetic, colors, and design identity, add outdoor seating with cute small tables, a bigger and more decorative awning, a second window, maybe a potted plant or flower box at the entrance, same kawaii art style, same colors, same lightning, everything must remain consistent but upgraded
+```
+
+### library_lv2.png
+
+```
+i want this same library but upgraded to level 2, take the level 1 library as reference and make it bigger and more detailed, keep the same look, aesthetic, colors, and design identity, add a second floor, more windows showing fuller bookshelves, a small reading balcony or terrace, a larger sign with a book icon, same kawaii art style, same colors, same lightning, everything must remain consistent but upgraded
+```
+
 ---
 
 ## Buildings - Level 3 (192x192px, transparent background)
@@ -588,6 +663,18 @@ i want this same water facility but upgraded to level 3 (max level), take the le
 
 ```
 i want this same power station but upgraded to level 3 (max level), take the level 2 power station as reference and make it even bigger and more impressive, keep the same look, aesthetic, colors, and design identity, make the main building large, add three smokestacks, solar panels, a wind turbine, same kawaii art style, same colors, same lightning, everything must remain consistent but this is the grand final version
+```
+
+### restaurant_lv3.png
+
+```
+i want this same restaurant but upgraded to level 3 (max level), take the level 2 restaurant as reference and make it even bigger and more impressive, keep the same look, aesthetic, colors, and design identity, make the building grander with a large fancy awning and decorative facade, add a rooftop terrace or garden, a fancy entrance with cute lanterns or string lights, a neon-style (but kawaii/pastel) glowing sign or cute food cart nearby, same kawaii art style, same colors, same lightning, everything must remain consistent but this is the grand final version
+```
+
+### library_lv3.png
+
+```
+i want this same library but upgraded to level 3 (max level), take the level 2 library as reference and make it even bigger and more impressive, keep the same look, aesthetic, colors, and design identity, add a third floor or a cute dome/clock tower on top, large stained-glass style windows with colorful pastel light effect, an outdoor reading garden with a bench and tree, a grand entrance with columns or an archway, same kawaii art style, same colors, same lightning, everything must remain consistent but this is the grand final version
 ```
 
 ---
@@ -870,6 +957,106 @@ the cat statue is made of light gray stone and dressed as a colonizer explorer l
 standing upright on a small stone pedestal
 the statue looks proud and noble in a cute kawaii way
 kawaii style, pastel color palette, soft gray stone colors with subtle cream/beige tones
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### bulletin_board.png
+
+```
+cute kawaii wooden bulletin board decoration for a village game
+a short sturdy wooden post with a wide rounded cork board panel mounted on top
+several tiny pinned papers and notes on the board in pastel colors (pink, mint, lavender), a small magnifying glass hanging off one corner by a string
+warm light brown wood, soft cork texture on the board
+small green grass tufts at the base of the post
+kawaii style, pastel color palette, soft pastel colors
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### flower_garden.png
+
+```
+cute kawaii flower garden patch decoration for a village game
+a small rectangular garden bed filled with adorable chubby flowers: pastel pink tulips, lavender daisies, and mint green leaves
+a tiny wooden picket border around the garden edge in warm cream wood
+the flowers have simple kawaii dot eyes and tiny smiles on their petals
+soft lush green grass inside the garden bed
+kawaii style, pastel color palette, very soft and round shapes
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### reading_bench.png
+
+```
+cute kawaii wooden park bench decoration for a village game
+a charming rounded wooden bench with soft curved armrests, warm honey-brown wood
+a tiny open book resting on the seat, its pages spread open, pastel mint cover
+a small potted flower in a cream-colored pot sitting beside one end of the bench, with a single pink bloom
+small green grass tufts at the base
+kawaii style, pastel color palette, soft pastel colors
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### book_stack_monument.png
+
+```
+cute kawaii stacked books monument decoration for a village game
+a tall proud stack of five oversized chubby books piled on top of each other, each with a different pastel cover color (pink, lavender, mint, peach, sky blue) and tiny gold star details on the spines
+the stack sits on a small rounded stone pedestal base in light gray
+the topmost book has a tiny glowing golden bookmark sticking out from the top
+kawaii style, pastel color palette, very rounded chubby proportions on every book
+clean simple outlines, simple shapes
+2D flat design with slight depth
+front view, centered in frame
+192x192px
+white background
+no shadows anywhere in the design
+no text inside the image
+no sparkle effects
+only the main image asset, nothing else
+```
+
+### wishing_well.png
+
+```
+cute kawaii stone wishing well decoration for a village game
+a round well made of light gray stone bricks with a small cream-colored roof canopy on two wooden posts above it
+a little wooden bucket hanging from a rope over the well opening
+soft green ivy vines climbing gently up one side of the stone wall
+a single shiny gold coin floating at the bottom of the dark well opening with a subtle soft glow
+small green grass tufts around the base
+kawaii style, pastel color palette, soft pastel colors
 clean simple outlines, simple shapes
 2D flat design with slight depth
 front view, centered in frame

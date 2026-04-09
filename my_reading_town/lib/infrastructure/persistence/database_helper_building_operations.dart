@@ -80,6 +80,26 @@ extension DatabaseHelperBuildingOperations on DatabaseHelper {
     return db.query('road_tiles');
   }
 
+  Future<List<Map<String, dynamic>>> getSpecialTiles() async {
+    final db = await database;
+    return db.query('special_tiles');
+  }
+
+  Future<void> upsertSpecialTile(int x, int y, String type) async {
+    final db = await database;
+    await db.insert(
+      'special_tiles',
+      {'tile_x': x, 'tile_y': y, 'tile_type': type},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteSpecialTile(int x, int y) async {
+    final db = await database;
+    await db.delete('special_tiles',
+        where: 'tile_x = ? AND tile_y = ?', whereArgs: [x, y]);
+  }
+
   Future<List<Map<String, dynamic>>> getUnlockedChunks() async {
     final db = await database;
     return db.query('unlocked_chunks');

@@ -1,0 +1,134 @@
+{
+  "questions": [
+    {
+      "line": "Appelez-moi Ismaël.",
+      "book": "Moby Dick",
+      "is_first": true
+    },
+    {
+      "line": "C'était le meilleur des temps, c'était le pire des temps, c'était l'âge de la sagesse, c'était l'âge de la folie.",
+      "book": "Le Conte de deux cités",
+      "is_first": true
+    },
+    {
+      "line": "Toutes les familles heureuses se ressemblent ; chaque famille malheureuse l'est à sa façon.",
+      "book": "Anna Karénine",
+      "is_first": true
+    },
+    {
+      "line": "C'était une journée d'avril froide et lumineuse, et les horloges sonnaient treize heures.",
+      "book": "1984",
+      "is_first": true
+    },
+    {
+      "line": "Mrs Dalloway dit qu'elle achèterait elle-même les fleurs.",
+      "book": "Mrs Dalloway",
+      "is_first": true
+    },
+    {
+      "line": "Tous les enfants, sauf un, grandissent.",
+      "book": "Peter Pan",
+      "is_first": true
+    },
+    {
+      "line": "C'est une vérité universellement reconnue qu'un célibataire en possession d'une belle fortune doit avoir besoin d'une femme.",
+      "book": "Orgueil et Préjugés",
+      "is_first": true
+    },
+    {
+      "line": "Dans mes jeunes années, plus vulnérables, mon père me donna un conseil que je n'ai cessé de retourner dans ma tête depuis lors.",
+      "book": "Gatsby le Magnifique",
+      "is_first": true
+    },
+    {
+      "line": "Le ciel au-dessus du port était de la couleur d'une télévision réglée sur un canal mort.",
+      "book": "Neuromancien",
+      "is_first": true
+    },
+    {
+      "line": "C'était un été étrange et torride, l'été où l'on électrocuta les Rosenberg.",
+      "book": "La Cloche de détresse",
+      "is_first": true
+    },
+    {
+      "line": "L'homme en noir s'enfuit à travers le désert, et le pistolero le suivit.",
+      "book": "La Tour sombre : Le Pistolero",
+      "is_first": true
+    },
+    {
+      "line": "Je suis un homme invisible.",
+      "book": "Homme invisible, pour qui chantes-tu?",
+      "is_first": true
+    },
+    {
+      "line": "J'écris ceci assis dans l'évier de la cuisine.",
+      "book": "Je capture le château",
+      "is_first": true
+    },
+    {
+      "line": "Ainsi continuons-nous à avancer, barques contre le courant, ramenés sans cesse vers le passé.",
+      "book": "Gatsby le Magnifique",
+      "is_first": false
+    },
+    {
+      "line": "C'est une chose bien meilleure que je fais là que tout ce que j'ai jamais fait ; c'est un repos bien meilleur où je vais que tout ce que j'ai jamais connu.",
+      "book": "Le Conte de deux cités",
+      "is_first": false
+    },
+    {
+      "line": "Après tout, demain est un autre jour.",
+      "book": "Autant en emporte le vent",
+      "is_first": false
+    },
+    {
+      "line": "Il aimait le Grand Frère.",
+      "book": "1984",
+      "is_first": false
+    },
+    {
+      "line": "Les créatures du dehors regardaient alternativement le cochon et l'homme, et l'homme et le cochon ; mais il était déjà impossible de distinguer l'un de l'autre.",
+      "book": "La Ferme des animaux",
+      "is_first": false
+    },
+    {
+      "line": "Ne raconte jamais rien à personne. Si tu le fais, tu commences à manquer à tout le monde.",
+      "book": "L'Attrape-cœurs",
+      "is_first": false
+    },
+    {
+      "line": "Poo-tee-weet?",
+      "book": "Abattoir 5",
+      "is_first": false
+    },
+    {
+      "line": "Il n'est pas souvent que quelqu'un vienne au monde qui soit à la fois un véritable ami et un bon écrivain. Charlotte était les deux.",
+      "book": "Le Toile de Charlotte",
+      "is_first": false
+    },
+    {
+      "line": "Le large était barré par une bande noire de nuages, et le tranquille cours d'eau menant aux confins de la terre coulait sombre sous un ciel couvert.",
+      "book": "Au cœur des ténèbres",
+      "is_first": false
+    },
+    {
+      "line": "Le vieil homme rêvait aux lions.",
+      "book": "Le Vieil Homme et la Mer",
+      "is_first": false
+    },
+    {
+      "line": "Mais je pense que je dois partir pour le Territoire avant les autres, parce que la tante Sally va m'adopter et me civiliser, et je ne peux pas le supporter.",
+      "book": "Les Aventures de Huckleberry Finn",
+      "is_first": false
+    },
+    {
+      "line": "Quoi que nous ayons manqué, nous possédions ensemble le passé précieux, l'incommunicable passé.",
+      "book": "Mon Ántonia",
+      "is_first": false
+    },
+    {
+      "line": "...car les races condamnées à cent ans de solitude n'avaient pas une seconde chance sur terre.",
+      "book": "Cent ans de solitude",
+      "is_first": false
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "questions": [
+    {
+      "line": "Chame-me Ismael.",
+      "book": "Moby Dick",
+      "is_first": true
+    },
+    {
+      "line": "Era o melhor dos tempos, era o pior dos tempos, era a época da sabedoria, era a época da insensatez.",
+      "book": "História de duas cidades",
+      "is_first": true
+    },
+    {
+      "line": "Todas as famílias felizes se parecem; cada família infeliz é infeliz à sua maneira.",
+      "book": "Anna Karenina",
+      "is_first": true
+    },
+    {
+      "line": "Era um dia frio e luminoso de abril, e os relógios marcavam treze horas.",
+      "book": "1984",
+      "is_first": true
+    },
+    {
+      "line": "A senhora Dalloway disse que ela mesma compraria as flores.",
+      "book": "Mrs. Dalloway",
+      "is_first": true
+    },
+    {
+      "line": "Todas as crianças, exceto uma, crescem.",
+      "book": "Peter Pan",
+      "is_first": true
+    },
+    {
+      "line": "É uma verdade universalmente reconhecida que um homem solteiro, possuidor de uma boa fortuna, deve estar necessitado de esposa.",
+      "book": "Orgulho e preconceito",
+      "is_first": true
+    },
+    {
+      "line": "Nos meus anos mais jovens e vulneráveis, meu pai me deu um conselho que tenho revolvido na cabeça desde então.",
+      "book": "O grande Gatsby",
+      "is_first": true
+    },
+    {
+      "line": "O céu acima do porto era da cor de uma televisão sintonizada num canal morto.",
+      "book": "Neuromancer",
+      "is_first": true
+    },
+    {
+      "line": "Foi um verão estranho e abafado, o verão em que eletrocutaram os Rosenberg.",
+      "book": "A redoma de vidro",
+      "is_first": true
+    },
+    {
+      "line": "O homem de negro fugiu pelo deserto, e o pistoleiro o seguiu.",
+      "book": "A Torre Negra: O Pistoleiro",
+      "is_first": true
+    },
+    {
+      "line": "Sou um homem invisível.",
+      "book": "Homem invisível",
+      "is_first": true
+    },
+    {
+      "line": "Escrevo isto sentada na pia da cozinha.",
+      "book": "Capturo o castelo",
+      "is_first": true
+    },
+    {
+      "line": "Assim continuamos a remar, barcos contra a corrente, levados de volta incessantemente ao passado.",
+      "book": "O grande Gatsby",
+      "is_first": false
+    },
+    {
+      "line": "É uma coisa muito, muito melhor a que faço agora do que tudo o que já fiz; é um repouso muito, muito mais suave para onde vou do que qualquer outro que já conheci.",
+      "book": "História de duas cidades",
+      "is_first": false
+    },
+    {
+      "line": "Afinal, amanhã é outro dia.",
+      "book": "... E o vento levou",
+      "is_first": false
+    },
+    {
+      "line": "Ele amava o Grande Irmão.",
+      "book": "1984",
+      "is_first": false
+    },
+    {
+      "line": "As criaturas lá fora olhavam do porco para o homem, e do homem para o porco; mas já era impossível dizer qual era qual.",
+      "book": "A revolução dos bichos",
+      "is_first": false
+    },
+    {
+      "line": "Nunca conte nada a ninguém. Se fizer isso, você começa a ter saudade de todo mundo.",
+      "book": "O apanhador no campo de centeio",
+      "is_first": false
+    },
+    {
+      "line": "Poo-tee-weet?",
+      "book": "Matadouro cinco",
+      "is_first": false
+    },
+    {
+      "line": "Não é frequente aparecer alguém que seja ao mesmo tempo um verdadeiro amigo e um bom escritor. Carlota era as duas coisas.",
+      "book": "A teia de Carlota",
+      "is_first": false
+    },
+    {
+      "line": "O horizonte estava bloqueado por um banco negro de nuvens, e o tranquilo curso de água que levava aos confins da terra fluía sombrio sob um céu encoberto.",
+      "book": "O coração das trevas",
+      "is_first": false
+    },
+    {
+      "line": "O velho estava sonhando com os leões.",
+      "book": "O velho e o mar",
+      "is_first": false
+    },
+    {
+      "line": "Mas acho que tenho de partir para o Território antes dos outros, porque a tia Sally vai me adotar e me civilizar, e eu não consigo suportar isso.",
+      "book": "As aventuras de Huckleberry Finn",
+      "is_first": false
+    },
+    {
+      "line": "O que quer que tivéssemos perdido, possuíamos juntos o precioso e incomunicável passado.",
+      "book": "Minha Ántonia",
+      "is_first": false
+    },
+    {
+      "line": "...porque as raças condenadas a cem anos de solidão não tinham uma segunda oportunidade sobre a terra.",
+      "book": "Cem anos de solidão",
+      "is_first": false
+    }
+  ]
+}

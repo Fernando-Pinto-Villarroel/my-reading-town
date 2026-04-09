@@ -55,6 +55,16 @@ class SqliteVillageRepository implements VillageRepository {
   Future<List<Map<String, dynamic>>> getRoadTiles() => _db.getRoadTiles();
 
   @override
+  Future<List<Map<String, dynamic>>> getSpecialTiles() => _db.getSpecialTiles();
+
+  @override
+  Future<void> upsertSpecialTile(int x, int y, String type) =>
+      _db.upsertSpecialTile(x, y, type);
+
+  @override
+  Future<void> deleteSpecialTile(int x, int y) => _db.deleteSpecialTile(x, y);
+
+  @override
   Future<List<Map<String, dynamic>>> getUnlockedChunks() =>
       _db.getUnlockedChunks();
 

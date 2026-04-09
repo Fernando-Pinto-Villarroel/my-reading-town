@@ -17,9 +17,12 @@ enum _HighlightTarget {
   photo,
   stats,
   settings,
+  roulette,
+  store,
+  speciesBook,
 }
 
-const int tourTotalSteps = 20;
+const int tourTotalSteps = 26;
 
 const List<_StepKind> _stepKinds = [
   _StepKind.villagerChat, // 0: welcome
@@ -40,8 +43,14 @@ const List<_StepKind> _stepKinds = [
   _StepKind.villagerChat, // 15: stats explain
   _StepKind.highlight, // 16: settings spotlight
   _StepKind.villagerChat, // 17: settings explain
-  _StepKind.input, // 18: username + town name form
-  _StepKind.villagerChat, // 19: farewell
+  _StepKind.highlight, // 18: roulette spotlight
+  _StepKind.villagerChat, // 19: roulette explain
+  _StepKind.highlight, // 20: store spotlight
+  _StepKind.villagerChat, // 21: store explain
+  _StepKind.highlight, // 22: species book spotlight
+  _StepKind.villagerChat, // 23: species book explain
+  _StepKind.input, // 24: username + town name form
+  _StepKind.villagerChat, // 25: farewell
 ];
 
 const List<_HighlightTarget?> _highlightTargets = [
@@ -63,6 +72,12 @@ const List<_HighlightTarget?> _highlightTargets = [
   null,
   _HighlightTarget.settings,
   null,
+  _HighlightTarget.roulette,
+  null,
+  _HighlightTarget.store,
+  null,
+  _HighlightTarget.speciesBook,
+  null,
   null,
   null,
 ];
@@ -79,6 +94,9 @@ class TourOverlay extends StatefulWidget {
   final GlobalKey photoButtonKey;
   final GlobalKey statsButtonKey;
   final GlobalKey settingsButtonKey;
+  final GlobalKey rouletteButtonKey;
+  final GlobalKey storeButtonKey;
+  final GlobalKey speciesButtonKey;
   final GlobalKey? resourcesKey;
   final String Function(String key, {String? fallback}) translate;
   final VoidCallback onAdvance;
@@ -97,6 +115,9 @@ class TourOverlay extends StatefulWidget {
     required this.photoButtonKey,
     required this.statsButtonKey,
     required this.settingsButtonKey,
+    required this.rouletteButtonKey,
+    required this.storeButtonKey,
+    required this.speciesButtonKey,
     this.resourcesKey,
     required this.translate,
     required this.onAdvance,
@@ -198,6 +219,12 @@ class _TourOverlayState extends State<TourOverlay>
       case 17:
         return t('tour_settings_explain');
       case 19:
+        return t('tour_roulette_explain');
+      case 21:
+        return t('tour_store_explain');
+      case 23:
+        return t('tour_species_book_explain');
+      case 25:
         return t('tour_farewell')
             .replaceAll('{name}', _submittedUsername ?? '');
       default:
@@ -349,6 +376,9 @@ class _TourOverlayState extends State<TourOverlay>
       _HighlightTarget.photo => widget.photoButtonKey,
       _HighlightTarget.stats => widget.statsButtonKey,
       _HighlightTarget.settings => widget.settingsButtonKey,
+      _HighlightTarget.roulette => widget.rouletteButtonKey,
+      _HighlightTarget.store => widget.storeButtonKey,
+      _HighlightTarget.speciesBook => widget.speciesButtonKey,
     };
 
     final spotRect = _getSpotRect(key);
@@ -364,6 +394,9 @@ class _TourOverlayState extends State<TourOverlay>
       12 => 'tour_highlight_photo',
       14 => 'tour_highlight_stats',
       16 => 'tour_highlight_settings',
+      18 => 'tour_highlight_roulette',
+      20 => 'tour_highlight_store',
+      22 => 'tour_highlight_species_book',
       _ => 'tour_tap_highlighted',
     };
     final instruction = widget.translate(instrKey);

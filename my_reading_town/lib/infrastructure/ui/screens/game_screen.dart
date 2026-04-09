@@ -95,6 +95,9 @@ class _GameScreenState extends State<GameScreen>
   final GlobalKey _tourPhotoKey = GlobalKey();
   final GlobalKey _tourStatsKey = GlobalKey();
   final GlobalKey _tourSettingsKey = GlobalKey();
+  final GlobalKey _tourRouletteKey = GlobalKey();
+  final GlobalKey _tourStoreKey = GlobalKey();
+  final GlobalKey _tourSpeciesKey = GlobalKey();
   int _tourStep = -1;
   bool _tourInitialized = false;
 
@@ -172,6 +175,9 @@ class _GameScreenState extends State<GameScreen>
   void _syncGameState() {
     final village = _villageProvider;
     _game.updateRoadTiles(village.roadTiles);
+    _game.updateSpecialTiles(village.specialTiles);
+    _game.updateWalkableTiles(village.walkableTiles);
+    _game.playerLevel = village.playerLevel;
     _game.updateUnlockedChunks(village.unlockedChunks);
     _game.updatePlacedBuildings(village.placedBuildings);
     _game.updateVillagers(village.villagers,
@@ -407,7 +413,17 @@ class _GameScreenState extends State<GameScreen>
         _menuOpen = false;
         _tourStep = 18;
       });
-    } else if (step == 19) {
+    } else if (step == 21) {
+      setState(() => _menuOpen = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _tourStep = 22);
+      });
+    } else if (step == 23) {
+      setState(() {
+        _menuOpen = false;
+        _tourStep = 24;
+      });
+    } else if (step == 25) {
       _completeTour();
     } else if (step >= 0 && step < tourTotalSteps) {
       setState(() => _tourStep = step + 1);
@@ -417,7 +433,7 @@ class _GameScreenState extends State<GameScreen>
   Future<void> _onTourInputSubmit(String username, String townName) async {
     if (username.isNotEmpty) await _villageProvider.updateUsername(username);
     if (townName.isNotEmpty) await _villageProvider.updateTownName(townName);
-    if (mounted) setState(() => _tourStep = 19);
+    if (mounted) setState(() => _tourStep = 25);
   }
 
   Future<void> _completeTour() async {
@@ -532,6 +548,8 @@ class _GameScreenState extends State<GameScreen>
                   buildButtonKey: _tourBuildKey,
                   backpackButtonKey: _tourBackpackKey,
                   minigamesButtonKey: _tourMinigamesKey,
+                  rouletteButtonKey: _tourRouletteKey,
+                  storeButtonKey: _tourStoreKey,
                   onConstructionTap: () {
                     setState(() {
                       if (_mode == GameMode.construction) {
@@ -571,8 +589,20 @@ class _GameScreenState extends State<GameScreen>
                       });
                     }
                   },
-                  onRouletteTap: () => showRouletteDialog(context),
-                  onStoreTap: () => showStoreDialog(context),
+                  onRouletteTap: () {
+                    if (_tourStep == 18) {
+                      setState(() => _tourStep = 19);
+                    } else {
+                      showRouletteDialog(context);
+                    }
+                  },
+                  onStoreTap: () {
+                    if (_tourStep == 20) {
+                      setState(() => _tourStep = 21);
+                    } else {
+                      showStoreDialog(context);
+                    }
+                  },
                 ),
               ],
             ),
@@ -594,6 +624,7 @@ class _GameScreenState extends State<GameScreen>
                   photoButtonKey: _tourPhotoKey,
                   statsButtonKey: _tourStatsKey,
                   settingsButtonKey: _tourSettingsKey,
+                  speciesButtonKey: _tourSpeciesKey,
                   onToggleMenu: () => setState(() => _menuOpen = !_menuOpen),
                   onReadingTap: () {
                     if (_tourStep == 6) {
@@ -623,7 +654,13 @@ class _GameScreenState extends State<GameScreen>
                       showSettingsDialog(context, _villageProvider);
                     }
                   },
-                  onSpeciesBookTap: () => showSpeciesBookDialog(context),
+                  onSpeciesBookTap: () {
+                    if (_tourStep == 22) {
+                      setState(() => _tourStep = 23);
+                    } else {
+                      showSpeciesBookDialog(context);
+                    }
+                  },
                 ),
               ],
             ),
@@ -672,6 +709,9 @@ class _GameScreenState extends State<GameScreen>
               photoButtonKey: _tourPhotoKey,
               statsButtonKey: _tourStatsKey,
               settingsButtonKey: _tourSettingsKey,
+              rouletteButtonKey: _tourRouletteKey,
+              storeButtonKey: _tourStoreKey,
+              speciesButtonKey: _tourSpeciesKey,
               resourcesKey: _tourResourcesKey,
               translate: (key, {fallback}) =>
                   sl<LanguageProvider>().translate(key, fallback: fallback ?? key),

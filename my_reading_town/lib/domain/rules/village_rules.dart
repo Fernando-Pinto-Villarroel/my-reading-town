@@ -50,10 +50,46 @@ class VillageRules {
         return 4 * level;
       case 'park':
         return 3 * level;
+      case 'restaurant':
+        return 3 * level;
+      case 'library':
+        return 3 * level;
       case 'power_plant':
         return 3 * level;
       default:
         return 0;
+    }
+  }
+
+  static const List<String> fixedNeedTypes = [
+    'water_plant',
+    'power_plant',
+    'school',
+  ];
+
+  static const int totalNeedCount = 4;
+
+  static List<String> rotationalNeedPool(int playerLevel) {
+    if (playerLevel >= 6) return ['park', 'restaurant', 'library', 'hospital'];
+    if (playerLevel >= 3) return ['park', 'restaurant', 'library'];
+    return ['park', 'restaurant'];
+  }
+
+  static String rotationalNeedForVillager(int villagerId, int playerLevel) {
+    final pool = rotationalNeedPool(playerLevel);
+    final epoch = DateTime(2024, 1, 1);
+    final daysSinceEpoch = DateTime.now().difference(epoch).inDays;
+    return pool[(daysSinceEpoch + villagerId) % pool.length];
+  }
+
+  static int minLevelForBuilding(String type) {
+    switch (type) {
+      case 'library':
+        return 3;
+      case 'hospital':
+        return 6;
+      default:
+        return 1;
     }
   }
 
@@ -116,10 +152,14 @@ class VillageRules {
         return maxHouses;
       case 'park':
         return (maxVillagers / 3).ceil();
+      case 'restaurant':
+        return (maxVillagers / 3).ceil();
       case 'school':
         return (maxVillagers / 4).ceil();
+      case 'library':
+        return playerLevel >= 3 ? (maxVillagers / 4).ceil() : 0;
       case 'hospital':
-        return (maxVillagers / 2).ceil();
+        return playerLevel >= 6 ? (maxVillagers / 2).ceil() : 0;
       case 'water_plant':
         return (maxVillagers / 3).ceil();
       case 'power_plant':
@@ -187,15 +227,15 @@ class VillageRules {
       'exp': 20
     },
     {
-      'type': 'park',
-      'name': 'Tiny Park',
-      'coinCost': 50,
+      'type': 'restaurant',
+      'name': 'Restaurant',
+      'coinCost': 70,
       'gemCost': 0,
-      'woodCost': 30,
-      'metalCost': 10,
+      'woodCost': 40,
+      'metalCost': 15,
       'happinessBonus': 8,
-      'constructionMinutes': 40,
-      'exp': 30
+      'constructionMinutes': 45,
+      'exp': 35
     },
     {
       'type': 'school',
@@ -209,15 +249,15 @@ class VillageRules {
       'exp': 60
     },
     {
-      'type': 'hospital',
-      'name': 'Clinic',
-      'coinCost': 120,
+      'type': 'park',
+      'name': 'Tiny Park',
+      'coinCost': 50,
       'gemCost': 0,
-      'woodCost': 50,
-      'metalCost': 40,
-      'happinessBonus': 12,
-      'constructionMinutes': 180,
-      'exp': 75
+      'woodCost': 30,
+      'metalCost': 10,
+      'happinessBonus': 8,
+      'constructionMinutes': 40,
+      'exp': 30
     },
     {
       'type': 'water_plant',
@@ -240,6 +280,28 @@ class VillageRules {
       'happinessBonus': 10,
       'constructionMinutes': 120,
       'exp': 50
+    },
+    {
+      'type': 'library',
+      'name': 'Library',
+      'coinCost': 110,
+      'gemCost': 0,
+      'woodCost': 70,
+      'metalCost': 25,
+      'happinessBonus': 12,
+      'constructionMinutes': 150,
+      'exp': 70
+    },
+    {
+      'type': 'hospital',
+      'name': 'Clinic',
+      'coinCost': 120,
+      'gemCost': 0,
+      'woodCost': 50,
+      'metalCost': 40,
+      'happinessBonus': 12,
+      'constructionMinutes': 180,
+      'exp': 75
     },
   ];
 
@@ -277,25 +339,82 @@ class VillageRules {
       'constructionMinutes': 60,
       'exp': 25
     },
+    {
+      'type': 'bulletin_board',
+      'name': 'Bulletin Board',
+      'coinCost': 60,
+      'gemCost': 0,
+      'woodCost': 50,
+      'metalCost': 20,
+      'happinessBonus': 0,
+      'constructionMinutes': 10,
+      'exp': 7
+    },
+    {
+      'type': 'flower_garden',
+      'name': 'Flower Garden',
+      'coinCost': 80,
+      'gemCost': 0,
+      'woodCost': 40,
+      'metalCost': 0,
+      'happinessBonus': 0,
+      'constructionMinutes': 20,
+      'exp': 8
+    },
+    {
+      'type': 'reading_bench',
+      'name': 'Reading Bench',
+      'coinCost': 120,
+      'gemCost': 20,
+      'woodCost': 80,
+      'metalCost': 0,
+      'happinessBonus': 0,
+      'constructionMinutes': 25,
+      'exp': 12
+    },
+    {
+      'type': 'book_stack_monument',
+      'name': 'Book Stack Monument',
+      'coinCost': 400,
+      'gemCost': 30,
+      'woodCost': 100,
+      'metalCost': 0,
+      'happinessBonus': 0,
+      'constructionMinutes': 90,
+      'exp': 35
+    },
+    {
+      'type': 'wishing_well',
+      'name': 'Wishing Well',
+      'coinCost': 200,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 120,
+      'happinessBonus': 0,
+      'constructionMinutes': 45,
+      'exp': 20
+    },
   ];
 
   static const List<Map<String, dynamic>> tileTemplates = [
-    {
-      'type': 'road',
-      'name': 'Road',
-      'coinCost': 0,
-      'gemCost': 0,
-      'woodCost': 0,
-      'metalCost': 0
-    },
+    {'type': 'road', 'name': 'Road', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
+    {'type': 'sea', 'name': 'Sea', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
+    {'type': 'sand', 'name': 'Sand', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
+    {'type': 'rock', 'name': 'Rock', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
   ];
 
   static const Set<String> decorationTypes = {
     'water_font',
     'lamp_post',
-    'cat_colon_statue'
+    'cat_colon_statue',
+    'bulletin_board',
+    'flower_garden',
+    'reading_bench',
+    'book_stack_monument',
+    'wishing_well',
   };
-  static const Set<String> tileTypes = {'road'};
+  static const Set<String> tileTypes = {'road', 'sea', 'sand', 'rock'};
+  static const Set<String> specialTileTypes = {'sea', 'sand', 'rock'};
 
   static bool isDecorationType(String type) => decorationTypes.contains(type);
   static bool isTileType(String type) => tileTypes.contains(type);

@@ -36,6 +36,8 @@ const ColorFilter grayscaleFilter = ColorFilter.matrix(<double>[
   0, 0, 0, 1, 0,
 ]);
 
+const ColorFilter blackFilter = ColorFilter.mode(Colors.black, BlendMode.srcATop);
+
 Widget buildAssetPreview(String type, double size, bool enabled) {
   final image = Image.asset(
     'assets/images/$type.png',

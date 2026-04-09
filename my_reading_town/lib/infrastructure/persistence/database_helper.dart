@@ -137,6 +137,15 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE special_tiles (
+        tile_x INTEGER NOT NULL,
+        tile_y INTEGER NOT NULL,
+        tile_type TEXT NOT NULL,
+        PRIMARY KEY (tile_x, tile_y)
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE unlocked_chunks (
         chunk_x INTEGER NOT NULL,
         chunk_y INTEGER NOT NULL,

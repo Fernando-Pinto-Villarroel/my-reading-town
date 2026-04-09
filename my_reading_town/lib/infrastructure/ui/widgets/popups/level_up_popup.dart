@@ -53,14 +53,10 @@ class _LevelUpPopupState extends State<LevelUpPopup>
   @override
   Widget build(BuildContext context) {
     final level = widget.newLevel;
-    final buildingTypes = [
-      'house',
-      'park',
-      'school',
-      'hospital',
-      'water_plant',
-      'power_plant'
-    ];
+    final buildingTypes = VillageRules.buildingTemplates
+        .map((t) => t['type'] as String)
+        .where((type) => VillageRules.minLevelForBuilding(type) <= level)
+        .toList();
 
     return Material(
       color: Colors.black.withAlpha(80),

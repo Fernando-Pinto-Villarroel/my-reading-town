@@ -16,6 +16,7 @@ class BuildingComponent extends PositionComponent {
   double _pulseTimer = 0;
   double _pulseScale = 1.0;
   bool _justUpgraded = false;
+  double _glowTimer = 0;
   Duration effectiveRemaining = Duration.zero;
 
 
@@ -56,6 +57,7 @@ class BuildingComponent extends PositionComponent {
   void update(double dt) {
     super.update(dt);
 
+    _glowTimer += dt;
     if (_justUpgraded) {
       _pulseTimer += dt;
       _pulseScale = 1.0 + 0.2 * (1.0 - _pulseTimer / 0.5).clamp(0.0, 1.0);
@@ -63,9 +65,6 @@ class BuildingComponent extends PositionComponent {
         _justUpgraded = false;
         _pulseScale = 1.0;
       }
-    } else if (building.isConstructed) {
-      _pulseTimer += dt;
-      _pulseScale = 1.0 + 0.01 * sin(_pulseTimer * 2);
     }
   }
 
@@ -74,7 +73,7 @@ class BuildingComponent extends PositionComponent {
     final centerX = offsetX + spriteW / 2;
     final centerY = offsetY + spriteH / 2;
     final glowRadius = (spriteW + spriteH) * 0.6;
-    final alpha = (0.35 + 0.3 * sin(_pulseTimer * 2.5)).clamp(0.0, 1.0);
+    final alpha = (0.35 + 0.3 * sin(_glowTimer * 2.5)).clamp(0.0, 1.0);
     final glowColor = Color.fromRGBO(255, 214, 0, alpha);
     final edgeColor = Color.fromRGBO(255, 214, 0, 0);
     final paint = Paint()

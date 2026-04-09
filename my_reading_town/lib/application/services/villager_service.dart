@@ -11,13 +11,6 @@ class VillagerService {
   final BuildingService _buildingService;
   VillagerService(this._repo, this._buildingService);
 
-  static const _needTypes = [
-    'water_plant',
-    'power_plant',
-    'hospital',
-    'school',
-    'park'
-  ];
 
   int villageHappiness(List<Villager> villagers) {
     if (villagers.isEmpty) return 0;
@@ -25,80 +18,90 @@ class VillagerService {
     return (total / villagers.length).round();
   }
 
-  List<String> missingBuildingTypes(List<Villager> villagers,
-      List<PlacedBuilding> buildings, Set<String> roadTiles) {
-    if (villagers.isEmpty) return [];
-    final totalNeeds = villagers.length;
-    final capacityByType = <String, int>{
-      for (final type in _needTypes) type: 0,
-    };
-    for (var b in buildings) {
-      if (b.type == 'house') continue;
+  List<String> _needsForVillager(Villager villager, int playerLevel) {
+    final id = villager.id ?? 0;
+    final rotational = VillageRules.rotationalNeedForVillager(id, playerLevel);
+    return [...VillageRules.fixedNeedTypes, rotational];
+  }
+
+  int _buildingCapacity(String type, List<PlacedBuilding> buildings, Set<String> roadTiles) {
+    int cap = 0;
+    for (final b in buildings) {
+      if (b.type != type) continue;
       if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
       final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
       if (effectiveLevel <= 0) continue;
-      capacityByType[b.type] = (capacityByType[b.type] ?? 0) +
-          VillageRules.buildingCapacity(b.type, effectiveLevel);
+      cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
     }
-    return capacityByType.entries
-        .where((e) => e.value < totalNeeds)
-        .map((e) => e.key)
-        .toList();
+    return cap;
+  }
+
+  List<String> missingBuildingTypes(List<Villager> villagers,
+      List<PlacedBuilding> buildings, Set<String> roadTiles, int playerLevel) {
+    if (villagers.isEmpty) return [];
+    final demandByType = <String, int>{};
+    for (final v in villagers) {
+      for (final type in _needsForVillager(v, playerLevel)) {
+        demandByType[type] = (demandByType[type] ?? 0) + 1;
+      }
+    }
+    final missing = <String>[];
+    for (final entry in demandByType.entries) {
+      if (_buildingCapacity(entry.key, buildings, roadTiles) < entry.value) {
+        missing.add(entry.key);
+      }
+    }
+    return missing;
+  }
+
+  int _rankForNeed(
+      int globalIndex,
+      String needType,
+      List<Villager> villagers,
+      int playerLevel) {
+    if (VillageRules.fixedNeedTypes.contains(needType)) return globalIndex;
+    int rank = 0;
+    for (int j = 0; j < globalIndex; j++) {
+      final vId = villagers[j].id ?? 0;
+      if (VillageRules.rotationalNeedForVillager(vId, playerLevel) == needType) {
+        rank++;
+      }
+    }
+    return rank;
   }
 
   List<String> missingNeedsForVillager(
       Villager villager,
       List<Villager> allVillagers,
       List<PlacedBuilding> buildings,
-      Set<String> roadTiles) {
+      Set<String> roadTiles,
+      int playerLevel) {
     final idx = allVillagers.indexOf(villager);
     if (idx == -1) return [];
 
-    final capacityByType = <String, int>{};
-    for (final type in _needTypes) {
-      int cap = 0;
-      for (var b in buildings) {
-        if (b.type != type) continue;
-        if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
-        if (effectiveLevel <= 0) continue;
-        cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
-      }
-      capacityByType[type] = cap;
-    }
-
-    return _needTypes
-        .where((type) => idx >= (capacityByType[type] ?? 0))
-        .toList();
+    final needs = _needsForVillager(villager, playerLevel);
+    return needs.where((type) {
+      final rank = _rankForNeed(idx, type, allVillagers, playerLevel);
+      return rank >= _buildingCapacity(type, buildings, roadTiles);
+    }).toList();
   }
 
   void updateVillagerHappiness(
       List<Villager> villagers,
       List<PlacedBuilding> buildings,
       Set<String> roadTiles,
-      List<ActivePowerup> activePowerups) {
+      List<ActivePowerup> activePowerups,
+      int playerLevel) {
     if (villagers.isEmpty) return;
 
-    final capacityByType = <String, int>{};
-    for (final type in _needTypes) {
-      int cap = 0;
-      for (var b in buildings) {
-        if (b.type != type) continue;
-        if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
-        final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
-        if (effectiveLevel <= 0) continue;
-        cap += VillageRules.buildingCapacity(b.type, effectiveLevel);
-      }
-      capacityByType[type] = cap;
-    }
-
     for (int i = 0; i < villagers.length; i++) {
+      final needs = _needsForVillager(villagers[i], playerLevel);
       double sum = 0;
-      for (final type in _needTypes) {
-        final cap = capacityByType[type] ?? 0;
-        if (i < cap) sum += 1.0;
+      for (final type in needs) {
+        final rank = _rankForNeed(i, type, villagers, playerLevel);
+        if (rank < _buildingCapacity(type, buildings, roadTiles)) sum += 1.0;
       }
-      int happiness = ((sum / _needTypes.length) * 100).round();
+      int happiness = ((sum / VillageRules.totalNeedCount) * 100).round();
 
       final hasBoost = villagers[i].id != null &&
           activePowerups.any((p) =>

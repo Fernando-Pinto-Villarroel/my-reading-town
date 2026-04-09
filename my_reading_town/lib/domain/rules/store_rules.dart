@@ -300,13 +300,13 @@ class StoreRules {
   static String inventoryTypeForPowerup(PowerupType powerup) {
     switch (powerup) {
       case PowerupType.book:
-        return 'book_happiness';
+        return 'book';
       case PowerupType.sandwich:
-        return 'sandwich_speed';
+        return 'sandwich';
       case PowerupType.hammer:
-        return 'hammer_constructor';
+        return 'hammer';
       case PowerupType.glasses:
-        return 'glasses_reading';
+        return 'glasses';
     }
   }
 }

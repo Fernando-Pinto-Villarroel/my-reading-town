@@ -184,17 +184,21 @@ class _TileList extends StatelessWidget {
   });
 
   Widget _buildTilePreview(String type, double size) {
-    if (type == 'road') {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: const Color(0xFFE0D8C8),
-          borderRadius: BorderRadius.circular(6),
-        ),
-      );
-    }
-    return Container(width: size, height: size, color: Colors.grey.shade300);
+    const tileColors = {
+      'road': Color(0xFFE0D8C8),
+      'sea': Color(0xFF7EC8E3),
+      'sand': Color(0xFFE8D89A),
+      'rock': Color(0xFFB0A898),
+    };
+    final color = tileColors[type] ?? Colors.grey.shade300;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
+    );
   }
 
   @override

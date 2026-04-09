@@ -120,6 +120,9 @@ class BuildingService {
   bool isRoadTile(int x, int y, Set<String> roadTiles) =>
       roadTiles.contains(tileKey(x, y));
 
+  bool isSpecialTile(int x, int y, Map<String, String> specialTiles) =>
+      specialTiles.containsKey(tileKey(x, y));
+
   PlacedBuilding? getBuildingAt(int x, int y, List<PlacedBuilding> buildings) {
     try {
       return buildings.firstWhere((b) => b.occupiesTile(x, y));
@@ -135,11 +138,14 @@ class BuildingService {
       int height,
       List<PlacedBuilding> buildings,
       Set<String> roadTiles,
-      Set<String> unlockedChunks) {
+      Set<String> unlockedChunks,
+      Map<String, String> specialTiles) {
     for (int dx = 0; dx < width; dx++) {
       for (int dy = 0; dy < height; dy++) {
         if (hasBuildingAt(x + dx, y + dy, buildings)) return false;
         if (isRoadTile(x + dx, y + dy, roadTiles)) return false;
+        final specialType = specialTiles[tileKey(x + dx, y + dy)];
+        if (specialType != null && specialType != 'sand') return false;
         if (!isTileUnlocked(x + dx, y + dy, unlockedChunks)) return false;
       }
     }
@@ -153,13 +159,14 @@ class BuildingService {
       int height,
       List<PlacedBuilding> buildings,
       Set<String> roadTiles,
-      Set<String> unlockedChunks) {
+      Set<String> unlockedChunks,
+      Map<String, String> specialTiles) {
     for (int dy = 0; dy < height; dy++) {
       for (int dx = 0; dx < width; dx++) {
         final originX = tapX - dx;
         final originY = tapY - dy;
         if (canPlaceBuildingAtArea(originX, originY, width, height, buildings,
-            roadTiles, unlockedChunks)) {
+            roadTiles, unlockedChunks, specialTiles)) {
           return (x: originX, y: originY);
         }
       }
@@ -395,7 +402,8 @@ class BuildingService {
       int newTileY,
       List<PlacedBuilding> buildings,
       Set<String> roadTiles,
-      Set<String> unlockedChunks) async {
+      Set<String> unlockedChunks,
+      Map<String, String> specialTiles) async {
     final idx = buildings.indexWhere((b) => b.id == buildingId);
     if (idx == -1) return false;
     final building = buildings[idx];
@@ -406,7 +414,7 @@ class BuildingService {
     building.tileY = -999;
 
     final placement = findValidPlacement(newTileX, newTileY, building.tileWidth,
-        building.tileHeight, buildings, roadTiles, unlockedChunks);
+        building.tileHeight, buildings, roadTiles, unlockedChunks, specialTiles);
 
     if (placement == null) {
       building.tileX = oldX;
@@ -428,14 +436,35 @@ class BuildingService {
     await _repo.flipBuilding(buildingId, buildings[idx].isFlipped);
   }
 
-  Future<void> toggleRoad(int x, int y, Set<String> roadTiles) async {
+  Future<void> toggleRoad(
+      int x, int y, Set<String> roadTiles, Map<String, String> specialTiles) async {
     final key = tileKey(x, y);
     if (roadTiles.contains(key)) {
       roadTiles.remove(key);
       await _repo.deleteRoadTile(x, y);
     } else {
+      if (specialTiles.containsKey(key)) {
+        specialTiles.remove(key);
+        await _repo.deleteSpecialTile(x, y);
+      }
       roadTiles.add(key);
       await _repo.insertRoadTile(x, y);
+    }
+  }
+
+  Future<void> toggleSpecialTile(int x, int y, String type,
+      Map<String, String> specialTiles, Set<String> roadTiles) async {
+    final key = tileKey(x, y);
+    if (specialTiles[key] == type) {
+      specialTiles.remove(key);
+      await _repo.deleteSpecialTile(x, y);
+    } else {
+      if (roadTiles.contains(key)) {
+        roadTiles.remove(key);
+        await _repo.deleteRoadTile(x, y);
+      }
+      specialTiles[key] = type;
+      await _repo.upsertSpecialTile(x, y, type);
     }
   }
 

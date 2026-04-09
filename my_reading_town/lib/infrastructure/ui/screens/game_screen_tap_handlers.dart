@@ -97,7 +97,11 @@ mixin _GameTapHandlers on State<GameScreen> {
         VillageRules.isTileType(_selectedBuildingType!)) {
       if (!village.isTileUnlocked(tileX, tileY)) return;
       if (village.hasBuildingAt(tileX, tileY)) return;
-      village.toggleRoad(tileX, tileY);
+      if (_selectedBuildingType == 'road') {
+        village.toggleRoad(tileX, tileY);
+      } else {
+        village.toggleSpecialTile(tileX, tileY, _selectedBuildingType!);
+      }
       _syncGameState();
       return;
     }
