@@ -6,7 +6,7 @@
       "wrong_authors": ["Stephen King", "J.R.R. Tolkien", "George R.R. Martin"]
     },
     {
-      "book": "El Senor de los Anillos",
+      "book": "El Señor de los Anillos",
       "correct_author": "J.R.R. Tolkien",
       "wrong_authors": ["C.S. Lewis", "J.K. Rowling", "Terry Pratchett"]
     },
@@ -48,7 +48,7 @@
       "book": "Don Quijote de la Mancha",
       "correct_author": "Miguel de Cervantes",
       "wrong_authors": [
-        "Gabriel Garcia Marquez",
+        "Gabriel García Márquez",
         "Jorge Luis Borges",
         "Pablo Neruda"
       ]
@@ -56,10 +56,10 @@
     {
       "book": "Un Cuento de Dos Ciudades",
       "correct_author": "Charles Dickens",
-      "wrong_authors": ["Victor Hugo", "Leo Tolstoy", "Jane Austen"]
+      "wrong_authors": ["Víctor Hugo", "Leo Tolstoy", "Jane Austen"]
     },
     {
-      "book": "El Guardian entre el Centeno",
+      "book": "El Guardián entre el Centeno",
       "correct_author": "J.D. Salinger",
       "wrong_authors": ["Jack Kerouac", "F. Scott Fitzgerald", "Kurt Vonnegut"]
     },
@@ -92,7 +92,7 @@
       ]
     },
     {
-      "book": "Alicia en el Pais de las Maravillas",
+      "book": "Alicia en el País de las Maravillas",
       "correct_author": "Lewis Carroll",
       "wrong_authors": [
         "Roald Dahl",
@@ -111,19 +111,19 @@
       "wrong_authors": ["Mary Shelley", "Edgar Allan Poe", "H.P. Lovecraft"]
     },
     {
-      "book": "Las Cronicas de Narnia",
+      "book": "Las Crónicas de Narnia",
       "correct_author": "C.S. Lewis",
       "wrong_authors": ["J.R.R. Tolkien", "Philip Pullman", "Lloyd Alexander"]
     },
     {
-      "book": "Charlie y la Fabrica de Chocolate",
+      "book": "Charlie y la Fábrica de Chocolate",
       "correct_author": "Roald Dahl",
       "wrong_authors": ["Dr. Seuss", "Shel Silverstein", "Lewis Carroll"]
     },
     {
       "book": "El Principito",
-      "correct_author": "Antoine de Saint-Exupery",
-      "wrong_authors": ["Victor Hugo", "Jules Verne", "Alexandre Dumas"]
+      "correct_author": "Antoine de Saint-Exupéry",
+      "wrong_authors": ["Víctor Hugo", "Jules Verne", "Alexandre Dumas"]
     },
     {
       "book": "Crimen y Castigo",
@@ -147,12 +147,12 @@
     },
     {
       "book": "Los Miserables",
-      "correct_author": "Victor Hugo",
+      "correct_author": "Víctor Hugo",
       "wrong_authors": ["Alexandre Dumas", "Gustave Flaubert", "Emile Zola"]
     },
     {
-      "book": "Cien Anos de Soledad",
-      "correct_author": "Gabriel Garcia Marquez",
+      "book": "Cien Años de Soledad",
+      "correct_author": "Gabriel García Márquez",
       "wrong_authors": [
         "Jorge Luis Borges",
         "Isabel Allende",
@@ -198,7 +198,7 @@
       "wrong_authors": ["Veronica Roth", "James Dashner", "Lois Lowry"]
     },
     {
-      "book": "Percy Jackson y el Ladron del Rayo",
+      "book": "Percy Jackson y el Ladrón del Rayo",
       "correct_author": "Rick Riordan",
       "wrong_authors": ["J.K. Rowling", "Christopher Paolini", "Eoin Colfer"]
     },
@@ -218,7 +218,7 @@
       "wrong_authors": ["Shel Silverstein", "Eric Carle", "Maurice Sendak"]
     },
     {
-      "book": "Diario de un Ninito",
+      "book": "Diario de un Niñito",
       "correct_author": "Jeff Kinney",
       "wrong_authors": ["Dav Pilkey", "James Patterson", "R.L. Stine"]
     },
@@ -231,13 +231,13 @@
       "book": "El Alquimista",
       "correct_author": "Paulo Coelho",
       "wrong_authors": [
-        "Gabriel Garcia Marquez",
+        "Gabriel García Márquez",
         "Jorge Luis Borges",
         "Haruki Murakami"
       ]
     },
     {
-      "book": "Rebelion en la Granja",
+      "book": "Rebelión en la Granja",
       "correct_author": "George Orwell",
       "wrong_authors": ["Aldous Huxley", "H.G. Wells", "Jonathan Swift"]
     },
@@ -257,7 +257,7 @@
       "wrong_authors": ["Arthur C. Clarke", "Isaac Asimov", "H.G. Wells"]
     },
     {
-      "book": "El Codigo Da Vinci",
+      "book": "El Código Da Vinci",
       "correct_author": "Dan Brown",
       "wrong_authors": ["John Grisham", "Tom Clancy", "James Patterson"]
     },

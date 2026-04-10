@@ -13,7 +13,7 @@
     {
       "character": "Gandalf",
       "correct_role": "Mago",
-      "wrong_roles": ["Rey", "Caballero", "Ladron"]
+      "wrong_roles": ["Rey", "Caballero", "Ladrón"]
     },
     {
       "character": "Robin Hood",
@@ -21,8 +21,8 @@
       "wrong_roles": ["Rey", "Mago", "Marinero"]
     },
     {
-      "character": "Capitan Ahab",
-      "correct_role": "Capitan de Barco",
+      "character": "Capitán Ahab",
+      "correct_role": "Capitán de Barco",
       "wrong_roles": ["Pirata", "Rey", "Detective"]
     },
     {
@@ -38,7 +38,7 @@
     {
       "character": "Aragorn",
       "correct_role": "Rey Ranger",
-      "wrong_roles": ["Mago", "Ladron", "Herrero"]
+      "wrong_roles": ["Mago", "Ladrón", "Herrero"]
     },
     {
       "character": "Hermione Granger",
@@ -46,8 +46,8 @@
       "wrong_roles": ["Princesa", "Hada", "Detective"]
     },
     {
-      "character": "Capitan Garfio",
-      "correct_role": "Capitan Pirata",
+      "character": "Capitán Garfio",
+      "correct_role": "Capitán Pirata",
       "wrong_roles": ["Almirante", "Rey", "Explorador"]
     },
     {
@@ -58,11 +58,11 @@
     {
       "character": "El Monstruo de Frankenstein",
       "correct_role": "Ser Creado",
-      "wrong_roles": ["Cientifico", "Fantasma", "Vampiro"]
+      "wrong_roles": ["Científico", "Fantasma", "Vampiro"]
     },
     {
       "character": "Huckleberry Finn",
-      "correct_role": "Nino Aventurero",
+      "correct_role": "Niño Aventurero",
       "wrong_roles": ["Principe", "Soldado", "Mago"]
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "character": "Aslan",
-      "correct_role": "Rey Leon",
+      "correct_role": "Rey León",
       "wrong_roles": ["Mago", "Dragon", "Caballero"]
     },
     {
@@ -87,7 +87,7 @@
     },
     {
       "character": "Alicia",
-      "correct_role": "Nina Curiosa",
+      "correct_role": "Niña Curiosa",
       "wrong_roles": ["Princesa", "Hada", "Bruja"]
     },
     {
@@ -98,12 +98,12 @@
     {
       "character": "Atticus Finch",
       "correct_role": "Abogado",
-      "wrong_roles": ["Medico", "Maestro", "Juez"]
+      "wrong_roles": ["Médico", "Maestro", "Juez"]
     },
     {
       "character": "Odiseo",
       "correct_role": "Rey Heroe Griego",
-      "wrong_roles": ["Dios", "Filosofo", "Gladiador"]
+      "wrong_roles": ["Dios", "Filósofo", "Gladiador"]
     },
     {
       "character": "Romeo",
@@ -112,22 +112,22 @@
     },
     {
       "character": "Peter Pan",
-      "correct_role": "Nino que Nunca Crecera",
+      "correct_role": "Niño que Nunca Crecerá",
       "wrong_roles": ["Principe", "Hada", "Mago"]
     },
     {
       "character": "Willy Wonka",
-      "correct_role": "Dueno de Fabrica de Chocolate",
+      "correct_role": "Dueño de Fábrica de Chocolate",
       "wrong_roles": ["Mago", "Chef", "Rey"]
     },
     {
       "character": "Matilda",
-      "correct_role": "Nina Regia",
+      "correct_role": "Niña Regia",
       "wrong_roles": ["Princesa", "Hada", "Robot"]
     },
     {
       "character": "Tom Sawyer",
-      "correct_role": "Nino Travieso",
+      "correct_role": "Niño Travieso",
       "wrong_roles": ["Pirata", "Soldado", "Principe"]
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "character": "Dorothy Gale",
-      "correct_role": "Nina de Granja de Kansas",
+      "correct_role": "Niña de Granja de Kansas",
       "wrong_roles": ["Princesa", "Bruja", "Hada"]
     },
     {
@@ -162,12 +162,12 @@
     },
     {
       "character": "Heidi",
-      "correct_role": "Nina de Montana",
+      "correct_role": "Niña de Montaña",
       "wrong_roles": ["Princesa", "Pastor", "Hada"]
     },
     {
       "character": "Mowgli",
-      "correct_role": "Nino de la Selva",
+      "correct_role": "Niño de la Selva",
       "wrong_roles": ["Principe", "Cazador", "Mago"]
     },
     {
@@ -182,7 +182,7 @@
     },
     {
       "character": "Pippi Calzaslargas",
-      "correct_role": "Nina Super Fuerte",
+      "correct_role": "Niña Super Fuerte",
       "wrong_roles": ["Princesa", "Pirata", "Hada"]
     },
     {

@@ -2,11 +2,11 @@ import 'mission.dart';
 
 class MissionData {
   static const List<String> buildingTypes = [
-    'park', 'water_plant', 'power_plant', 'school', 'hospital',
+    'water_plant', 'power_plant', 'school', 'restaurant', 'park', 'library', 'hospital',
   ];
 
   static const List<String> allBuildingTypes = [
-    'house', 'park', 'water_plant', 'power_plant', 'school', 'hospital',
+    'house', 'water_plant', 'power_plant', 'school', 'restaurant', 'park', 'library', 'hospital',
   ];
 
   static List<Mission> get allMissions => [
@@ -33,6 +33,20 @@ class MissionData {
         orderInBranch: i,
       ),
 
+    Mission(
+      id: 'bc_houses_2_lv1',
+      title: 'Have 2 Houses',
+      description: 'Have 2 houses at level 1 or above.',
+      branch: MissionBranch.basicConstruction,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.reachBuildingCount,
+      buildingType: 'house',
+      targetLevel: 1,
+      targetCount: 2,
+      reward: MissionReward(exp: 30, coins: 20),
+      orderInBranch: 7,
+    ),
+
     for (int i = 0; i < allBuildingTypes.length; i++)
       Mission(
         id: 'bc_upgrade_${allBuildingTypes[i]}_lv2',
@@ -44,8 +58,22 @@ class MissionData {
         buildingType: allBuildingTypes[i],
         targetLevel: 2,
         reward: MissionReward(exp: 40 + i * 5, coins: 30 + i * 10),
-        orderInBranch: 5 + i,
+        orderInBranch: 8 + i,
       ),
+
+    Mission(
+      id: 'bc_houses_4_lv1',
+      title: 'Have 4 Houses',
+      description: 'Have 4 houses at level 1 or above.',
+      branch: MissionBranch.basicConstruction,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.reachBuildingCount,
+      buildingType: 'house',
+      targetLevel: 1,
+      targetCount: 4,
+      reward: MissionReward(exp: 60, coins: 50),
+      orderInBranch: 16,
+    ),
 
     for (int i = 0; i < allBuildingTypes.length; i++)
       Mission(
@@ -58,8 +86,22 @@ class MissionData {
         buildingType: allBuildingTypes[i],
         targetLevel: 3,
         reward: MissionReward(exp: 60 + i * 10, coins: 50 + i * 15, gems: 8 + i * 3),
-        orderInBranch: 11 + i,
+        orderInBranch: 17 + i,
       ),
+
+    Mission(
+      id: 'bc_houses_6_lv1',
+      title: 'Have 6 Houses',
+      description: 'Have 6 houses at level 1 or above.',
+      branch: MissionBranch.basicConstruction,
+      checkType: MissionCheckType.bm,
+      conditionType: MissionConditionType.reachBuildingCount,
+      buildingType: 'house',
+      targetLevel: 1,
+      targetCount: 6,
+      reward: MissionReward(exp: 100, coins: 80, gems: 10),
+      orderInBranch: 25,
+    ),
   ];
 
   static final List<Mission> _advancedConstructionBranch = [
@@ -90,7 +132,7 @@ class MissionData {
         targetLevel: 2,
         targetCount: _advCount(allBuildingTypes[i]),
         reward: MissionReward(exp: 80 + i * 10, coins: 60 + i * 15, gems: 10 + i * 3),
-        orderInBranch: 6 + i,
+        orderInBranch: 8 + i,
       ),
 
     for (int i = 0; i < allBuildingTypes.length; i++)
@@ -105,7 +147,7 @@ class MissionData {
         targetLevel: 3,
         targetCount: _advCount(allBuildingTypes[i]),
         reward: MissionReward(exp: 120 + i * 15, coins: 100 + i * 20, gems: 20 + i * 5),
-        orderInBranch: 12 + i,
+        orderInBranch: 16 + i,
       ),
   ];
 
@@ -434,15 +476,17 @@ class MissionData {
     switch (type) {
       case 'house': return 'House';
       case 'park': return 'Park';
+      case 'restaurant': return 'Restaurant';
       case 'water_plant': return 'Water Tower';
       case 'power_plant': return 'Power Station';
       case 'school': return 'School';
-      case 'hospital': return 'Clinic';
+      case 'library': return 'Library';
+      case 'hospital': return 'Hospital';
       default: return type;
     }
   }
 
-  static int _advCount(String type) => type == 'house' ? 5 : 3;
+  static int _advCount(String type) => type == 'house' ? 8 : 3;
 
   static Mission? getMissionById(String id) {
     try {

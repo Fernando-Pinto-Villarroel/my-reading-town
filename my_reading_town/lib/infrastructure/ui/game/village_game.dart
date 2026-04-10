@@ -41,6 +41,7 @@ class VillageGame extends FlameGame {
   final Map<int, BuildingComponent> _buildingComponents = {};
   final List<VillagerComponent> _villagerComponents = [];
   final Map<String, ExpansionSignComponent> _expansionSigns = {};
+  final Map<String, int> _villagerOccupancy = {};
   List<String> _walkableTilesList = [];
 
   double _constructionCheckTimer = 0;
@@ -260,27 +261,55 @@ class VillageGame extends FlameGame {
     }
   }
 
-  bool _isBuildingRoadConnected(PlacedBuilding b, Set<String> roads) {
+  bool _isBuildingRoadConnected(PlacedBuilding b, Set<String> walkableTiles) {
+    final allBuildings = _buildingsById.values.toList();
+    final startTiles = <String>{};
     for (int dx = 0; dx < b.tileWidth; dx++) {
       for (int dy = 0; dy < b.tileHeight; dy++) {
-        final tx = b.tileX + dx;
-        final ty = b.tileY + dy;
-        for (final d in [
-          [-1, 0],
-          [1, 0],
-          [0, -1],
-          [0, 1]
-        ]) {
-          final nx = tx + d[0];
-          final ny = ty + d[1];
-          if (nx >= b.tileX &&
-              nx < b.tileX + b.tileWidth &&
-              ny >= b.tileY &&
-              ny < b.tileY + b.tileHeight) {
-            continue;
-          }
-          if (roads.contains('$nx,$ny')) return true;
+        for (final d in [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+          final nx = b.tileX + dx + d[0];
+          final ny = b.tileY + dy + d[1];
+          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY && ny < b.tileY + b.tileHeight) { continue; }
+          final key = '$nx,$ny';
+          if (walkableTiles.contains(key)) startTiles.add(key);
         }
+      }
+    }
+    if (startTiles.isEmpty) return false;
+
+    final sourceTiles = <String>{};
+    for (final h in allBuildings) {
+      if (h.type != 'house' || !h.isConstructed || h.id == b.id) continue;
+      for (int dx = 0; dx < h.tileWidth; dx++) {
+        for (int dy = 0; dy < h.tileHeight; dy++) {
+          for (final d in [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            final nx = h.tileX + dx + d[0];
+            final ny = h.tileY + dy + d[1];
+            if (nx >= h.tileX && nx < h.tileX + h.tileWidth &&
+                ny >= h.tileY && ny < h.tileY + h.tileHeight) { continue; }
+            final key = '$nx,$ny';
+            if (walkableTiles.contains(key)) sourceTiles.add(key);
+          }
+        }
+      }
+    }
+
+    if (sourceTiles.isEmpty) return true;
+    if (startTiles.any(sourceTiles.contains)) return true;
+
+    final visited = <String>{...startTiles};
+    final queue = startTiles.toList();
+    int i = 0;
+    while (i < queue.length) {
+      final current = queue[i++];
+      final parts = current.split(',');
+      final cx = int.parse(parts[0]);
+      final cy = int.parse(parts[1]);
+      for (final d in [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+        final key = '${cx + d[0]},${cy + d[1]}';
+        if (sourceTiles.contains(key)) return true;
+        if (walkableTiles.contains(key) && visited.add(key)) queue.add(key);
       }
     }
     return false;
@@ -423,6 +452,7 @@ class VillageGame extends FlameGame {
           villager: v,
           position: spawnPos,
           roadTiles: _walkableTilesList,
+          occupancyMap: _villagerOccupancy,
           missingBuildingTypes: villagerMissingNeeds,
           onTapped: onVillagerTapped,
         );

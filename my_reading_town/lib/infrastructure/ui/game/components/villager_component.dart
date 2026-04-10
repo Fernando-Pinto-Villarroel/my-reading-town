@@ -12,6 +12,7 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   Villager villager;
   List<String> roadTiles;
   List<String> missingBuildingTypes;
+  final Map<String, int> occupancyMap;
   final void Function(Villager)? onTapped;
 
   Sprite? _sprite;
@@ -36,10 +37,17 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
 
   double _zzzTimer = 0;
 
+  final List<String> _recentTiles = [];
+  String? _claimedTile;
+  int _lastDx = 0;
+  int _lastDy = 0;
+  static const int _historySize = 12;
+
   VillagerComponent({
     required this.villager,
     required Vector2 position,
     required this.roadTiles,
+    required this.occupancyMap,
     this.missingBuildingTypes = const [],
     this.onTapped,
   }) : super(
@@ -50,8 +58,35 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
           priority: 200,
         ) {
     _targetPosition = position.clone();
-    _waitTimer = _random.nextDouble() * 2;
+    final id = villager.id ?? 0;
+    _waitTimer = _random.nextDouble() * 3.0 + (id % 20) * 0.15;
     _facingRight = _random.nextBool();
+  }
+
+  @override
+  void onMount() {
+    super.onMount();
+    final tileX = (position.x / UiConstants.tilePixelSize).floor();
+    final tileY = (position.y / UiConstants.tilePixelSize).floor();
+    _claimedTile = '$tileX,$tileY';
+    occupancyMap[_claimedTile!] = (occupancyMap[_claimedTile!] ?? 0) + 1;
+  }
+
+  @override
+  void onRemove() {
+    _releaseClaimed();
+    super.onRemove();
+  }
+
+  void _releaseClaimed() {
+    if (_claimedTile == null) return;
+    final occ = (occupancyMap[_claimedTile!] ?? 1) - 1;
+    if (occ <= 0) {
+      occupancyMap.remove(_claimedTile!);
+    } else {
+      occupancyMap[_claimedTile!] = occ;
+    }
+    _claimedTile = null;
   }
 
   @override
@@ -156,18 +191,21 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
   void _pickNewTarget() {
     final currentTileX = (position.x / UiConstants.tilePixelSize).floor();
     final currentTileY = (position.y / UiConstants.tilePixelSize).floor();
+    final currentKey = '$currentTileX,$currentTileY';
 
-    final neighbors = [
+    _releaseClaimed();
+
+    if (_recentTiles.length >= _historySize) _recentTiles.removeAt(0);
+    _recentTiles.add(currentKey);
+
+    final candidates = [
       (currentTileX + 1, currentTileY),
       (currentTileX - 1, currentTileY),
       (currentTileX, currentTileY + 1),
       (currentTileX, currentTileY - 1),
-    ];
+    ].where((n) => roadTiles.contains('${n.$1},${n.$2}')).toList();
 
-    final validNeighbors =
-        neighbors.where((n) => roadTiles.contains('${n.$1},${n.$2}')).toList();
-
-    if (validNeighbors.isEmpty) {
+    if (candidates.isEmpty) {
       if (roadTiles.isNotEmpty) {
         String? nearest;
         double minDist = double.infinity;
@@ -184,6 +222,8 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
           }
         }
         if (nearest != null) {
+          occupancyMap[nearest] = (occupancyMap[nearest] ?? 0) + 1;
+          _claimedTile = nearest;
           final parts = nearest.split(',');
           _targetPosition = Vector2(
             int.parse(parts[0]) * UiConstants.tilePixelSize +
@@ -196,11 +236,45 @@ class VillagerComponent extends PositionComponent with TapCallbacks {
       return;
     }
 
-    final target = validNeighbors[_random.nextInt(validNeighbors.length)];
-    _targetPosition = Vector2(
-      target.$1 * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
-      target.$2 * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
-    );
+    (int, int)? best;
+    double bestScore = double.infinity;
+
+    for (final n in candidates) {
+      final key = '${n.$1},${n.$2}';
+      double score = 0;
+
+      score += (occupancyMap[key] ?? 0) * 4.0;
+
+      final histIdx = _recentTiles.lastIndexOf(key);
+      if (histIdx >= 0) {
+        score += ((histIdx + 1) / _historySize) * 5.0;
+      }
+
+      final dx = n.$1 - currentTileX;
+      final dy = n.$2 - currentTileY;
+      if (dx == _lastDx && dy == _lastDy && (_lastDx != 0 || _lastDy != 0)) {
+        score -= 1.5;
+      }
+
+      score += _random.nextDouble() * 2.0;
+
+      if (score < bestScore) {
+        bestScore = score;
+        best = n;
+      }
+    }
+
+    if (best != null) {
+      _lastDx = best.$1 - currentTileX;
+      _lastDy = best.$2 - currentTileY;
+      final targetKey = '${best.$1},${best.$2}';
+      occupancyMap[targetKey] = (occupancyMap[targetKey] ?? 0) + 1;
+      _claimedTile = targetKey;
+      _targetPosition = Vector2(
+        best.$1 * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
+        best.$2 * UiConstants.tilePixelSize + UiConstants.tilePixelSize / 2,
+      );
+    }
   }
 
   void _renderZzz(Canvas canvas) {

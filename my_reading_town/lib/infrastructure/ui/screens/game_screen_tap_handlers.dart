@@ -99,6 +99,8 @@ mixin _GameTapHandlers on State<GameScreen> {
       if (village.hasBuildingAt(tileX, tileY)) return;
       if (_selectedBuildingType == 'road') {
         village.toggleRoad(tileX, tileY);
+      } else if (_selectedBuildingType == 'grass') {
+        village.clearToGrass(tileX, tileY);
       } else {
         village.toggleSpecialTile(tileX, tileY, _selectedBuildingType!);
       }

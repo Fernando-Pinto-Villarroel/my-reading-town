@@ -59,12 +59,13 @@ class _LevelUpPopupState extends State<LevelUpPopup>
         .toList();
 
     return Material(
-      color: Colors.black.withAlpha(80),
-      child: InkWell(
+      color: Colors.transparent,
+      child: GestureDetector(
         onTap: widget.onDismiss,
+        behavior: HitTestBehavior.opaque,
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
               ConfettiWidget(
                 confettiController: _confettiController,
@@ -85,8 +86,8 @@ class _LevelUpPopupState extends State<LevelUpPopup>
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 16),
                   constraints: const BoxConstraints(maxWidth: 360),
                   decoration: BoxDecoration(
                     color: AppTheme.cream,
@@ -101,9 +102,11 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                     border: Border.all(
                         color: AppTheme.lavender.withAlpha(120), width: 2),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                       Align(
                         alignment: Alignment.topRight,
                         child: GestureDetector(
@@ -278,10 +281,11 @@ class _LevelUpPopupState extends State<LevelUpPopup>
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

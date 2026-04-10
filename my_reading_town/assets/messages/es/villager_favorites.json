@@ -1,23 +1,23 @@
 {
   "favorites": [
     {
-      "author": "Gabriel Garcia Marquez",
+      "author": "Gabriel García Márquez",
       "quote": "Un lector vive mil vidas antes de morir."
     },
     {
       "author": "Jorge Luis Borges",
-      "quote": "Siempre me he imaginado que el paraiso sera una especie de biblioteca."
+      "quote": "Siempre me he imaginado que el paraíso será una especie de biblioteca."
     },
     {
       "author": "Isabel Allende",
-      "quote": "No todos los que vagan estan perdidos."
+      "quote": "No todos los que vagan están perdidos."
     },
     {
       "author": "Pablo Neruda",
       "quote": "Son nuestras elecciones las que muestran lo que realmente somos."
     },
     {
-      "author": "Julio Cortazar",
+      "author": "Julio Cortázar",
       "quote": "Hay que tener cuidado con los libros y lo que hay dentro de ellos."
     },
     {
@@ -26,28 +26,28 @@
     },
     {
       "author": "Octavio Paz",
-      "quote": "Una habitacion sin libros es como un cuerpo sin alma."
+      "quote": "Una habitación sin libros es como un cuerpo sin alma."
     },
     {
       "author": "Eduardo Galeano",
-      "quote": "Lo unico que es absolutamente necesario saber, es la ubicacion de la biblioteca."
+      "quote": "Lo único que es absolutamente necesario saber es la ubicación de la biblioteca."
     },
     {
       "author": "Laura Esquivel",
-      "quote": "Leer es sonar con los ojos abiertos."
+      "quote": "Leer es soñar con los ojos abiertos."
     },
     {
       "author": "Carlos Fuentes",
-      "quote": "Los libros son una magia unicamente portable."
+      "quote": "Los libros son una magia únicamente portable."
     },
     {
       "author": "J.K. Rowling",
       "quote": "Leemos para saber que no estamos solos."
     },
-    { "author": "J.R.R. Tolkien", "quote": "Hoy un lector, manana un lider." },
+    { "author": "J.R.R. Tolkien", "quote": "Hoy un lector, mañana un líder." },
     {
       "author": "Stephen King",
-      "quote": "Una vez que aprendas a leer, seras libre para siempre."
+      "quote": "Una vez que aprendas a leer, serás libre para siempre."
     },
     {
       "author": "Agatha Christie",
@@ -60,15 +60,15 @@
     { "author": "Mark Twain", "quote": "Tantos libros, tan poco tiempo." },
     {
       "author": "Ernest Hemingway",
-      "quote": "Cuanto mas lees, mas cosas sabras."
+      "quote": "Cuanto más lees, más cosas sabrás."
     },
     {
-      "author": "Antoine de Saint-Exupery",
+      "author": "Antoine de Saint-Exupéry",
       "quote": "Leer es para la mente lo que el ejercicio es para el cuerpo."
     },
     {
       "author": "Lewis Carroll",
-      "quote": "Los libros son los amigos mas silenciosos y constantes."
+      "quote": "Los libros son los amigos más silenciosos y constantes."
     },
     { "author": "Roald Dahl", "quote": "Un buen libro no tiene final." },
     {
@@ -77,31 +77,31 @@
     },
     {
       "author": "Oscar Wilde",
-      "quote": "Lo que lees cuando no tienes que hacerlo determina lo que seras cuando no puedas evitarlo."
+      "quote": "Lo que lees cuando no tienes que hacerlo determina lo que serás cuando no puedas evitarlo."
     },
     {
       "author": "Franz Kafka",
       "quote": "Un libro debe ser el hacha para el mar helado dentro de nosotros."
     },
     {
-      "author": "Leon Tolstoi",
-      "quote": "Toda gran literatura es una de dos historias: un hombre va en un viaje o un extrano llega al pueblo."
+      "author": "León Tolstói",
+      "quote": "Toda gran literatura es una de dos historias: un hombre va en un viaje o un extraño llega al pueblo."
     },
     {
-      "author": "Fiodor Dostoievski",
-      "quote": "El alma se cura estando con los ninos."
+      "author": "Fiódor Dostoyevski",
+      "quote": "El alma se cura estando con los niños."
     },
     {
-      "author": "Victor Hugo",
+      "author": "Víctor Hugo",
       "quote": "Aprender a leer es encender un fuego."
     },
     {
       "author": "Charles Dickens",
-      "quote": "Nadie es inutil en este mundo si aligera las cargas de otro."
+      "quote": "Nadie es inútil en este mundo si aligera las cargas de otro."
     },
     {
       "author": "William Shakespeare",
-      "quote": "Que hay en un nombre? Lo que llamamos rosa, con cualquier otro nombre oleria igual de dulce."
+      "quote": "¿Qué hay en un nombre? Lo que llamamos rosa, con cualquier otro nombre olería igual de dulce."
     },
     {
       "author": "Gustave Flaubert",
@@ -113,27 +113,27 @@
     },
     {
       "author": "Albert Camus",
-      "quote": "En medio del invierno, descubri que habia en mi un verano invencible."
+      "quote": "En medio del invierno, descubrí que había en mí un verano invencible."
     },
     {
       "author": "Simone de Beauvoir",
-      "quote": "Soy demasiado inteligente, exigente y capaz para que alguien pueda hacerse cargo de mi por completo."
+      "quote": "Soy demasiado inteligente, exigente y capaz para que alguien pueda hacerse cargo de mí por completo."
     },
     {
       "author": "Maya Angelou",
-      "quote": "No hay mayor agonia que llevar dentro una historia no contada."
+      "quote": "No hay mayor agonía que llevar dentro una historia no contada."
     },
     {
       "author": "Toni Morrison",
-      "quote": "Si tienes algun poder, tu trabajo es empoderar a alguien mas."
+      "quote": "Si tienes algún poder, tu trabajo es empoderar a alguien más."
     },
     {
       "author": "Neil Gaiman",
-      "quote": "Un libro es un sueno que sostienes en tu mano."
+      "quote": "Un libro es un sueño que sostienes en tu mano."
     },
     {
       "author": "C.S. Lewis",
-      "quote": "Nunca puedes conseguir una taza de te lo suficientemente grande ni un libro lo suficientemente largo."
+      "quote": "Nunca puedes conseguir una taza de té lo suficientemente grande ni un libro lo suficientemente largo."
     },
     {
       "author": "Ray Bradbury",
@@ -141,19 +141,19 @@
     },
     {
       "author": "George Orwell",
-      "quote": "No todos los libros estan pensados para ser leidos, solo algunos de ellos."
+      "quote": "No todos los libros están pensados para ser leídos, solo algunos de ellos."
     },
     {
       "author": "Haruki Murakami",
-      "quote": "Si solo lees los libros que todos los demas leen, solo podras pensar lo que todos los demas piensan."
+      "quote": "Si solo lees los libros que todos los demás leen, solo podrás pensar lo que todos los demás piensan."
     },
     {
-      "author": "Gabriel Garcia Marquez",
-      "quote": "Era todavia demasiado joven para saber que la memoria del corazon elimina los malos recuerdos y magnifica los buenos."
+      "author": "Gabriel García Márquez",
+      "quote": "Era todavía demasiado joven para saber que la memoria del corazón elimina los malos recuerdos y magnifica los buenos."
     },
     {
-      "author": "Jaime Saenz",
-      "quote": "Si te encuentras con la ninfa, no le digas que he llorado. Dile que en los rios me viste, lavando oro para su cofre."
+      "author": "Jaime Sáenz",
+      "quote": "Si te encuentras con la ninfa, no le digas que he llorado. Dile que en los ríos me viste, lavando oro para su cofre."
     }
   ]
 }

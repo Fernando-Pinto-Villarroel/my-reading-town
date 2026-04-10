@@ -6,13 +6,13 @@ class VillageRules {
   static const int metalPerPage = 2;
   static const int bookCompletionGemBonus = 15;
   static const int bookCompletionCoinBonus = 50;
-  static const int startingCoins = 60;
+  static const int startingCoins = 50;
   static const int startingGems = 5;
-  static const int startingWood = 40;
+  static const int startingWood = 30;
   static const int startingMetal = 10;
 
   static const int maxBuildingLevel = 3;
-  static const int sadHappinessThreshold = 80;
+  static const int sadHappinessThreshold = 75;
 
   static const int mapSize = 150;
   static const int defaultAreaSize = 25;
@@ -47,13 +47,13 @@ class VillageRules {
       case 'hospital':
         return 2 * level;
       case 'school':
-        return 4 * level;
+        return 3 * level;
       case 'park':
-        return 3 * level;
+        return 2 * level;
       case 'restaurant':
-        return 3 * level;
+        return 2 * level;
       case 'library':
-        return 3 * level;
+        return 2 * level;
       case 'power_plant':
         return 3 * level;
       default:
@@ -70,9 +70,9 @@ class VillageRules {
   static const int totalNeedCount = 4;
 
   static List<String> rotationalNeedPool(int playerLevel) {
-    if (playerLevel >= 6) return ['park', 'restaurant', 'library', 'hospital'];
-    if (playerLevel >= 3) return ['park', 'restaurant', 'library'];
-    return ['park', 'restaurant'];
+    if (playerLevel >= 5) return ['restaurant', 'park', 'library', 'hospital'];
+    if (playerLevel >= 3) return ['restaurant', 'park', 'library'];
+    return ['restaurant', 'park'];
   }
 
   static String rotationalNeedForVillager(int villagerId, int playerLevel) {
@@ -87,7 +87,7 @@ class VillageRules {
       case 'library':
         return 3;
       case 'hospital':
-        return 6;
+        return 5;
       default:
         return 1;
     }
@@ -142,30 +142,25 @@ class VillageRules {
     }
   }
 
-  static int maxHousesForPlayerLevel(int playerLevel) => playerLevel * 2;
+  static int maxHousesForPlayerLevel(int playerLevel) => 4 + playerLevel * 2;
 
   static int maxBuildingsOfTypeForPlayerLevel(String type, int playerLevel) {
-    final maxHouses = maxHousesForPlayerLevel(playerLevel);
-    final maxVillagers = maxHouses * 3;
     switch (type) {
       case 'house':
-        return maxHouses;
-      case 'park':
-        return (maxVillagers / 3).ceil();
+        return 4 + playerLevel * 2;
       case 'restaurant':
-        return (maxVillagers / 3).ceil();
-      case 'school':
-        return (maxVillagers / 4).ceil();
+      case 'park':
+        return playerLevel * 2;
       case 'library':
-        return playerLevel >= 3 ? (maxVillagers / 4).ceil() : 0;
+        return playerLevel >= 3 ? playerLevel * 2 : 0;
       case 'hospital':
-        return playerLevel >= 6 ? (maxVillagers / 2).ceil() : 0;
+        return playerLevel >= 5 ? playerLevel * 2 : 0;
       case 'water_plant':
-        return (maxVillagers / 3).ceil();
       case 'power_plant':
-        return (maxVillagers / 3).ceil();
+      case 'school':
+        return 2 + playerLevel * 2;
       default:
-        return maxHouses;
+        return 4 + playerLevel * 2;
     }
   }
 
@@ -227,8 +222,19 @@ class VillageRules {
       'exp': 20
     },
     {
-      'type': 'restaurant',
-      'name': 'Restaurant',
+      'type': 'water_plant',
+      'name': 'Water Tower',
+      'coinCost': 50,
+      'gemCost': 0,
+      'woodCost': 30,
+      'metalCost': 10,
+      'happinessBonus': 8,
+      'constructionMinutes': 40,
+      'exp': 30
+    },
+    {
+      'type': 'power_plant',
+      'name': 'Power Station',
       'coinCost': 70,
       'gemCost': 0,
       'woodCost': 40,
@@ -239,29 +245,7 @@ class VillageRules {
     },
     {
       'type': 'school',
-      'name': 'Little School',
-      'coinCost': 100,
-      'gemCost': 0,
-      'woodCost': 60,
-      'metalCost': 20,
-      'happinessBonus': 15,
-      'constructionMinutes': 120,
-      'exp': 60
-    },
-    {
-      'type': 'park',
-      'name': 'Tiny Park',
-      'coinCost': 50,
-      'gemCost': 0,
-      'woodCost': 30,
-      'metalCost': 10,
-      'happinessBonus': 8,
-      'constructionMinutes': 40,
-      'exp': 30
-    },
-    {
-      'type': 'water_plant',
-      'name': 'Water Tower',
+      'name': 'School',
       'coinCost': 80,
       'gemCost': 0,
       'woodCost': 20,
@@ -271,8 +255,8 @@ class VillageRules {
       'exp': 40
     },
     {
-      'type': 'power_plant',
-      'name': 'Power Station',
+      'type': 'restaurant',
+      'name': 'Restaurant',
       'coinCost': 90,
       'gemCost': 0,
       'woodCost': 30,
@@ -280,6 +264,17 @@ class VillageRules {
       'happinessBonus': 10,
       'constructionMinutes': 120,
       'exp': 50
+    },
+    {
+      'type': 'park',
+      'name': 'Park',
+      'coinCost': 100,
+      'gemCost': 0,
+      'woodCost': 60,
+      'metalCost': 20,
+      'happinessBonus': 15,
+      'constructionMinutes': 120,
+      'exp': 60
     },
     {
       'type': 'library',
@@ -294,7 +289,7 @@ class VillageRules {
     },
     {
       'type': 'hospital',
-      'name': 'Clinic',
+      'name': 'Hospital',
       'coinCost': 120,
       'gemCost': 0,
       'woodCost': 50,
@@ -306,39 +301,6 @@ class VillageRules {
   ];
 
   static const List<Map<String, dynamic>> decorationTemplates = [
-    {
-      'type': 'water_font',
-      'name': 'Water Font',
-      'coinCost': 150,
-      'gemCost': 0,
-      'woodCost': 0,
-      'metalCost': 65,
-      'happinessBonus': 0,
-      'constructionMinutes': 30,
-      'exp': 15
-    },
-    {
-      'type': 'lamp_post',
-      'name': 'Lamp Post',
-      'coinCost': 50,
-      'gemCost': 0,
-      'woodCost': 0,
-      'metalCost': 75,
-      'happinessBonus': 0,
-      'constructionMinutes': 15,
-      'exp': 10
-    },
-    {
-      'type': 'cat_colon_statue',
-      'name': 'Villager Statue',
-      'coinCost': 300,
-      'gemCost': 10,
-      'woodCost': 0,
-      'metalCost': 200,
-      'happinessBonus': 0,
-      'constructionMinutes': 60,
-      'exp': 25
-    },
     {
       'type': 'bulletin_board',
       'name': 'Bulletin Board',
@@ -362,6 +324,17 @@ class VillageRules {
       'exp': 8
     },
     {
+      'type': 'lamp_post',
+      'name': 'Lamp Post',
+      'coinCost': 50,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 75,
+      'happinessBonus': 0,
+      'constructionMinutes': 15,
+      'exp': 10
+    },
+    {
       'type': 'reading_bench',
       'name': 'Reading Bench',
       'coinCost': 120,
@@ -373,15 +346,15 @@ class VillageRules {
       'exp': 12
     },
     {
-      'type': 'book_stack_monument',
-      'name': 'Book Stack Monument',
-      'coinCost': 400,
-      'gemCost': 30,
-      'woodCost': 100,
-      'metalCost': 0,
+      'type': 'water_font',
+      'name': 'Water Font',
+      'coinCost': 150,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 65,
       'happinessBonus': 0,
-      'constructionMinutes': 90,
-      'exp': 35
+      'constructionMinutes': 30,
+      'exp': 15
     },
     {
       'type': 'wishing_well',
@@ -394,13 +367,71 @@ class VillageRules {
       'constructionMinutes': 45,
       'exp': 20
     },
+    {
+      'type': 'cat_colon_statue',
+      'name': 'Villager Statue',
+      'coinCost': 300,
+      'gemCost': 10,
+      'woodCost': 0,
+      'metalCost': 200,
+      'happinessBonus': 0,
+      'constructionMinutes': 60,
+      'exp': 25
+    },
+    {
+      'type': 'book_stack_monument',
+      'name': 'Book Stack Monument',
+      'coinCost': 400,
+      'gemCost': 30,
+      'woodCost': 100,
+      'metalCost': 0,
+      'happinessBonus': 0,
+      'constructionMinutes': 90,
+      'exp': 35
+    },
   ];
 
   static const List<Map<String, dynamic>> tileTemplates = [
-    {'type': 'road', 'name': 'Road', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
-    {'type': 'sea', 'name': 'Sea', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
-    {'type': 'sand', 'name': 'Sand', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
-    {'type': 'rock', 'name': 'Rock', 'coinCost': 0, 'gemCost': 0, 'woodCost': 0, 'metalCost': 0},
+    {
+      'type': 'grass',
+      'name': 'Grass',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
+    {
+      'type': 'road',
+      'name': 'Road',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
+    {
+      'type': 'sea',
+      'name': 'Water',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
+    {
+      'type': 'sand',
+      'name': 'Sand',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
+    {
+      'type': 'rock',
+      'name': 'Rock',
+      'coinCost': 0,
+      'gemCost': 0,
+      'woodCost': 0,
+      'metalCost': 0
+    },
   ];
 
   static const Set<String> decorationTypes = {
@@ -413,7 +444,7 @@ class VillageRules {
     'book_stack_monument',
     'wishing_well',
   };
-  static const Set<String> tileTypes = {'road', 'sea', 'sand', 'rock'};
+  static const Set<String> tileTypes = {'grass', 'road', 'sea', 'sand', 'rock'};
   static const Set<String> specialTileTypes = {'sea', 'sand', 'rock'};
 
   static bool isDecorationType(String type) => decorationTypes.contains(type);

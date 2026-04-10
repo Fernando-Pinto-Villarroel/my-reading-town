@@ -163,7 +163,7 @@ class _GameScreenState extends State<GameScreen>
       _tourInitialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !_villageProvider.tutorialCompleted && !AppConstants.testMode) {
-          setState(() => _tourStep = 0);
+          setState(() => _tourStep = kTourStepWelcome);
         }
       });
     }
@@ -263,8 +263,9 @@ class _GameScreenState extends State<GameScreen>
     if (newLevel != null && mounted) {
       showDialog(
         context: context,
-        barrierColor: Colors.transparent,
+        barrierColor: Colors.black.withAlpha(80),
         barrierDismissible: true,
+        useSafeArea: false,
         builder: (ctx) => LevelUpPopup(
             newLevel: newLevel, onDismiss: () {
           Navigator.pop(ctx);
@@ -395,35 +396,25 @@ class _GameScreenState extends State<GameScreen>
 
   void _onTourAdvance() {
     final step = _tourStep;
-    if (step == 5) {
+    if (step == kTourStepBuildExplain) {
       setState(() {
         _mode = GameMode.normal;
         _selectedBuildingType = null;
         _flipNextBuilding = false;
-        _tourStep = 6;
+        _tourStep = kTourStepBackpackHighlight;
       });
       _syncGameState();
-    } else if (step == 11) {
+    } else if (step == kTourStepReadingExplain) {
       setState(() => _menuOpen = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _tourStep = 12);
+        if (mounted) setState(() => _tourStep = kTourStepPhotoHighlight);
       });
-    } else if (step == 17) {
+    } else if (step == kTourStepSettingsExplain) {
       setState(() {
         _menuOpen = false;
-        _tourStep = 18;
+        _tourStep = kTourStepInput;
       });
-    } else if (step == 21) {
-      setState(() => _menuOpen = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _tourStep = 22);
-      });
-    } else if (step == 23) {
-      setState(() {
-        _menuOpen = false;
-        _tourStep = 24;
-      });
-    } else if (step == 25) {
+    } else if (step == kTourStepFarewell) {
       _completeTour();
     } else if (step >= 0 && step < tourTotalSteps) {
       setState(() => _tourStep = step + 1);
@@ -433,7 +424,7 @@ class _GameScreenState extends State<GameScreen>
   Future<void> _onTourInputSubmit(String username, String townName) async {
     if (username.isNotEmpty) await _villageProvider.updateUsername(username);
     if (townName.isNotEmpty) await _villageProvider.updateTownName(townName);
-    if (mounted) setState(() => _tourStep = 25);
+    if (mounted) setState(() => _tourStep = kTourStepFarewell);
   }
 
   Future<void> _completeTour() async {
@@ -558,29 +549,29 @@ class _GameScreenState extends State<GameScreen>
                         _flipNextBuilding = false;
                       } else {
                         _mode = GameMode.construction;
-                        if (_tourStep == 4) _tourStep = 5;
+                        if (_tourStep == kTourStepBuildHighlight) _tourStep = kTourStepBuildExplain;
                       }
                     });
                     _syncGameState();
                   },
                   onMissionsTap: () {
-                    if (_tourStep == 2) {
-                      setState(() => _tourStep = 3);
+                    if (_tourStep == kTourStepMissionsHighlight) {
+                      setState(() => _tourStep = kTourStepMissionsExplain);
                     } else {
                       showMissionsModal(context);
                     }
                   },
                   onBackpackTap: () {
-                    if (_tourStep == 8) {
-                      setState(() => _tourStep = 9);
+                    if (_tourStep == kTourStepBackpackHighlight) {
+                      setState(() => _tourStep = kTourStepBackpackExplain);
                     } else {
                       _villageProvider.clearNewBackpackItems();
                       showBackpackDialog(context, _villageProvider);
                     }
                   },
                   onMinigamesTap: () {
-                    if (_tourStep == 10) {
-                      setState(() => _tourStep = 11);
+                    if (_tourStep == kTourStepMinigamesHighlight) {
+                      setState(() => _tourStep = kTourStepMinigamesExplain);
                     } else {
                       showMinigamesDialog(context,
                           village: _villageProvider, onReturn: () {
@@ -590,15 +581,15 @@ class _GameScreenState extends State<GameScreen>
                     }
                   },
                   onRouletteTap: () {
-                    if (_tourStep == 18) {
-                      setState(() => _tourStep = 19);
+                    if (_tourStep == kTourStepRouletteHighlight) {
+                      setState(() => _tourStep = kTourStepRouletteExplain);
                     } else {
                       showRouletteDialog(context);
                     }
                   },
                   onStoreTap: () {
-                    if (_tourStep == 20) {
-                      setState(() => _tourStep = 21);
+                    if (_tourStep == kTourStepStoreHighlight) {
+                      setState(() => _tourStep = kTourStepStoreExplain);
                     } else {
                       showStoreDialog(context);
                     }
@@ -627,36 +618,36 @@ class _GameScreenState extends State<GameScreen>
                   speciesButtonKey: _tourSpeciesKey,
                   onToggleMenu: () => setState(() => _menuOpen = !_menuOpen),
                   onReadingTap: () {
-                    if (_tourStep == 6) {
-                      setState(() => _tourStep = 7);
+                    if (_tourStep == kTourStepReadingHighlight) {
+                      setState(() => _tourStep = kTourStepReadingExplain);
                     } else {
                       showReadingModal(context);
                     }
                   },
                   onPhotoTap: () {
-                    if (_tourStep == 12) {
-                      setState(() => _tourStep = 13);
+                    if (_tourStep == kTourStepPhotoHighlight) {
+                      setState(() => _tourStep = kTourStepPhotoExplain);
                     } else {
                       _captureVillagePhoto();
                     }
                   },
                   onStatsTap: () {
-                    if (_tourStep == 14) {
-                      setState(() => _tourStep = 15);
+                    if (_tourStep == kTourStepStatsHighlight) {
+                      setState(() => _tourStep = kTourStepStatsExplain);
                     } else {
                       showStatsDialog(context, _villageProvider, _bookProvider);
                     }
                   },
                   onSettingsTap: () {
-                    if (_tourStep == 16) {
-                      setState(() => _tourStep = 17);
+                    if (_tourStep == kTourStepSettingsHighlight) {
+                      setState(() => _tourStep = kTourStepSettingsExplain);
                     } else {
                       showSettingsDialog(context, _villageProvider);
                     }
                   },
                   onSpeciesBookTap: () {
-                    if (_tourStep == 22) {
-                      setState(() => _tourStep = 23);
+                    if (_tourStep == kTourStepSpeciesHighlight) {
+                      setState(() => _tourStep = kTourStepSpeciesExplain);
                     } else {
                       showSpeciesBookDialog(context);
                     }

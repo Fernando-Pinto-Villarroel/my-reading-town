@@ -24,6 +24,33 @@ enum _HighlightTarget {
 
 const int tourTotalSteps = 26;
 
+const int kTourStepWelcome = 0;
+const int kTourStepResources = 1;
+const int kTourStepMissionsHighlight = 2;
+const int kTourStepMissionsExplain = 3;
+const int kTourStepBuildHighlight = 4;
+const int kTourStepBuildExplain = 5;
+const int kTourStepBackpackHighlight = 6;
+const int kTourStepBackpackExplain = 7;
+const int kTourStepMinigamesHighlight = 8;
+const int kTourStepMinigamesExplain = 9;
+const int kTourStepRouletteHighlight = 10;
+const int kTourStepRouletteExplain = 11;
+const int kTourStepStoreHighlight = 12;
+const int kTourStepStoreExplain = 13;
+const int kTourStepReadingHighlight = 14;
+const int kTourStepReadingExplain = 15;
+const int kTourStepPhotoHighlight = 16;
+const int kTourStepPhotoExplain = 17;
+const int kTourStepSpeciesHighlight = 18;
+const int kTourStepSpeciesExplain = 19;
+const int kTourStepStatsHighlight = 20;
+const int kTourStepStatsExplain = 21;
+const int kTourStepSettingsHighlight = 22;
+const int kTourStepSettingsExplain = 23;
+const int kTourStepInput = 24;
+const int kTourStepFarewell = 25;
+
 const List<_StepKind> _stepKinds = [
   _StepKind.villagerChat, // 0: welcome
   _StepKind.villagerChat, // 1: resources
@@ -31,24 +58,24 @@ const List<_StepKind> _stepKinds = [
   _StepKind.villagerChat, // 3: missions explain
   _StepKind.highlight, // 4: build spotlight
   _StepKind.villagerChat, // 5: build explain
-  _StepKind.highlight, // 6: reading spotlight
-  _StepKind.villagerChat, // 7: reading explain
-  _StepKind.highlight, // 8: backpack spotlight
-  _StepKind.villagerChat, // 9: backpack explain
-  _StepKind.highlight, // 10: minigames spotlight
-  _StepKind.villagerChat, // 11: minigames explain
-  _StepKind.highlight, // 12: photo spotlight
-  _StepKind.villagerChat, // 13: photo explain
-  _StepKind.highlight, // 14: stats spotlight
-  _StepKind.villagerChat, // 15: stats explain
-  _StepKind.highlight, // 16: settings spotlight
-  _StepKind.villagerChat, // 17: settings explain
-  _StepKind.highlight, // 18: roulette spotlight
-  _StepKind.villagerChat, // 19: roulette explain
-  _StepKind.highlight, // 20: store spotlight
-  _StepKind.villagerChat, // 21: store explain
-  _StepKind.highlight, // 22: species book spotlight
-  _StepKind.villagerChat, // 23: species book explain
+  _StepKind.highlight, // 6: backpack spotlight
+  _StepKind.villagerChat, // 7: backpack explain
+  _StepKind.highlight, // 8: minigames spotlight
+  _StepKind.villagerChat, // 9: minigames explain
+  _StepKind.highlight, // 10: roulette spotlight
+  _StepKind.villagerChat, // 11: roulette explain
+  _StepKind.highlight, // 12: store spotlight
+  _StepKind.villagerChat, // 13: store explain
+  _StepKind.highlight, // 14: reading spotlight
+  _StepKind.villagerChat, // 15: reading explain
+  _StepKind.highlight, // 16: photo spotlight
+  _StepKind.villagerChat, // 17: photo explain
+  _StepKind.highlight, // 18: species book spotlight
+  _StepKind.villagerChat, // 19: species book explain
+  _StepKind.highlight, // 20: stats spotlight
+  _StepKind.villagerChat, // 21: stats explain
+  _StepKind.highlight, // 22: settings spotlight
+  _StepKind.villagerChat, // 23: settings explain
   _StepKind.input, // 24: username + town name form
   _StepKind.villagerChat, // 25: farewell
 ];
@@ -60,23 +87,23 @@ const List<_HighlightTarget?> _highlightTargets = [
   null,
   _HighlightTarget.build,
   null,
-  _HighlightTarget.reading,
-  null,
   _HighlightTarget.backpack,
   null,
   _HighlightTarget.minigames,
-  null,
-  _HighlightTarget.photo,
-  null,
-  _HighlightTarget.stats,
-  null,
-  _HighlightTarget.settings,
   null,
   _HighlightTarget.roulette,
   null,
   _HighlightTarget.store,
   null,
+  _HighlightTarget.reading,
+  null,
+  _HighlightTarget.photo,
+  null,
   _HighlightTarget.speciesBook,
+  null,
+  _HighlightTarget.stats,
+  null,
+  _HighlightTarget.settings,
   null,
   null,
   null,
@@ -198,33 +225,33 @@ class _TourOverlayState extends State<TourOverlay>
     final t = widget.translate;
     final name = widget.villagerName;
     switch (widget.stepIndex) {
-      case 0:
+      case kTourStepWelcome:
         return t('tour_welcome').replaceAll('{name}', name);
-      case 1:
+      case kTourStepResources:
         return t('tour_resources');
-      case 3:
+      case kTourStepMissionsExplain:
         return t('tour_missions_explain');
-      case 5:
+      case kTourStepBuildExplain:
         return t('tour_build_explain');
-      case 7:
-        return t('tour_reading_explain');
-      case 9:
+      case kTourStepBackpackExplain:
         return t('tour_backpack_explain');
-      case 11:
+      case kTourStepMinigamesExplain:
         return t('tour_minigames_explain');
-      case 13:
-        return t('tour_photo_explain');
-      case 15:
-        return t('tour_stats_explain');
-      case 17:
-        return t('tour_settings_explain');
-      case 19:
+      case kTourStepRouletteExplain:
         return t('tour_roulette_explain');
-      case 21:
+      case kTourStepStoreExplain:
         return t('tour_store_explain');
-      case 23:
+      case kTourStepReadingExplain:
+        return t('tour_reading_explain');
+      case kTourStepPhotoExplain:
+        return t('tour_photo_explain');
+      case kTourStepSpeciesExplain:
         return t('tour_species_book_explain');
-      case 25:
+      case kTourStepStatsExplain:
+        return t('tour_stats_explain');
+      case kTourStepSettingsExplain:
+        return t('tour_settings_explain');
+      case kTourStepFarewell:
         return t('tour_farewell')
             .replaceAll('{name}', _submittedUsername ?? '');
       default:
@@ -235,8 +262,14 @@ class _TourOverlayState extends State<TourOverlay>
   Rect _getSpotRect(GlobalKey key) {
     final ctx = key.currentContext;
     if (ctx == null) return Rect.zero;
-    final box = ctx.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize) return Rect.zero;
+    if (!ctx.mounted) return Rect.zero;
+    RenderBox? box;
+    try {
+      box = ctx.findRenderObject() as RenderBox?;
+    } catch (_) {
+      return Rect.zero;
+    }
+    if (box == null || !box.hasSize || !box.attached) return Rect.zero;
     final pos = box.localToGlobal(Offset.zero);
     return Rect.fromLTWH(pos.dx, pos.dy, box.size.width, box.size.height);
   }
@@ -386,17 +419,17 @@ class _TourOverlayState extends State<TourOverlay>
     const spotRadius = 20.0;
 
     final instrKey = switch (step) {
-      2 => 'tour_highlight_missions',
-      4 => 'tour_highlight_build',
-      6 => 'tour_highlight_reading',
-      8 => 'tour_highlight_backpack',
-      10 => 'tour_highlight_minigames',
-      12 => 'tour_highlight_photo',
-      14 => 'tour_highlight_stats',
-      16 => 'tour_highlight_settings',
-      18 => 'tour_highlight_roulette',
-      20 => 'tour_highlight_store',
-      22 => 'tour_highlight_species_book',
+      kTourStepMissionsHighlight => 'tour_highlight_missions',
+      kTourStepBuildHighlight => 'tour_highlight_build',
+      kTourStepBackpackHighlight => 'tour_highlight_backpack',
+      kTourStepMinigamesHighlight => 'tour_highlight_minigames',
+      kTourStepRouletteHighlight => 'tour_highlight_roulette',
+      kTourStepStoreHighlight => 'tour_highlight_store',
+      kTourStepReadingHighlight => 'tour_highlight_reading',
+      kTourStepPhotoHighlight => 'tour_highlight_photo',
+      kTourStepSpeciesHighlight => 'tour_highlight_species_book',
+      kTourStepStatsHighlight => 'tour_highlight_stats',
+      kTourStepSettingsHighlight => 'tour_highlight_settings',
       _ => 'tour_tap_highlighted',
     };
     final instruction = widget.translate(instrKey);
@@ -413,28 +446,40 @@ class _TourOverlayState extends State<TourOverlay>
     final leftInset = MediaQuery.of(context).padding.left;
     final rightInset = MediaQuery.of(context).padding.right;
 
+    final tapZoneRect = spotRect == Rect.zero
+        ? null
+        : Rect.fromLTWH(
+            spotRect.left - spotPadding,
+            spotRect.top - spotPadding,
+            spotRect.width + spotPadding * 2,
+            spotRect.height + spotPadding * 2,
+          );
+
     return Stack(
       children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {},
+            behavior: HitTestBehavior.opaque,
+            child: Container(color: Colors.transparent),
+          ),
+        ),
         if (spotRect != Rect.zero)
           Positioned.fill(
-            child: ClipPath(
-              clipper: _SpotlightClipper(
-                spotRect: spotRect,
-                padding: spotPadding,
-                cornerRadius: spotRadius,
-              ),
-              child: GestureDetector(
-                onTap: () {},
-                behavior: HitTestBehavior.opaque,
+            child: IgnorePointer(
+              child: ClipPath(
+                clipper: _SpotlightClipper(
+                  spotRect: spotRect,
+                  padding: spotPadding,
+                  cornerRadius: spotRadius,
+                ),
                 child: Container(color: Colors.black.withValues(alpha: 0.72)),
               ),
             ),
           )
         else
           Positioned.fill(
-            child: GestureDetector(
-              onTap: () {},
-              behavior: HitTestBehavior.opaque,
+            child: IgnorePointer(
               child: Container(color: Colors.black.withValues(alpha: 0.72)),
             ),
           ),
@@ -452,6 +497,18 @@ class _TourOverlayState extends State<TourOverlay>
                   ),
                 ),
               ),
+            ),
+          ),
+        if (tapZoneRect != null)
+          Positioned(
+            left: tapZoneRect.left,
+            top: tapZoneRect.top,
+            width: tapZoneRect.width,
+            height: tapZoneRect.height,
+            child: GestureDetector(
+              onTap: widget.onAdvance,
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
             ),
           ),
         Positioned(

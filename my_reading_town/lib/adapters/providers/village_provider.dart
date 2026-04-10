@@ -75,7 +75,14 @@ class VillageProvider extends ChangeNotifier {
   Set<String> get walkableTiles {
     final result = Set<String>.from(_roadTiles);
     for (final entry in _specialTiles.entries) {
-      if (entry.value == 'sand') result.add(entry.key);
+      if (entry.value == 'sand') {
+        final parts = entry.key.split(',');
+        final x = int.parse(parts[0]);
+        final y = int.parse(parts[1]);
+        if (!_placedBuildings.any((b) => b.occupiesTile(x, y))) {
+          result.add(entry.key);
+        }
+      }
     }
     return result;
   }
@@ -178,7 +185,7 @@ class VillageProvider extends ChangeNotifier {
       _villagers, _placedBuildings, walkableTiles, _playerLevel);
 
   bool isBuildingRoadConnected(PlacedBuilding b) =>
-      _buildingSvc.isBuildingRoadConnected(b, walkableTiles);
+      _buildingSvc.isBuildingRoadConnected(b, walkableTiles, _placedBuildings);
 
   bool isTileUnlocked(int tileX, int tileY) =>
       _buildingSvc.isTileUnlocked(tileX, tileY, _unlockedChunks);
@@ -670,6 +677,11 @@ class VillageProvider extends ChangeNotifier {
 
   Future<void> toggleSpecialTile(int x, int y, String type) async {
     await _buildingSvc.toggleSpecialTile(x, y, type, _specialTiles, _roadTiles);
+    notifyListeners();
+  }
+
+  Future<void> clearToGrass(int x, int y) async {
+    await _buildingSvc.clearToGrass(x, y, _roadTiles, _specialTiles);
     notifyListeners();
   }
 

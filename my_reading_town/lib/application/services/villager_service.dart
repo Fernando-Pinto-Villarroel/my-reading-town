@@ -28,7 +28,7 @@ class VillagerService {
     int cap = 0;
     for (final b in buildings) {
       if (b.type != type) continue;
-      if (!_buildingService.isBuildingRoadConnected(b, roadTiles)) continue;
+      if (!_buildingService.isBuildingRoadConnected(b, roadTiles, buildings)) continue;
       final effectiveLevel = _buildingService.effectiveBuildingLevel(b);
       if (effectiveLevel <= 0) continue;
       cap += VillageRules.buildingCapacity(b.type, effectiveLevel);

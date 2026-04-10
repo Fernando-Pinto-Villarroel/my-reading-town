@@ -303,12 +303,21 @@ class _RouletteDialogState extends State<_RouletteDialog>
     final canAfford = isFree || gems >= gemCost;
     final timeLeft = village.rouletteNextFreeSpinIn;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: AppTheme.cream,
-      insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: SingleChildScrollView(
-        child: Padding(
+    final canDismiss = !_isSpinning && !_showingReward;
+
+    return PopScope(
+      canPop: canDismiss,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () { if (canDismiss) Navigator.of(context).pop(); },
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          backgroundColor: AppTheme.cream,
+          insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: GestureDetector(
+        onTap: () {},
+        child: SingleChildScrollView(
+          child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -491,7 +500,10 @@ class _RouletteDialogState extends State<_RouletteDialog>
           ),
         ),
       ),
-    );
+        ),
+      ),
+    ),
+  );
   }
 }
 

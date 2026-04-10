@@ -183,14 +183,32 @@ class _TileList extends StatelessWidget {
     required this.onSelect,
   });
 
+  static const _tileColors = {
+    'grass': Color(0xFF90C96B),
+    'road': Color(0xFFE0D8C8),
+    'sea': Color(0xFF7EC8E3),
+    'sand': Color(0xFFE8D89A),
+    'rock': Color(0xFFB0A898),
+  };
+
+  static const _tileWalkable = {
+    'grass': false,
+    'road': true,
+    'sea': false,
+    'sand': true,
+    'rock': false,
+  };
+
+  static const _tileBuildable = {
+    'grass': true,
+    'road': false,
+    'sea': false,
+    'sand': true,
+    'rock': false,
+  };
+
   Widget _buildTilePreview(String type, double size) {
-    const tileColors = {
-      'road': Color(0xFFE0D8C8),
-      'sea': Color(0xFF7EC8E3),
-      'sand': Color(0xFFE8D89A),
-      'rock': Color(0xFFB0A898),
-    };
-    final color = tileColors[type] ?? Colors.grey.shade300;
+    final color = _tileColors[type] ?? Colors.grey.shade300;
     return Container(
       width: size,
       height: size,
@@ -198,6 +216,45 @@ class _TileList extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(6),
       ),
+    );
+  }
+
+  Widget _tileInfoRow(BuildContext context, String labelKey, bool valid, double fontSize) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          valid ? Icons.check_circle : Icons.cancel,
+          size: fontSize + 3,
+          color: valid ? const Color(0xFF4CAF50) : const Color(0xFFE53935),
+        ),
+        SizedBox(width: 3),
+        Text(
+          context.t(labelKey),
+          style: TextStyle(
+            fontSize: fontSize,
+            color: AppTheme.darkText.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _timerRow(double fontSize) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.timer_outlined,
+            size: fontSize + 2,
+            color: AppTheme.darkOrange),
+        SizedBox(width: 2),
+        Text(
+          '0s',
+          style: TextStyle(
+              fontSize: fontSize,
+              color: AppTheme.darkOrange),
+        ),
+      ],
     );
   }
 
@@ -229,6 +286,8 @@ class _TileList extends StatelessWidget {
       'building_name_$type',
       fallback: template['name'] as String,
     );
+    final walkable = _tileWalkable[type] ?? false;
+    final buildable = _tileBuildable[type] ?? false;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -243,20 +302,41 @@ class _TileList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(translatedName,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.darkText)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(translatedName,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.darkText)),
+                  if (type == 'grass') ...[
+                    SizedBox(width: 4),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppTheme.mint.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        context.t('tile_default_label'),
+                        style: TextStyle(
+                            fontSize: 7,
+                            color: AppTheme.darkMint,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
               Text(context.t('free'),
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.darkMint)),
-              Text(context.t('no_build_time'),
-                  style: TextStyle(
-                      fontSize: 9,
-                      color: AppTheme.darkText.withValues(alpha: 0.5))),
+              _timerRow(9),
+              _tileInfoRow(context, 'tile_walking', walkable, 9),
+              _tileInfoRow(context, 'tile_building', buildable, 9),
             ],
           ),
         ],
@@ -270,6 +350,8 @@ class _TileList extends StatelessWidget {
       'building_name_$type',
       fallback: template['name'] as String,
     );
+    final walkable = _tileWalkable[type] ?? false;
+    final buildable = _tileBuildable[type] ?? false;
     return Container(
       width: 140,
       margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -279,14 +361,36 @@ class _TileList extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTilePreview(type, 80),
+          _buildTilePreview(type, 64),
           SizedBox(height: 4),
-          Text(translatedName,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.darkText)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(translatedName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkText)),
+              if (type == 'grass') ...[
+                SizedBox(width: 4),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: AppTheme.mint.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    context.t('tile_default_label'),
+                    style: TextStyle(
+                        fontSize: 7,
+                        color: AppTheme.darkMint,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ],
+          ),
           SizedBox(height: 2),
           Text(context.t('free'),
               textAlign: TextAlign.center,
@@ -294,11 +398,10 @@ class _TileList extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.darkMint)),
-          Text(context.t('no_build_time'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 10,
-                  color: AppTheme.darkText.withValues(alpha: 0.5))),
+          _timerRow(9),
+          SizedBox(height: 2),
+          _tileInfoRow(context, 'tile_walking', walkable, 9),
+          _tileInfoRow(context, 'tile_building', buildable, 9),
         ],
       ),
     );

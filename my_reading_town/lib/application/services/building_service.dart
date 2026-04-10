@@ -53,22 +53,55 @@ class BuildingService {
         : Duration(milliseconds: remainingMs.round());
   }
 
-  bool isBuildingRoadConnected(PlacedBuilding b, Set<String> roadTiles) {
+  bool isBuildingRoadConnected(
+      PlacedBuilding b, Set<String> walkableTiles, List<PlacedBuilding> allBuildings) {
+    final startTiles = <String>{};
     for (int dx = 0; dx < b.tileWidth; dx++) {
       for (int dy = 0; dy < b.tileHeight; dy++) {
-        final tx = b.tileX + dx;
-        final ty = b.tileY + dy;
         for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
-          final nx = tx + d.$1;
-          final ny = ty + d.$2;
-          if (nx >= b.tileX &&
-              nx < b.tileX + b.tileWidth &&
-              ny >= b.tileY &&
-              ny < b.tileY + b.tileHeight) {
-            continue;
-          }
-          if (roadTiles.contains(tileKey(nx, ny))) return true;
+          final nx = b.tileX + dx + d.$1;
+          final ny = b.tileY + dy + d.$2;
+          if (nx >= b.tileX && nx < b.tileX + b.tileWidth &&
+              ny >= b.tileY && ny < b.tileY + b.tileHeight) { continue; }
+          final key = tileKey(nx, ny);
+          if (walkableTiles.contains(key)) startTiles.add(key);
         }
+      }
+    }
+    if (startTiles.isEmpty) return false;
+
+    final sourceTiles = <String>{};
+    for (final h in allBuildings) {
+      if (h.type != 'house' || !h.isConstructed || h.id == b.id) continue;
+      for (int dx = 0; dx < h.tileWidth; dx++) {
+        for (int dy = 0; dy < h.tileHeight; dy++) {
+          for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+            final nx = h.tileX + dx + d.$1;
+            final ny = h.tileY + dy + d.$2;
+            if (nx >= h.tileX && nx < h.tileX + h.tileWidth &&
+                ny >= h.tileY && ny < h.tileY + h.tileHeight) { continue; }
+            final key = tileKey(nx, ny);
+            if (walkableTiles.contains(key)) sourceTiles.add(key);
+          }
+        }
+      }
+    }
+
+    if (sourceTiles.isEmpty) return true;
+    if (startTiles.any(sourceTiles.contains)) return true;
+
+    final visited = <String>{...startTiles};
+    final queue = startTiles.toList();
+    int i = 0;
+    while (i < queue.length) {
+      final current = queue[i++];
+      final parts = current.split(',');
+      final cx = int.parse(parts[0]);
+      final cy = int.parse(parts[1]);
+      for (final d in [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+        final key = tileKey(cx + d.$1, cy + d.$2);
+        if (sourceTiles.contains(key)) return true;
+        if (walkableTiles.contains(key) && visited.add(key)) queue.add(key);
       }
     }
     return false;
@@ -466,6 +499,13 @@ class BuildingService {
       specialTiles[key] = type;
       await _repo.upsertSpecialTile(x, y, type);
     }
+  }
+
+  Future<void> clearToGrass(
+      int x, int y, Set<String> roadTiles, Map<String, String> specialTiles) async {
+    final key = tileKey(x, y);
+    if (roadTiles.remove(key)) await _repo.deleteRoadTile(x, y);
+    if (specialTiles.remove(key) != null) await _repo.deleteSpecialTile(x, y);
   }
 
   Future<bool> expandTerritoryWithGems(int chunkX, int chunkY, int currentGems,
